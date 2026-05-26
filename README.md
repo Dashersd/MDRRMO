@@ -12,7 +12,7 @@ A 100% pure public safety information board tailored for citizens.
 - **Dynamic Threat Alert Engine:** Automatically evaluates the highest threat severity in the active dispatches from the database. It pulses in Green (Normal), Yellow (Active Monitoring/Yellow Alert), Orange (High Severity), or Red (Critical Red Alert) with localized safety notices.
 - **Dynamic Weather & Clock:** A high-end real-time digital clock coupled with interactive weather telemetry widgets.
 - **Official Roster Directory:** Displays active responders and leadership, updated in real time. It features customized profile dimensions ensuring full face visibility (no cropping).
-- **Map-Free Public Reports Feed:** Per request, the public incident feed is entirely **map-free** to maintain a clean card grid presentation. It showcases incident details, severities, coordinates, and dispatcher statuses in a responsive three-column grid.
+- **No Map on Homepage:** To ensure a clean, modern, and high-performance user experience, there is no map on the public homepage. Public emergency dispatches are displayed in a clean, responsive three-column card grid featuring geotagged locations, status indicators, and modal popups.
 - **High-Fidelity Detail Modals:** Clicking any personnel or incident card launches a details overlay. Media files inside the modal utilize containment wrappers to prevent image cropping.
 - **Click-to-Copy Directory:** A beautiful directory of emergency contact hotlines with clipboard-copy indicators.
 
