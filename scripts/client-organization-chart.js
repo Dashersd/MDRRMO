@@ -76,15 +76,26 @@
     
     if (!root) return null;
 
+    const rootIdStr = root.id.toString();
+
+    // Normalize personnel: if they are not the root node and have no reportsTo,
+    // automatically link them to the root node (CEO) so they don't disappear.
+    const normalizedPersonnel = personnel.map(p => {
+      if (p.id.toString() !== rootIdStr && !p.isCEO && !p.reportsTo) {
+        return { ...p, reportsTo: rootIdStr };
+      }
+      return p;
+    });
+
     // Build tree recursively
     function buildTree(personId) {
-      const person = personnel.find(p => p.id === personId || p.id.toString() === personId.toString());
+      const personIdStr = personId.toString();
+      const person = normalizedPersonnel.find(p => p.id.toString() === personIdStr || p.id === personId);
       if (!person) return null;
 
-      const children = personnel
+      const children = normalizedPersonnel
         .filter(p => {
           const reportsTo = p.reportsTo ? p.reportsTo.toString() : null;
-          const personIdStr = personId.toString();
           return reportsTo === personIdStr;
         })
         .map(child => buildTree(child.id))
@@ -242,7 +253,7 @@
     const reportToEl = document.getElementById('viewPersonnelReportTo');
 
     if (person.photoDataUrl) {
-      imgContainer.innerHTML = `<img src="${person.photoDataUrl}" alt="${person.name}" class="img-thumbnail rounded-circle shadow-sm" style="width: 150px; height: 150px; object-fit: cover; border: 4px solid white;">`;
+      imgContainer.innerHTML = `<img src="${person.photoDataUrl}" alt="${person.name}" class="img-thumbnail rounded-circle shadow-sm" style="width: 150px; height: 150px; object-fit: cover; object-position: top; border: 4px solid white;">`;
     } else {
       imgContainer.innerHTML = `<div class="mx-auto rounded-circle shadow-sm d-flex align-items-center justify-content-center bg-white" style="width: 150px; height: 150px; border: 4px solid white;"><i class="bi bi-person-fill text-muted" style="font-size: 5rem;"></i></div>`;
     }

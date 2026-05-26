@@ -272,11 +272,16 @@ if (isset($_GET['logout'])) {
                 <small class="text-muted d-block mt-1">Select who this person reports to in the organization.</small>
               </div>
             </div>
-            <div class="modal-footer border-0 bg-light">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-              <button type="submit" class="btn btn-primary">
-                <i class="bi bi-check-circle me-1"></i> Add Personnel
+            <div class="modal-footer border-0 bg-light d-flex justify-content-between">
+              <button type="button" class="btn btn-danger d-none" id="btnDeletePersonnel">
+                <i class="bi bi-trash me-1"></i> Delete
               </button>
+              <div class="d-flex gap-2">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">
+                  <i class="bi bi-check-circle me-1"></i> Add Personnel
+                </button>
+              </div>
             </div>
           </form>
         </div>
@@ -416,6 +421,7 @@ if (isset($_GET['logout'])) {
         height: 100%;
         border-radius: 50%;
         object-fit: cover;
+        object-position: top;
         border: 3px solid white;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
       }

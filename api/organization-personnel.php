@@ -15,6 +15,11 @@ checkLogin();
 $method = $_SERVER['REQUEST_METHOD'];
 $isAdmin = getUserRole() === 'admin';
 
+// Increase PHP limits for large base64 image uploads
+@ini_set('post_max_size', '20M');
+@ini_set('upload_max_filesize', '20M');
+@ini_set('memory_limit', '128M');
+
 try {
     $pdo = getPdoConnection();
     if (!$pdo) {

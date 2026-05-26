@@ -70,7 +70,38 @@ Admin and responder operations are fully isolated behind standard authentication
 * PHP 8.0 or higher.
 
 ### 2. Installation Steps
-1. Place the project folder inside your webroot or host locally.
-2. Initialize the MySQL database named `geotagged` using the setup schema under `db/db_setup.php`.
-3. Configure the `.env` settings to match your local database credentials.
-4. Launch your local server (e.g. `php -S localhost:8000`) and open the browser.
+1. **Link or Place the Folder:** Move the project folder to `C:\xampp\htdocs\MDRRMO` or run the following command in cmd as Administrator:
+   ```cmd
+   mklink /J "C:\xampp\htdocs\MDRRMO" "C:\Users\NITRO V15\OneDrive\Documents\MDRRMO"
+   ```
+2. **Start Services:** Start **Apache** and **MySQL** from your XAMPP Control Panel.
+3. **Configure Settings:** Verify the `.env` settings match your local database credentials (default: username `root` with no password).
+4. **Initialize Database:** Visit **[http://localhost/MDRRMO/db/db_setup.php](http://localhost/MDRRMO/db/db_setup.php)** to automatically set up the schema, tables, and migrate users.
+
+---
+
+## 🌐 Local Access Portals
+
+Use the links below to access the different parts of the system when running locally on XAMPP:
+
+### Public Gateways
+* **Official Homepage (Citizen Info Board):** [http://localhost/MDRRMO/index.php](http://localhost/MDRRMO/index.php)
+* **Secure Login Entrance:** [http://localhost/MDRRMO/login.php](http://localhost/MDRRMO/login.php)
+* **Responder Registration (Signup):** [http://localhost/MDRRMO/signup.php](http://localhost/MDRRMO/signup.php)
+
+### Secured Dashboards (Requires Session)
+* **Admin Command Center:** [http://localhost/MDRRMO/admin-dashboard.php](http://localhost/MDRRMO/admin-dashboard.php)
+* **Responder Dashboard:** [http://localhost/MDRRMO/client-dashboard.php](http://localhost/MDRRMO/client-dashboard.php)
+
+### Administrative Panel Suite (`admin/`)
+* **Incidents Manager:** [http://localhost/MDRRMO/admin/incidents.php](http://localhost/MDRRMO/admin/incidents.php)
+* **Organization & Roster Chart:** [http://localhost/MDRRMO/admin/organization-chart.php](http://localhost/MDRRMO/admin/organization-chart.php)
+* **Equipment Inventory:** [http://localhost/MDRRMO/admin/equipment.php](http://localhost/MDRRMO/admin/equipment.php)
+* **Activity & Drill Logs:** [http://localhost/MDRRMO/admin/activities.php](http://localhost/MDRRMO/admin/activities.php)
+* **User Management Panel:** [http://localhost/MDRRMO/admin/users.php](http://localhost/MDRRMO/admin/users.php)
+
+### Responder Operations Suite (`client/`)
+* **My Incident Logs:** [http://localhost/MDRRMO/client/incidents.php](http://localhost/MDRRMO/client/incidents.php)
+* **View Roster Chart:** [http://localhost/MDRRMO/client/organization-chart.php](http://localhost/MDRRMO/client/organization-chart.php)
+* **Activities & Drills:** [http://localhost/MDRRMO/client/activities.php](http://localhost/MDRRMO/client/activities.php)
+

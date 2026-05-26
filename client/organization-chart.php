@@ -336,6 +336,7 @@ if (isset($_GET['logout'])) {
         height: 100%;
         border-radius: 50%;
         object-fit: cover;
+        object-position: top;
         border: 3px solid white;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
       }

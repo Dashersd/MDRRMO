@@ -26,6 +26,7 @@
   const isCEOCheckbox = document.getElementById('isCEO');
   const personnelReportsToSelect = document.getElementById('personnelReportsTo');
   const reportsToContainer = document.getElementById('reportsToContainer');
+  const btnDeletePersonnel = document.getElementById('btnDeletePersonnel');
   
   let editingPersonnelId = null; // Track which personnel is being edited
   const orgChartContainer = document.getElementById('orgChartContainer');
@@ -84,6 +85,7 @@
           await loadPersonnelForEdit(editingPersonnelId);
           if (addPersonnelModalLabel) addPersonnelModalLabel.innerHTML = '<i class="bi bi-pencil me-2"></i>Edit Personnel';
           if (addPersonnelSubmitBtn) addPersonnelSubmitBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i> Update Personnel';
+          if (btnDeletePersonnel) btnDeletePersonnel.classList.remove('d-none');
         } else {
           // Add mode
           editingPersonnelId = null;
@@ -95,28 +97,53 @@
           if (personnelPhotoInput) personnelPhotoInput.value = '';
           if (addPersonnelModalLabel) addPersonnelModalLabel.innerHTML = '<i class="bi bi-person-plus me-2"></i>Add Personnel';
           if (addPersonnelSubmitBtn) addPersonnelSubmitBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i> Add Personnel';
+          if (btnDeletePersonnel) btnDeletePersonnel.classList.add('d-none');
         }
       });
     }
 
-    // Handle photo upload preview
+    // Handle delete button click
+    if (btnDeletePersonnel) {
+      btnDeletePersonnel.addEventListener('click', handleDeletePersonnelClick);
+    }
+
+    // Handle photo upload preview with resize/compress
     if (personnelPhotoInput) {
       personnelPhotoInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file) {
-          if (file.size > 5 * 1024 * 1024) { // 5MB limit
-            alert('Image size must be less than 5MB');
+          if (file.size > 10 * 1024 * 1024) { // 10MB hard limit before resize
+            alert('Image size must be less than 10MB');
             this.value = '';
             return;
           }
-          
+
           const reader = new FileReader();
           reader.onload = function(event) {
-            if (photoPreview) {
-              photoPreview.src = event.target.result;
-              photoPreview.removeAttribute('data-removed');
-            }
-            if (photoPreviewContainer) photoPreviewContainer.style.display = 'block';
+            // Resize & compress via canvas before storing
+            const img = new Image();
+            img.onload = function() {
+              const MAX_SIZE = 300; // max width or height in pixels
+              let w = img.width;
+              let h = img.height;
+              if (w > h) {
+                if (w > MAX_SIZE) { h = Math.round(h * MAX_SIZE / w); w = MAX_SIZE; }
+              } else {
+                if (h > MAX_SIZE) { w = Math.round(w * MAX_SIZE / h); h = MAX_SIZE; }
+              }
+              const canvas = document.createElement('canvas');
+              canvas.width = w;
+              canvas.height = h;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, w, h);
+              const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+              if (photoPreview) {
+                photoPreview.src = compressedDataUrl;
+                photoPreview.removeAttribute('data-removed');
+              }
+              if (photoPreviewContainer) photoPreviewContainer.style.display = 'block';
+            };
+            img.src = event.target.result;
           };
           reader.readAsDataURL(file);
         }
@@ -237,8 +264,8 @@
     // Handle photo upload - get from preview (already loaded when user selects file)
     if (personnelPhotoInput && personnelPhotoInput.files && personnelPhotoInput.files[0]) {
       const file = personnelPhotoInput.files[0];
-      if (file.size > 5 * 1024 * 1024) {
-        alert('Image size must be less than 5MB');
+      if (file.size > 10 * 1024 * 1024) {
+        alert('Image size must be less than 10MB');
         return;
       }
       
@@ -351,9 +378,6 @@
     });
   }
 
-  /**
-   * Build hierarchical tree structure
-   */
   function buildHierarchy(personnel) {
     if (personnel.length === 0) return null;
 
@@ -367,13 +391,24 @@
     
     if (!root) return null;
 
+    const rootIdStr = root.id.toString();
+
+    // Normalize personnel: if they are not the root node and have no reportsTo,
+    // automatically link them to the root node (CEO) so they don't disappear.
+    const normalizedPersonnel = personnel.map(p => {
+      if (p.id.toString() !== rootIdStr && !p.isCEO && !p.reportsTo) {
+        return { ...p, reportsTo: rootIdStr };
+      }
+      return p;
+    });
+
     // Build tree recursively
     function buildTree(personId) {
       const personIdStr = personId.toString();
-      const person = personnel.find(p => p.id.toString() === personIdStr || p.id === personId);
+      const person = normalizedPersonnel.find(p => p.id.toString() === personIdStr || p.id === personId);
       if (!person) return null;
 
-      const children = personnel
+      const children = normalizedPersonnel
         .filter(p => {
           const reportsTo = p.reportsTo ? p.reportsTo.toString() : null;
           return reportsTo === personIdStr || reportsTo === personId;
@@ -543,7 +578,7 @@
     const reportToEl = document.getElementById('viewPersonnelReportTo');
 
     if (person.photoDataUrl) {
-      imgContainer.innerHTML = `<img src="${person.photoDataUrl}" alt="${person.name}" class="img-thumbnail rounded-circle shadow-sm" style="width: 150px; height: 150px; object-fit: cover; border: 4px solid white;">`;
+      imgContainer.innerHTML = `<img src="${person.photoDataUrl}" alt="${person.name}" class="img-thumbnail rounded-circle shadow-sm" style="width: 150px; height: 150px; object-fit: cover; object-position: top; border: 4px solid white;">`;
     } else {
       imgContainer.innerHTML = `<div class="mx-auto rounded-circle shadow-sm d-flex align-items-center justify-content-center bg-white" style="width: 150px; height: 150px; border: 4px solid white;"><i class="bi bi-person-fill text-muted" style="font-size: 5rem;"></i></div>`;
     }
@@ -565,6 +600,48 @@
 
     const modal = new bootstrap.Modal(modalElement);
     modal.show();
+  }
+
+  /**
+   * Delete personnel via API
+   */
+  async function handleDeletePersonnelClick() {
+    if (!editingPersonnelId) return;
+
+    if (!confirm('Are you sure you want to delete this personnel member? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      if (btnDeletePersonnel) {
+        btnDeletePersonnel.disabled = true;
+        btnDeletePersonnel.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Deleting...';
+      }
+
+      const response = await fetch(`${API_URL}?id=${editingPersonnelId}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete personnel');
+      }
+
+      // Close modal and refresh chart
+      const bsModal = bootstrap.Modal.getInstance(addPersonnelModal);
+      if (bsModal) bsModal.hide();
+      
+      editingPersonnelId = null;
+      await loadAndRenderChart();
+    } catch (error) {
+      console.error('Error deleting personnel:', error);
+      alert('Error deleting personnel: ' + error.message);
+    } finally {
+      if (btnDeletePersonnel) {
+        btnDeletePersonnel.disabled = false;
+        btnDeletePersonnel.innerHTML = '<i class="bi bi-trash me-1"></i> Delete';
+      }
+    }
   }
 
 })();
