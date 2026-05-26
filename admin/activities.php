@@ -6,7 +6,7 @@ require_once '../auth.php';
 checkLogin();
 
 if (getUserRole() !== 'admin') {
-    header('Location: ../client-dashboard.php');
+    header('Location: ../bdrrmo-dashboard.php');
     exit();
 }
 

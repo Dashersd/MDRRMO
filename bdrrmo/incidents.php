@@ -56,7 +56,7 @@ if (isset($_GET['logout'])) {
       <div class="sidebar-header">
         <div class="sidebar-brand">
           <img src="../assets/icon.png" alt="MDRRMO Logo" style="max-width: 32px; height: auto; margin-right: 0.5rem;" />
-          <span id="brandText">MDRRMO Client</span>
+          <span id="brandText">BDRRMO STAFF</span>
         </div>
         <button class="sidebar-toggle" id="sidebarToggle">
           <i class="bi bi-list"></i>
@@ -67,7 +67,7 @@ if (isset($_GET['logout'])) {
         <div class="nav-section">
           <div class="nav-section-title" id="navTitle">Navigation</div>
           
-          <a href="../client-dashboard.php" class="nav-item">
+          <a href="../bdrrmo-dashboard.php" class="nav-item">
             <div class="nav-icon">
               <i data-filled="fi fi-sr-apps" data-unfilled="fi fi-rr-apps"></i>
             </div>
@@ -146,8 +146,7 @@ if (isset($_GET['logout'])) {
             <div class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" role="button" aria-expanded="false">
                 <i class="bi bi-person-circle me-1"></i>
-                <?php echo htmlspecialchars(getCurrentUser()); ?>
-                <span class="badge bg-primary ms-1">Client</span>
+                <span class="badge bg-primary ms-1">BDRRMO STAFF</span>
               </a>
               <ul class="dropdown-menu dropdown-menu-end">
                 <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
@@ -193,13 +192,9 @@ if (isset($_GET['logout'])) {
                     <label for="filterStatus" class="form-label small text-muted mb-0 d-none d-md-block">Filter:</label>
                     <select id="filterStatus" class="form-select form-select-sm incident-filter-select">
                       <option value="All" selected>All statuses</option>
-                      <option value="New">New</option>
-                      <option value="Pending">Pending</option>
                       <option value="Approved">Approved</option>
                       <option value="Dispatched">Dispatched</option>
                       <option value="Resolved">Resolved</option>
-                      <option value="Decline">Declined</option>
-                      <option value="Cancelled">Cancelled</option>
                     </select>
                   </div>
                 </div>
@@ -234,7 +229,7 @@ if (isset($_GET['logout'])) {
 
       <footer class="container pb-4 small text-center text-muted">
         <span class="d-inline-flex align-items-center gap-1">
-          <i class="bi bi-info-circle"></i> MDRRMO Client Dashboard - Geotagged Incident Reporting System
+          <i class="bi bi-info-circle"></i> BDRRMO Staff Dashboard - Geotagged Incident Reporting System
         </span>
       </footer>
     </div>
@@ -267,7 +262,7 @@ if (isset($_GET['logout'])) {
         display: flex;
         flex-direction: row; /* Horizontal layout for rectangle */
         cursor: pointer;
-        max-width: 100%; /* Ensure card doesn't exceed container */
+        max-width: 480px; /* Limit card width to prevent infinite stretching when only few items are present */
         box-sizing: border-box;
         align-items: stretch; /* Stretch to fit content */
       }

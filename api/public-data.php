@@ -65,8 +65,8 @@ try {
         ];
     }, $personnels);
 
-    // 2. Fetch Incidents
-    $stmtInc = $pdo->query('SELECT id, type, description, status, severity, lat, lng, photo_data_url, created_at FROM incidents ORDER BY created_at DESC LIMIT 50');
+    // 2. Fetch Incidents (Only approved, dispatched, or resolved)
+    $stmtInc = $pdo->query("SELECT id, type, description, status, severity, lat, lng, photo_data_url, created_at FROM incidents WHERE status IN ('Approved', 'Dispatched', 'Resolved') ORDER BY created_at DESC LIMIT 50");
     $incidents = $stmtInc->fetchAll(PDO::FETCH_ASSOC);
     $formattedIncidents = array_map(function($incident) {
         return [

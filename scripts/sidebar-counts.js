@@ -75,7 +75,7 @@
       // Determine API path based on current page location
       const path = window.location.pathname;
       let apiUrl = 'api/incidents.php';
-      if (path.includes('/admin/') || path.includes('/client/')) {
+      if (path.includes('/admin/') || path.includes('/client/') || path.includes('/bdrrmo/')) {
         apiUrl = '../api/incidents.php';
       }
       

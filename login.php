@@ -8,7 +8,7 @@ if (isLoggedIn()) {
     if ($userRole === 'admin') {
         header('Location: admin-dashboard.php');
     } else {
-        header('Location: client-dashboard.php');
+        header('Location: bdrrmo-dashboard.php');
     }
     exit();
 }
@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($userRole === 'admin') {
                 header('Location: admin-dashboard.php');
             } else {
-                header('Location: client-dashboard.php');
+                header('Location: bdrrmo-dashboard.php');
             }
             exit();
         } else {

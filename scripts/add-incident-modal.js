@@ -48,68 +48,116 @@
       });
     }
 
+    // Reset form states completely
+    const resetModalState = () => {
+      form.reset();
+      form.classList.remove("was-validated");
+      if (photoPreviewWrap) photoPreviewWrap.style.display = "none";
+      if (photoMeta) {
+        photoMeta.innerHTML = '<i class="bi bi-clock me-1"></i>Awaiting image upload...';
+      }
+      
+      const editIdEl = document.getElementById("editIncidentId");
+      if (editIdEl) editIdEl.value = "";
+      
+      const modalLabel = document.getElementById("addIncidentModalLabel");
+      if (modalLabel) {
+        modalLabel.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2"></i>Report New Incident';
+      }
+      
+      const modalDesc = modal.querySelector(".modal-header p");
+      if (modalDesc) {
+        modalDesc.textContent = "Fill in the details below to create a new incident report";
+      }
+      
+      if (submitBtn) {
+        submitBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i> Submit Incident Report';
+        submitBtn.disabled = false;
+      }
+      
+      if (photoInput) {
+        photoInput.setAttribute("required", "");
+      }
+    };
+
     // Form submission
     if (submitBtn) {
       submitBtn.addEventListener("click", async function () {
+        const editIdEl = document.getElementById("editIncidentId");
+        const isEdit = editIdEl && editIdEl.value;
+        
+        if (isEdit) {
+          if (photoInput) photoInput.removeAttribute("required");
+        } else {
+          if (photoInput) photoInput.setAttribute("required", "");
+        }
+
         if (!form.checkValidity()) {
           form.classList.add("was-validated");
           return;
         }
 
         try {
-          const incident = await serializeIncidentForm();
-
           // Show loading state
-          submitBtn.innerHTML =
-            '<span class="spinner-border spinner-border-sm me-1"></span> Submitting...';
+          submitBtn.innerHTML = isEdit
+            ? '<span class="spinner-border spinner-border-sm me-1"></span> Updating...'
+            : '<span class="spinner-border spinner-border-sm me-1"></span> Submitting...';
           submitBtn.disabled = true;
 
-          // Save to database
-          await saveIncident(incident);
+          if (isEdit) {
+            const id = editIdEl.value;
+            const type = incidentType ? incidentType.value : "";
+            const descVal = description ? description.value.trim() : "";
+            const file = photoInput?.files && photoInput.files[0];
+            
+            const updateData = { id, type, description: descVal };
+            if (file) {
+              updateData.photoDataUrl = await resizeImageToDataURL(file, 1280, 1280);
+            }
+            
+            const response = await fetch("../api/incidents.php", {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(updateData),
+            });
+            
+            if (!response.ok) {
+              const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+              throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+            }
+            
+            showSuccessNotification("Incident report updated successfully!");
+          } else {
+            const incident = await serializeIncidentForm();
+            await saveIncident(incident);
+            showSuccessNotification("Incident report submitted successfully!");
+          }
 
           // Close modal after a brief delay
           setTimeout(function () {
             const bsModal = bootstrap.Modal.getInstance(modal);
             if (bsModal) bsModal.hide();
 
-            // Reset form
-            form.reset();
-            form.classList.remove("was-validated");
-            if (photoPreviewWrap) photoPreviewWrap.style.display = "none";
-            if (photoMeta)
-              photoMeta.innerHTML =
-                '<i class="bi bi-clock me-1"></i>Awaiting image upload...';
+            resetModalState();
 
-            // Reset button
-            submitBtn.innerHTML =
-              '<i class="bi bi-check-circle me-1"></i> Submit Incident Report';
-            submitBtn.disabled = false;
-
-            // Show success notification
-            showSuccessNotification("Incident report submitted successfully!");
-
-            // Dispatch event to refresh dashboard
+            // Dispatch event to refresh dashboard/lists
             window.dispatchEvent(new CustomEvent("incidentAdded"));
           }, 500);
         } catch (error) {
           console.error("Error submitting incident:", error);
           alert("Failed to submit incident: " + error.message);
-          submitBtn.innerHTML =
-            '<i class="bi bi-check-circle me-1"></i> Submit Incident Report';
+          submitBtn.innerHTML = isEdit
+            ? '<i class="bi bi-check-circle me-1"></i> Update Incident Report'
+            : '<i class="bi bi-check-circle me-1"></i> Submit Incident Report';
           submitBtn.disabled = false;
         }
       });
     }
 
     // Reset form when modal is closed
-    modal.addEventListener("hidden.bs.modal", function () {
-      form.reset();
-      form.classList.remove("was-validated");
-      if (photoPreviewWrap) photoPreviewWrap.style.display = "none";
-      if (photoMeta)
-        photoMeta.innerHTML =
-          '<i class="bi bi-clock me-1"></i>Awaiting image upload...';
-    });
+    modal.addEventListener("hidden.bs.modal", resetModalState);
   });
 
   /**

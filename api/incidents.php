@@ -178,6 +178,21 @@ switch ($method) {
                 $updates[] = 'description = :description';
                 $params[':description'] = $data['description'];
             }
+
+            if (isset($data['type'])) {
+                $updates[] = 'type = :type';
+                $params[':type'] = $data['type'];
+            }
+
+            if (isset($data['severity'])) {
+                $updates[] = 'severity = :severity';
+                $params[':severity'] = $data['severity'];
+            }
+
+            if (isset($data['photoDataUrl'])) {
+                $updates[] = 'photo_data_url = :photo_data_url';
+                $params[':photo_data_url'] = $data['photoDataUrl'];
+            }
             
             if (!empty($updates)) {
                 $updates[] = 'updated_at = :updated_at';

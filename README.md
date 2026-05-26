@@ -19,7 +19,7 @@ A 100% pure public safety information board tailored for citizens.
 ### 2. Multi-Role Secured Dashboards
 Admin and responder operations are fully isolated behind standard authentication interfaces:
 - **Admin Dashboard (`admin-dashboard.php`):** Full administration suite to dispatch responders, manage user roles, update rosters, and log real-time geotagged emergency events.
-- **Client Dashboard (`client-dashboard.php`):** Interactive reporting hub for registered responders to send geotagged incident requests with photo uploads.
+- **BDRRMO Staff Dashboard (`bdrrmo-dashboard.php`):** Interactive reporting hub for registered responders to send geotagged incident requests with photo uploads.
 - **Interactive Maps (Internal):** Leaflet maps are kept inside secure panels for precise dispatch coordinates and incident plot rendering.
 
 ---
@@ -27,7 +27,7 @@ Admin and responder operations are fully isolated behind standard authentication
 ## 🔐 Authentication & Roles
 
 - **Admin Account:** `admin` / `mdrrmo2024`
-- **Client Account:** `client` / `client2024`
+- **BDRRMO Staff Account:** `client` / `client2024`
 - **Security Protocols:** Session-based validation, automatic unauthenticated page guards, and secure password hashing using PHP's `password_hash()`.
 
 ---
@@ -35,30 +35,72 @@ Admin and responder operations are fully isolated behind standard authentication
 ## 📂 File Structure
 
 ```text
-├── index.php                     # Pure public landing portal / information board
-├── login.php                     # Secured dashboard portal entrance
-├── signup.php                    # Public user registration page
-├── admin-dashboard.php           # Core Admin operation center
-├── client-dashboard.php          # Secured client reporting portal
-├── auth.php                      # Session-based authentication helper library
-├── config.php                    # Global database connection and configuration file
-├── xampp-setup.md                # Walkthrough detailing local Apache/MariaDB setup
+├── index.php                          # Pure public landing portal / information board
+├── login.php                          # Secured dashboard portal entrance
+├── logout.php                         # Session destruction and redirect handler
+├── signup.php                         # Public user registration page
+├── incidents.php                      # Public-facing incident view page
+├── admin-dashboard.php                # Core Admin operation center
+├── bdrrmo-dashboard.php               # Secured BDRRMO Staff reporting portal
+├── auth.php                           # Session-based authentication helper library
+├── config.php                         # Global database connection and configuration file
+├── create-admin.php                   # One-time admin account creation utility
+├── debug-admin.php                    # Admin session/auth debugging utility
+├── .env                               # Environment variables (DB credentials, ports)
+├── .htaccess                          # Apache rewrite rules and access control
+├── xampp-setup.md                     # Walkthrough detailing local Apache/MariaDB setup
 │
 ├── api/
-│   ├── public-data.php           # Secure public reader GET endpoint (hides reporter private data)
-│   ├── incidents.php             # Core incident creation & modification API
-│   └── organization-personnel.php# Organizational chart responder API
+│   ├── public-data.php                # Secure public reader GET endpoint
+│   ├── incidents.php                  # Core incident creation & modification API
+│   ├── organization-personnel.php     # Organizational chart responder API
+│   ├── activities.php                 # Activities & drills data API
+│   ├── equipment.php                  # Equipment inventory data API
+│   └── dashboard-stats.php            # Dashboard summary statistics API
+│
+├── admin/
+│   ├── incidents.php                  # Admin incidents management page
+│   ├── organization-chart.php         # Admin organization & roster chart page
+│   ├── equipment.php                  # Admin equipment inventory page
+│   ├── activities.php                 # Admin activity & drill logs page
+│   └── users.php                      # Admin user management panel
+│
+├── bdrrmo/
+│   ├── incidents.php                  # Staff incident logs page
+│   ├── organization-chart.php         # Staff roster chart view
+│   └── activities.php                 # Staff activities & drills page
+│
+├── db/
+│   ├── db_setup.php                   # Automated schema, tables & user migration script
+│   └── db_connect.php                 # Database connection bootstrap
 │
 ├── assets/
-│   └── icon.png                  # Official brand identity logo
+│   └── icon.png                       # Official brand identity logo
 │
 ├── scripts/
-│   ├── homepage.js               # Clock, detail modals, copy logic, and roster engines
-│   └── dashboard.js              # Dashboard layout scripts
+│   ├── homepage.js                    # Clock, detail modals, copy logic, and roster engines
+│   ├── login.js                       # Login form handling
+│   ├── signup.js                      # Signup form handling
+│   ├── dashboard.js                   # Legacy dashboard layout scripts
+│   ├── admin-dashboard.js             # Admin dashboard logic
+│   ├── admin-incidents.js             # Admin incidents management logic
+│   ├── client-dashboard.js            # BDRRMO staff dashboard logic
+│   ├── client-incidents.js            # Staff incident management logic
+│   ├── client-organization-chart.js   # Staff organization chart logic
+│   ├── incidents.js                   # Public incidents view logic
+│   ├── add-incident-modal.js          # Reusable add-incident modal component
+│   ├── organization-chart.js          # Organization chart shared logic
+│   ├── activities.js                  # Activities page logic
+│   ├── equipment.js                   # Equipment inventory logic
+│   ├── users.js                       # User management logic
+│   └── sidebar-counts.js             # Sidebar notification badge counts
 │
 └── styles/
-    ├── homepage.css              # Custom styling for public interface
-    └── dashboard.css             # Administrative panel styling tokens
+    ├── homepage.css                   # Custom styling for public interface
+    ├── dashboard.css                  # Administrative panel styling tokens
+    ├── incidents.css                  # Incidents page styles
+    ├── login.css                      # Login page styles
+    └── signup.css                     # Signup page styles
 ```
 
 ---
@@ -70,13 +112,14 @@ Admin and responder operations are fully isolated behind standard authentication
 * PHP 8.0 or higher.
 
 ### 2. Installation Steps
-1. **Link or Place the Folder:** Move the project folder to `C:\xampp\htdocs\MDRRMO` or run the following command in cmd as Administrator:
+1. **Link or Place the Folder:** Create a junction link so Apache can serve the project. Run the following command in **Command Prompt as Administrator**:
    ```cmd
-   mklink /J "C:\xampp\htdocs\MDRRMO" "C:\Users\NITRO V15\OneDrive\Documents\MDRRMO"
+   mklink /J "C:\xampp\htdocs\MDRRMO" "C:\Users\NITRO V15\OneDrive\Documents\MDRRMO Information System"
    ```
 2. **Start Services:** Start **Apache** and **MySQL** from your XAMPP Control Panel.
-3. **Configure Settings:** Verify the `.env` settings match your local database credentials (default: username `root` with no password).
-4. **Initialize Database:** Visit **[http://localhost/MDRRMO/db/db_setup.php](http://localhost/MDRRMO/db/db_setup.php)** to automatically set up the schema, tables, and migrate users.
+3. **Configure Environment:** Open the `.env` file in the project root and verify the database credentials match your local setup (defaults: `DB_HOST=127.0.0.1`, `DB_USERNAME=root`, `DB_PASSWORD=` *(empty)*, `DB_DATABASE=mdrrmo_information_system`).
+4. **Initialize Database:** Visit **[http://localhost/MDRRMO/db/db_setup.php](http://localhost/MDRRMO/db/db_setup.php)** to automatically create the schema, tables, and seed default users.
+5. **Create Admin Account *(if needed)*:** If the admin user was not seeded, visit **[http://localhost/MDRRMO/create-admin.php](http://localhost/MDRRMO/create-admin.php)** once to create it, then delete or restrict access to that file.
 
 ---
 
@@ -91,7 +134,7 @@ Use the links below to access the different parts of the system when running loc
 
 ### Secured Dashboards (Requires Session)
 * **Admin Command Center:** [http://localhost/MDRRMO/admin-dashboard.php](http://localhost/MDRRMO/admin-dashboard.php)
-* **Responder Dashboard:** [http://localhost/MDRRMO/client-dashboard.php](http://localhost/MDRRMO/client-dashboard.php)
+* **BDRRMO Staff Dashboard:** [http://localhost/MDRRMO/bdrrmo-dashboard.php](http://localhost/MDRRMO/bdrrmo-dashboard.php)
 
 ### Administrative Panel Suite (`admin/`)
 * **Incidents Manager:** [http://localhost/MDRRMO/admin/incidents.php](http://localhost/MDRRMO/admin/incidents.php)
@@ -100,8 +143,8 @@ Use the links below to access the different parts of the system when running loc
 * **Activity & Drill Logs:** [http://localhost/MDRRMO/admin/activities.php](http://localhost/MDRRMO/admin/activities.php)
 * **User Management Panel:** [http://localhost/MDRRMO/admin/users.php](http://localhost/MDRRMO/admin/users.php)
 
-### Responder Operations Suite (`client/`)
-* **My Incident Logs:** [http://localhost/MDRRMO/client/incidents.php](http://localhost/MDRRMO/client/incidents.php)
-* **View Roster Chart:** [http://localhost/MDRRMO/client/organization-chart.php](http://localhost/MDRRMO/client/organization-chart.php)
-* **Activities & Drills:** [http://localhost/MDRRMO/client/activities.php](http://localhost/MDRRMO/client/activities.php)
+### Responder Operations Suite (`bdrrmo/`)
+* **My Incident Logs:** [http://localhost/MDRRMO/bdrrmo/incidents.php](http://localhost/MDRRMO/bdrrmo/incidents.php)
+* **View Roster Chart:** [http://localhost/MDRRMO/bdrrmo/organization-chart.php](http://localhost/MDRRMO/bdrrmo/organization-chart.php)
+* **Activities & Drills:** [http://localhost/MDRRMO/bdrrmo/activities.php](http://localhost/MDRRMO/bdrrmo/activities.php)
 

@@ -6,7 +6,7 @@ require_once 'auth.php';
 checkLogin();
 
 if (getUserRole() !== 'admin') {
-    header('Location: client-dashboard.php');
+    header('Location: bdrrmo-dashboard.php');
     exit();
 }
 
@@ -390,7 +390,7 @@ if (isset($_GET['logout'])) {
         display: flex;
         flex-direction: row;
         cursor: pointer;
-        max-width: 100%;
+        max-width: 480px; /* Limit card width to prevent infinite stretching when only few items are present */
         box-sizing: border-box;
         align-items: stretch;
       }

@@ -20,7 +20,7 @@ if (isset($_GET['logout'])) {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Client Dashboard | MDRRMO Incident Reporting</title>
+    <title>BDRRMO Staff Dashboard | MDRRMO Incident Reporting</title>
 
     <!-- Tab Icon / Favicon -->
     <link rel="icon" type="image/png" href="assets/icon.png" />
@@ -64,7 +64,7 @@ if (isset($_GET['logout'])) {
       <div class="sidebar-header">
         <div class="sidebar-brand">
           <img src="assets/icon.png" alt="MDRRMO Logo" style="max-width: 32px; height: auto; margin-right: 0.5rem;" />
-          <span id="brandText">MDRRMO Client</span>
+          <span id="brandText">BDRRMO STAFF</span>
         </div>
         <button class="sidebar-toggle" id="sidebarToggle">
           <i class="bi bi-list"></i>
@@ -75,21 +75,21 @@ if (isset($_GET['logout'])) {
         <div class="nav-section">
           <div class="nav-section-title" id="navTitle">Navigation</div>
           
-          <a href="client-dashboard.php" class="nav-item active">
+          <a href="bdrrmo-dashboard.php" class="nav-item active">
             <div class="nav-icon">
               <i data-filled="fi fi-sr-apps" data-unfilled="fi fi-rr-apps"></i>
             </div>
             <div class="nav-text">Dashboard</div>
           </a>
           
-          <a href="client/organization-chart.php" class="nav-item">
+          <a href="bdrrmo/organization-chart.php" class="nav-item">
             <div class="nav-icon">
               <i data-filled="fi fi-sr-sitemap" data-unfilled="fi fi-rr-sitemap"></i>
             </div>
             <div class="nav-text">Organization Chart</div>
           </a>
           
-          <a href="client/incidents.php" class="nav-item" id="incidentsLink">
+          <a href="bdrrmo/incidents.php" class="nav-item" id="incidentsLink">
             <div class="nav-icon">
               <i data-filled="fi fi-sr-light-emergency-on" data-unfilled="fi fi-rr-light-emergency-on"></i>
             </div>
@@ -97,7 +97,7 @@ if (isset($_GET['logout'])) {
             <div class="nav-badge warning" id="incidentCount">0</div>
           </a>
           
-          <a href="client/activities.php" class="nav-item">
+          <a href="bdrrmo/activities.php" class="nav-item">
             <div class="nav-icon">
               <i data-filled="fi fi-sr-calendar-check" data-unfilled="fi fi-rr-calendar-check"></i>
             </div>
@@ -181,8 +181,7 @@ if (isset($_GET['logout'])) {
             <div class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" role="button" aria-expanded="false">
                 <i class="bi bi-person-circle me-1"></i>
-                <?php echo htmlspecialchars(getCurrentUser()); ?>
-                <span class="badge bg-primary ms-1">Client</span>
+                <span class="badge bg-primary ms-1">BDRRMO STAFF</span>
               </a>
               <ul class="dropdown-menu dropdown-menu-end">
                 <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
@@ -201,7 +200,7 @@ if (isset($_GET['logout'])) {
           <div class="col-12">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
               <div>
-                <h1 class="h3 mb-1 fw-bold">Client Dashboard</h1>
+                <h1 class="h3 mb-1 fw-bold">BDRRMO Staff Dashboard</h1>
                 <p class="text-muted mb-0">Overview of system metrics and pending reports</p>
               </div>
               <div class="d-flex gap-2">
@@ -309,7 +308,7 @@ if (isset($_GET['logout'])) {
                     <p class="text-muted small mb-0">Incident reports awaiting review and action</p>
                   </div>
                   <div class="d-flex gap-2">
-                    <a href="client/incidents.php" class="btn btn-outline-primary btn-sm">
+                    <a href="bdrrmo/incidents.php" class="btn btn-outline-primary btn-sm">
                       <i class="bi bi-arrow-right me-1"></i> View All
                     </a>
                   </div>
@@ -331,7 +330,7 @@ if (isset($_GET['logout'])) {
                   </div>
                   <h5 class="fw-semibold mb-2">No Pending Reports</h5>
                   <p class="text-muted mb-4">All reports have been reviewed. Great job!</p>
-                  <a href="client/incidents.php" class="btn btn-outline-primary">
+                  <a href="bdrrmo/incidents.php" class="btn btn-outline-primary">
                     <i class="bi bi-flag me-1"></i> View All Incidents
                   </a>
                 </div>
@@ -343,7 +342,7 @@ if (isset($_GET['logout'])) {
 
                 <!-- View More Link (if more than displayed) -->
                 <div id="pendingReportsViewMore" class="text-center mt-4" style="display: none;">
-                  <a href="client/incidents.php" class="btn btn-outline-primary">
+                  <a href="bdrrmo/incidents.php" class="btn btn-outline-primary">
                     <i class="bi bi-arrow-right me-1"></i> View All Pending Reports
                   </a>
                 </div>
@@ -539,7 +538,7 @@ if (isset($_GET['logout'])) {
         display: flex;
         flex-direction: row;
         cursor: pointer;
-        max-width: 100%;
+        max-width: 480px; /* Limit card width to prevent infinite stretching when only few items are present */
         box-sizing: border-box;
         align-items: stretch;
       }

@@ -286,7 +286,7 @@
                                     <i class="bi ${typeToIcon(inc.type)} me-1 text-primary"></i>
                                     ${escapeHtml(inc.type)}
                                 </h5>
-                                <span class="status-badge status-${inc.status}">${inc.status}</span>
+                                ${inc.status !== 'Approved' ? `<span class="status-badge status-${inc.status}">${inc.status}</span>` : ''}
                             </div>
                             <span class="small text-muted d-block mb-3"><i class="bi bi-calendar-event me-1"></i>${date}</span>
                             <p class="text-muted small mb-0" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.5;">${escapeHtml(inc.description)}</p>
@@ -448,8 +448,13 @@
                 if (mDescription) mDescription.textContent = inc.description;
                 
                 if (mStatus) {
-                    mStatus.className = `badge status-badge status-${inc.status}`;
-                    mStatus.textContent = inc.status;
+                    if (inc.status === 'Approved') {
+                        mStatus.style.display = 'none';
+                    } else {
+                        mStatus.style.display = 'inline-block';
+                        mStatus.className = `badge status-badge status-${inc.status}`;
+                        mStatus.textContent = inc.status;
+                    }
                 }
                 if (mSeverity) {
                     const sevColor = severityColor(inc.severity);

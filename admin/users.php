@@ -6,7 +6,7 @@ require_once '../auth.php';
 checkLogin();
 
 if (getUserRole() !== 'admin') {
-    header('Location: ../client-dashboard.php');
+    header('Location: ../bdrrmo-dashboard.php');
     exit();
 }
 
@@ -328,7 +328,7 @@ $users = getAllUsers();
                           <td><?php echo htmlspecialchars($user['email']); ?></td>
                           <td>
                             <span class="badge bg-<?php echo $user['role'] === 'admin' ? 'danger' : 'primary'; ?>">
-                              <?php echo ucfirst($user['role']); ?>
+                              <?php echo $user['role'] === 'admin' ? 'Admin' : 'BDRRMO Staff'; ?>
                             </span>
                           </td>
                           <td><?php echo htmlspecialchars($user['organization'] ?? ''); ?></td>
@@ -430,7 +430,7 @@ $users = getAllUsers();
                 <div class="mb-3">
                   <label class="form-label">Role</label>
                   <select class="form-select" name="role">
-                    <option value="client" <?php echo ($user['role'] ?? 'client') === 'client' ? 'selected' : ''; ?>>Client</option>
+                    <option value="client" <?php echo ($user['role'] ?? 'client') === 'client' ? 'selected' : ''; ?>>BDRRMO Staff</option>
                     <option value="admin" <?php echo ($user['role'] ?? 'client') === 'admin' ? 'selected' : ''; ?>>Admin</option>
                   </select>
                 </div>
@@ -501,7 +501,7 @@ $users = getAllUsers();
                 <div class="col-md-6">
                   <label class="form-label">Role <span class="text-danger">*</span></label>
                   <select class="form-select" name="role" required>
-                    <option value="client" selected>Client</option>
+                    <option value="client" selected>BDRRMO Staff</option>
                     <option value="admin">Admin</option>
                   </select>
                 </div>

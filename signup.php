@@ -180,7 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <div class="role-selector">
                 <div class="role-option selected" data-role="client">
                   <i class="bi bi-person"></i>
-                  <div class="fw-bold">Client</div>
+                  <div class="fw-bold">BDRRMO Staff</div>
                   <small>Report incidents</small>
                 </div>
                 <div class="role-option" data-role="admin">

@@ -456,15 +456,15 @@
       modal.className = 'modal fade';
       modal.id = 'incidentDetailsModal';
       modal.innerHTML = `
-        <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content border-0 shadow-lg" style="overflow: hidden;">
-            <div class="modal-header border-0 pb-0" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 1.5rem 1.75rem;">
+            <div class="modal-header border-0 pb-0" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 1.25rem 1.5rem;">
               <div class="d-flex align-items-center w-100">
                 <div class="flex-grow-1 d-flex align-items-center gap-3 pb-3">
-                  <h5 class="modal-title mb-0 fw-bold" style="font-size: 1.5rem; color: #212529;">
+                  <h5 class="modal-title mb-0 fw-bold" style="font-size: 1.3rem; color: #212529;">
                     ${escapeHtml(incident.type || 'Unknown Incident')}
                   </h5>
-                  <span class="badge ${statusBadge.class} px-3 py-2" style="font-size: 0.85rem; font-weight: 600;">
+                  <span class="badge ${statusBadge.class} px-3 py-2" style="font-size: 0.75rem; font-weight: 600;">
                     ${escapeHtml(statusBadge.text)}
                   </span>
                 </div>
@@ -472,125 +472,115 @@
               </div>
             </div>
             
-            <div class="modal-body" style="padding: 1.75rem;">
-              <div class="row g-4">
-                <!-- Left Column: Information -->
-                <div class="col-lg-6">
-                  <div class="card border-0 shadow-sm mb-4" style="background: #f8f9fa;">
-                    <div class="card-body p-4">
-                      <h6 class="card-title fw-bold mb-3 d-flex align-items-center" style="color: #495057;">
-                        <i class="bi bi-info-circle-fill me-2 text-primary"></i>
-                        Incident Information
-                      </h6>
-                      
-                      <div class="d-flex align-items-start mb-3 pb-3 border-bottom">
-                        <div class="flex-shrink-0 me-3">
-                          <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                            <i class="bi bi-tag-fill text-primary"></i>
-                          </div>
-                        </div>
-                        <div class="flex-grow-1">
-                          <small class="text-muted d-block mb-1" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Type</small>
-                          <div class="fw-semibold" style="color: #212529; font-size: 0.95rem;">
-                            ${escapeHtml(incident.type || 'Unknown')}
-                          </div>
-                        </div>
+            <div class="modal-body" style="padding: 1.25rem;">
+              <!-- Incident Information Card -->
+              <div class="card border-0 shadow-sm mb-3" style="background: #f8f9fa;">
+                <div class="card-body p-3">
+                  <h6 class="card-title fw-bold mb-3 d-flex align-items-center" style="color: #495057; font-size: 0.95rem;">
+                    <i class="bi bi-info-circle-fill me-2 text-primary"></i>
+                    Incident Information
+                  </h6>
+                  
+                  <!-- Type -->
+                  <div class="d-flex align-items-start mb-2 pb-2 border-bottom">
+                    <div class="flex-shrink-0 me-3">
+                      <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                        <i class="bi bi-tag-fill text-primary" style="font-size: 0.85rem;"></i>
                       </div>
-                      
-                      <div class="d-flex align-items-start mb-3 pb-3 border-bottom">
-                        <div class="flex-shrink-0 me-3">
-                          <div class="bg-success bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                            <i class="bi bi-calendar3-fill text-success"></i>
-                          </div>
-                        </div>
-                        <div class="flex-grow-1">
-                          <small class="text-muted d-block mb-1" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Date & Time</small>
-                          <div class="fw-semibold" style="color: #212529; font-size: 0.95rem;">
-                            ${escapeHtml(date)}
-                          </div>
-                        </div>
+                    </div>
+                    <div class="flex-grow-1">
+                      <small class="text-muted d-block mb-0.5" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">Type</small>
+                      <div class="fw-semibold" style="color: #212529; font-size: 0.9rem;">
+                        ${escapeHtml(incident.type || 'Unknown')}
                       </div>
-                      
-                      <div class="d-flex align-items-start mb-3 pb-3 border-bottom">
-                        <div class="flex-shrink-0 me-3">
-                          <div class="bg-info bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                            <i class="bi bi-flag-fill text-info"></i>
-                          </div>
-                        </div>
-                        <div class="flex-grow-1">
-                          <small class="text-muted d-block mb-1" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Status</small>
-                          <div class="fw-semibold" style="color: #212529; font-size: 0.95rem;">
-                            <span class="badge ${statusBadge.class}">${escapeHtml(statusBadge.text)}</span>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      ${(incident.lat != null && incident.lng != null) ? `
-                        <div class="d-flex align-items-start">
-                          <div class="flex-shrink-0 me-3">
-                            <div class="bg-warning bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                              <i class="bi bi-geo-alt-fill text-warning"></i>
-                            </div>
-                          </div>
-                          <div class="flex-grow-1">
-                            <small class="text-muted d-block mb-1" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Location</small>
-                            <div class="fw-semibold" style="color: #212529; font-size: 0.95rem;">
-                              ${incident.lat.toFixed(6)}, ${incident.lng.toFixed(6)}
-                            </div>
-                          </div>
-                        </div>
-                      ` : ''}
                     </div>
                   </div>
                   
-                  <div class="card border-0 shadow-sm" style="background: #f8f9fa;">
-                    <div class="card-body p-4">
-                      <h6 class="card-title fw-bold mb-3 d-flex align-items-center" style="color: #495057;">
-                        <i class="bi bi-file-text-fill me-2 text-info"></i>
-                        Description
-                      </h6>
-                      <p class="mb-0" style="color: #495057; line-height: 1.6; font-size: 0.95rem;">
-                        ${escapeHtml(incident.description || 'No description provided')}
-                      </p>
+                  <!-- Date & Time -->
+                  <div class="d-flex align-items-start mb-2 pb-2 border-bottom">
+                    <div class="flex-shrink-0 me-3">
+                      <div class="bg-success bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                        <i class="bi bi-calendar3-fill text-success" style="font-size: 0.85rem;"></i>
+                      </div>
+                    </div>
+                    <div class="flex-grow-1">
+                      <small class="text-muted d-block mb-0.5" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">Date & Time</small>
+                      <div class="fw-semibold" style="color: #212529; font-size: 0.9rem;">
+                        ${escapeHtml(date)}
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Status -->
+                  <div class="d-flex align-items-start ${(incident.lat != null && incident.lng != null) ? 'mb-2 pb-2 border-bottom' : ''}">
+                    <div class="flex-shrink-0 me-3">
+                      <div class="bg-info bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                        <i class="bi bi-flag-fill text-info" style="font-size: 0.85rem;"></i>
+                      </div>
+                    </div>
+                    <div class="flex-grow-1">
+                      <small class="text-muted d-block mb-0.5" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">Status</small>
+                      <div class="fw-semibold" style="color: #212529; font-size: 0.9rem;">
+                        <span class="badge ${statusBadge.class}" style="font-size: 0.75rem;">${escapeHtml(statusBadge.text)}</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Location -->
+                  ${(incident.lat != null && incident.lng != null) ? `
+                    <div class="d-flex align-items-start">
+                      <div class="flex-shrink-0 me-3">
+                        <div class="bg-warning bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                          <i class="bi bi-geo-alt-fill text-warning" style="font-size: 0.85rem;"></i>
+                        </div>
+                      </div>
+                      <div class="flex-grow-1">
+                        <small class="text-muted d-block mb-0.5" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">Location</small>
+                        <div class="fw-semibold" style="color: #212529; font-size: 0.9rem;">
+                          ${incident.lat.toFixed(6)}, ${incident.lng.toFixed(6)}
+                        </div>
+                      </div>
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+              
+              <!-- Description Card -->
+              <div class="card border-0 shadow-sm mb-3" style="background: #f8f9fa;">
+                <div class="card-body p-3">
+                  <h6 class="card-title fw-bold mb-2 d-flex align-items-center" style="color: #495057; font-size: 0.95rem;">
+                    <i class="bi bi-file-text-fill me-2 text-info"></i>
+                    Description
+                  </h6>
+                  <p class="mb-0 text-muted" style="line-height: 1.5; font-size: 0.85rem; max-height: 120px; overflow-y: auto;">
+                    ${escapeHtml(incident.description || 'No description provided')}
+                  </p>
+                </div>
+              </div>
+              
+              <!-- Photo Card -->
+              ${incident.photoDataUrl ? `
+                <div class="card border-0 shadow-sm" style="background: #f8f9fa;">
+                  <div class="card-body p-3">
+                    <h6 class="card-title fw-bold mb-2 d-flex align-items-center" style="color: #495057; font-size: 0.95rem;">
+                      <i class="bi bi-image-fill me-2 text-danger"></i>
+                      Incident Photo
+                    </h6>
+                    <div class="text-center" style="background: white; border-radius: 8px; padding: 0.5rem; box-shadow: inset 0 2px 6px rgba(0,0,0,0.05);">
+                      <img src="${incident.photoDataUrl}" 
+                           alt="Incident Photo" 
+                           class="img-fluid rounded shadow-sm" 
+                           style="max-height: 250px; width: auto; cursor: pointer; transition: transform 0.3s ease;"
+                           onclick="viewReportImage('${incident.id}')"
+                           onmouseover="this.style.transform='scale(1.02)'"
+                           onmouseout="this.style.transform='scale(1)'">
                     </div>
                   </div>
                 </div>
-                
-                <!-- Right Column: Photo -->
-                <div class="col-lg-6">
-                  ${incident.photoDataUrl ? `
-                    <div class="card border-0 shadow-sm h-100" style="background: #f8f9fa;">
-                      <div class="card-body p-4">
-                        <h6 class="card-title fw-bold mb-3 d-flex align-items-center" style="color: #495057;">
-                          <i class="bi bi-image-fill me-2 text-danger"></i>
-                          Incident Photo
-                        </h6>
-                        <div class="text-center" style="background: white; border-radius: 12px; padding: 1rem; box-shadow: inset 0 2px 8px rgba(0,0,0,0.05);">
-                          <img src="${incident.photoDataUrl}" 
-                               alt="Incident Photo" 
-                               class="img-fluid rounded shadow-sm" 
-                               style="max-height: 450px; width: auto; cursor: pointer; transition: transform 0.3s ease;"
-                               onclick="viewReportImage('${incident.id}')"
-                               onmouseover="this.style.transform='scale(1.02)'"
-                               onmouseout="this.style.transform='scale(1)'">
-                        </div>
-                      </div>
-                    </div>
-                  ` : `
-                    <div class="card border-0 shadow-sm h-100" style="background: #f8f9fa;">
-                      <div class="card-body p-4 d-flex align-items-center justify-content-center" style="min-height: 300px;">
-                        <div class="text-center text-muted">
-                          <i class="bi bi-image" style="font-size: 4rem; opacity: 0.3;"></i>
-                          <p class="mt-3 mb-0">No photo available</p>
-                        </div>
-                      </div>
-                    </div>
-                  `}
-                </div>
-              </div>
+              ` : ''}
             </div>
             
-            <div class="modal-footer border-top bg-light" style="padding: 1rem 1.75rem;">
+            <div class="modal-footer border-top bg-light" style="padding: 1rem 1.5rem;">
               ${incident.photoDataUrl ? `
                 <button type="button" class="btn btn-outline-danger" onclick="downloadIncidentPhoto('${incident.id}')">
                   <i class="bi bi-download me-1"></i> Download Photo

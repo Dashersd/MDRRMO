@@ -6,7 +6,7 @@ require_once '../auth.php';
 checkLogin();
 
 if (getUserRole() !== 'admin') {
-    header('Location: ../client-dashboard.php');
+    header('Location: ../bdrrmo-dashboard.php');
     exit();
 }
 
@@ -241,6 +241,7 @@ if (isset($_GET['logout'])) {
           <!-- Modal Body with Improved Padding -->
           <div class="modal-body" style="padding: 2rem 1.75rem;">
             <form id="addIncidentForm" class="needs-validation" novalidate>
+              <input type="hidden" id="editIncidentId" value="">
               <!-- Incident Type -->
               <div class="mb-4">
                 <label for="modalIncidentType" class="form-label fw-semibold mb-2" style="font-size: 0.95rem; color: #495057;">
@@ -356,7 +357,7 @@ if (isset($_GET['logout'])) {
         display: flex;
         flex-direction: row; /* Horizontal layout for rectangle */
         cursor: pointer;
-        max-width: 100%; /* Ensure card doesn't exceed container */
+        max-width: 480px; /* Limit card width to prevent infinite stretching when only few items are present */
         box-sizing: border-box;
         align-items: stretch; /* Stretch to fit content */
       }

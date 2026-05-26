@@ -66,13 +66,13 @@ function getDatabaseConfig(): array
     $port = getenv('DB_PORT') ?: '3306';
 
     // Support both DB_DATABASE/DB_NAME and DB_USERNAME/DB_USER naming conventions.
-    $dbname = getenv('DB_DATABASE') ?: (getenv('DB_NAME') ?: 'geotagged');
-    $username = getenv('DB_USERNAME') ?: (getenv('DB_USER') ?: 'geotagged_user');
+    $dbname = getenv('DB_DATABASE') ?: (getenv('DB_NAME') ?: 'mdrrmo_information_system');
+    $username = getenv('DB_USERNAME') ?: (getenv('DB_USER') ?: 'root');
     
     // Check if DB_PASSWORD is set in environment (even if empty)
     $password = getenv('DB_PASSWORD');
     if ($password === false) {
-        $password = 'geotagged_password';
+        $password = '';
     }
 
     $options = [

@@ -23,6 +23,7 @@
   const equipmentLoading = document.getElementById('equipmentLoading');
   const totalEquipmentTypes = document.getElementById('totalEquipmentTypes');
   const totalEquipmentCount = document.getElementById('totalEquipmentCount');
+  const editEquipmentIdInput = document.getElementById('editEquipmentId');
 
   // Initialize when DOM is ready
   document.addEventListener('DOMContentLoaded', function() {
@@ -53,11 +54,24 @@
 
     // Modal reset when shown
     if (addEquipmentModal) {
-      addEquipmentModal.addEventListener('show.bs.modal', function() {
-        addEquipmentForm.reset();
-        if (equipmentImagePreviewContainer) equipmentImagePreviewContainer.style.display = 'none';
-        if (equipmentImagePreview) equipmentImagePreview.src = '';
-        if (equipmentImageInput) equipmentImageInput.value = '';
+      addEquipmentModal.addEventListener('show.bs.modal', function(e) {
+        if (e.relatedTarget) {
+          addEquipmentForm.reset();
+          if (editEquipmentIdInput) editEquipmentIdInput.value = '';
+          if (equipmentImagePreviewContainer) equipmentImagePreviewContainer.style.display = 'none';
+          if (equipmentImagePreview) equipmentImagePreview.src = '';
+          if (equipmentImageInput) equipmentImageInput.value = '';
+          
+          const modalLabel = document.getElementById('addEquipmentModalLabel');
+          if (modalLabel) {
+            modalLabel.innerHTML = '<i class="bi bi-tool me-2"></i>Add Equipment';
+          }
+
+          const submitBtn = addEquipmentForm.querySelector('button[type="submit"]');
+          if (submitBtn) {
+            submitBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i> Add Equipment';
+          }
+        }
       });
     }
 
@@ -203,39 +217,56 @@
     }
 
     try {
-      // Check if equipment with same name already exists
-      const allEquipment = await loadEquipment();
-      const existing = allEquipment.find(eq => eq.name.toLowerCase() === name.toLowerCase());
-      
-      if (existing) {
-        if (!confirm(`Equipment "${existing.name}" already exists. Update the count instead?`)) {
-          if (submitBtn) {
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
-          }
-          return;
-        }
-        // Update existing equipment count
+      // Check if we are editing or creating new
+      const editId = editEquipmentIdInput ? editEquipmentIdInput.value : '';
+
+      if (editId) {
+        // Prepare updated equipment data
         const updatedEquipment = {
-          id: existing.id,
-          count: existing.count + count
+          id: editId,
+          name: name,
+          count: count
         };
-        if (imageDataUrl) {
-          updatedEquipment.imageDataUrl = imageDataUrl;
-        }
+        
+        const previewSrc = equipmentImagePreview ? equipmentImagePreview.src : '';
+        updatedEquipment.imageDataUrl = previewSrc ? previewSrc : null;
+
         await updateEquipment(updatedEquipment);
       } else {
-        // Create new equipment object
-        const newEquipment = {
-          id: generateId(),
-          name: name,
-          count: count,
-          imageDataUrl: imageDataUrl,
-          createdAt: Date.now()
-        };
+        // Check if equipment with same name already exists
+        const allEquipment = await loadEquipment();
+        const existing = allEquipment.find(eq => eq.name.toLowerCase() === name.toLowerCase());
+        
+        if (existing) {
+          if (!confirm(`Equipment "${existing.name}" already exists. Update the count instead?`)) {
+            if (submitBtn) {
+              submitBtn.innerHTML = originalText;
+              submitBtn.disabled = false;
+            }
+            return;
+          }
+          // Update existing equipment count
+          const updatedEquipment = {
+            id: existing.id,
+            count: existing.count + count
+          };
+          if (imageDataUrl) {
+            updatedEquipment.imageDataUrl = imageDataUrl;
+          }
+          await updateEquipment(updatedEquipment);
+        } else {
+          // Create new equipment object
+          const newEquipment = {
+            id: generateId(),
+            name: name,
+            count: count,
+            imageDataUrl: imageDataUrl,
+            createdAt: Date.now()
+          };
 
-        // Save to database
-        await saveEquipment(newEquipment);
+          // Save to database
+          await saveEquipment(newEquipment);
+        }
       }
 
       // Close modal and refresh display
@@ -336,6 +367,32 @@
     countBadge.textContent = `${equipment.count} ${equipment.count === 1 ? 'item' : 'items'}`;
     cardBody.appendChild(countBadge);
 
+    // Card actions (Edit and Delete)
+    const actions = document.createElement('div');
+    actions.className = 'equipment-card-actions';
+
+    // Edit button
+    const editBtn = document.createElement('button');
+    editBtn.className = 'btn btn-sm btn-outline-primary';
+    editBtn.innerHTML = '<i class="bi bi-pencil-square"></i> Edit';
+    editBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      editEquipment(equipment);
+    });
+    actions.appendChild(editBtn);
+
+    // Delete button
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'btn btn-sm btn-outline-danger';
+    deleteBtn.innerHTML = '<i class="bi bi-trash"></i> Delete';
+    deleteBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteEquipment(equipment.id);
+    });
+    actions.appendChild(deleteBtn);
+
+    cardBody.appendChild(actions);
+
     card.appendChild(cardBody);
 
     return card;
@@ -398,6 +455,70 @@
 
     const modal = new bootstrap.Modal(modalElement);
     modal.show();
+  }
+
+  /**
+   * Edit equipment - opens the modal in edit mode
+   */
+  function editEquipment(equipment) {
+    if (!addEquipmentModal || !addEquipmentForm) return;
+
+    // Set hidden input
+    if (editEquipmentIdInput) {
+      editEquipmentIdInput.value = equipment.id;
+    }
+
+    // Set other inputs
+    if (equipmentNameInput) equipmentNameInput.value = equipment.name;
+    if (equipmentCountInput) equipmentCountInput.value = equipment.count;
+
+    // Handle image preview
+    if (equipment.imageDataUrl) {
+      if (equipmentImagePreview) equipmentImagePreview.src = equipment.imageDataUrl;
+      if (equipmentImagePreviewContainer) equipmentImagePreviewContainer.style.display = 'block';
+    } else {
+      if (equipmentImagePreview) equipmentImagePreview.src = '';
+      if (equipmentImagePreviewContainer) equipmentImagePreviewContainer.style.display = 'none';
+    }
+
+    // Change modal title and button text
+    const modalLabel = document.getElementById('addEquipmentModalLabel');
+    if (modalLabel) {
+      modalLabel.innerHTML = '<i class="bi bi-pencil-square me-2"></i>Edit Equipment';
+    }
+
+    const submitBtn = addEquipmentForm.querySelector('button[type="submit"]');
+    if (submitBtn) {
+      submitBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i> Update Equipment';
+    }
+
+    // Show modal
+    const bsModal = new bootstrap.Modal(addEquipmentModal);
+    bsModal.show();
+  }
+
+  /**
+   * Delete equipment
+   */
+  async function deleteEquipment(id) {
+    if (!confirm('Are you sure you want to delete this equipment? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+
+      await loadAndDisplayEquipment();
+    } catch (error) {
+      alert('Failed to delete equipment: ' + error.message);
+    }
   }
 
 })();

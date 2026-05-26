@@ -6,7 +6,7 @@ require_once '../auth.php';
 checkLogin();
 
 if (getUserRole() !== 'admin') {
-    header('Location: ../client-dashboard.php');
+    header('Location: ../bdrrmo-dashboard.php');
     exit();
 }
 
@@ -265,7 +265,7 @@ if (isset($_GET['logout'])) {
 
     <!-- Add Equipment Modal -->
     <div class="modal fade" id="addEquipmentModal" tabindex="-1" aria-labelledby="addEquipmentModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
           <div class="modal-header border-0 bg-primary text-white">
             <h5 class="modal-title fw-bold" id="addEquipmentModalLabel">
@@ -274,6 +274,7 @@ if (isset($_GET['logout'])) {
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <form id="addEquipmentForm">
+            <input type="hidden" id="editEquipmentId" value="">
             <div class="modal-body p-4">
               <div class="row">
                 <div class="col-md-6 mb-3">
@@ -291,11 +292,11 @@ if (isset($_GET['logout'])) {
               <div class="mb-3">
                 <label for="equipmentImage" class="form-label fw-semibold">Equipment Image</label>
                 <input type="file" class="form-control" id="equipmentImage" accept="image/*">
-                <small class="text-muted d-block mt-1">Upload an image of the equipment (optional). JPG, PNG, or GIF formats.</small>
+                <small class="text-muted d-block mt-1">Upload an image of the equipment (optional).</small>
                 
                 <!-- Image Preview -->
                 <div class="mt-3 text-center" id="equipmentImagePreviewContainer" style="display: none;">
-                  <img id="equipmentImagePreview" src="" alt="Preview" class="img-thumbnail" style="max-width: 300px; max-height: 300px; border-radius: 8px; object-fit: cover;">
+                  <img id="equipmentImagePreview" src="" alt="Preview" class="img-thumbnail" style="max-width: 200px; max-height: 200px; border-radius: 8px; object-fit: cover;">
                   <div class="mt-2">
                     <button type="button" class="btn btn-sm btn-outline-danger" id="removeEquipmentImage">
                       <i class="bi bi-x-circle me-1"></i> Remove Image

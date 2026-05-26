@@ -7,7 +7,7 @@
   'use strict';
 
   // Determine API URL based on current page location
-  const API_URL = window.location.pathname.includes('/client/') 
+  const API_URL = (window.location.pathname.includes('/client/') || window.location.pathname.includes('/bdrrmo/'))
     ? '../api/organization-personnel.php' 
     : 'api/organization-personnel.php';
   
