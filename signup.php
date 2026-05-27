@@ -129,7 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
     />
 
-    <link rel="stylesheet" href="styles/signup.css" />
+    <link rel="stylesheet" href="styles/signup.css?v=4" />
   </head>
   <body style="overflow: hidden;">
     <!-- Floating background shapes -->
@@ -142,10 +142,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="signup-container">
       <div class="card signup-card">
         <div class="signup-header">
-          <div class="d-flex align-items-center justify-content-center gap-3 mb-3">
-            <i class="bi bi-shield-exclamation fs-1"></i>
+          <div class="d-flex align-items-center justify-content-center gap-3 mb-1">
+            <i class="bi bi-shield-exclamation fs-2"></i>
           </div>
-          <h4 class="mb-1">MDRRMO Incident Desk</h4>
+          <h4 class="mb-0">MDRRMO Incident Desk</h4>
           <p class="mb-0 small opacity-75">Create New Account</p>
         </div>
         
@@ -175,8 +175,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           
           <form method="POST" action="" class="needs-validation" novalidate>
             <!-- Role Selection -->
-            <div class="mb-3">
-              <label class="form-label fw-bold">Select Your Role</label>
+            <div class="mb-2">
+              <label class="form-label fw-bold mb-1">Select Your Role</label>
               <div class="role-selector">
                 <div class="role-option selected" data-role="client">
                   <i class="bi bi-person"></i>
@@ -194,7 +194,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             
             <div class="row g-2">
-              <div class="col-12 col-md-6">
+              <!-- Username -->
+              <div class="col-6">
                 <div class="form-floating">
                   <input 
                     type="text" 
@@ -206,13 +207,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     value="<?php echo htmlspecialchars($_POST['username'] ?? ''); ?>"
                   >
                   <label for="username">
-                    <i class="bi bi-person me-2"></i>Username
+                    <i class="bi bi-person me-1"></i>Username
                   </label>
                   <div class="invalid-feedback">Please enter a username.</div>
                 </div>
               </div>
               
-              <div class="col-12 col-md-6">
+              <!-- Email -->
+              <div class="col-6">
                 <div class="form-floating">
                   <input 
                     type="email" 
@@ -224,13 +226,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>"
                   >
                   <label for="email">
-                    <i class="bi bi-envelope me-2"></i>Email
+                    <i class="bi bi-envelope me-1"></i>Email
                   </label>
                   <div class="invalid-feedback">Please enter a valid email.</div>
                 </div>
               </div>
               
-              <div class="col-12">
+              <!-- Full Name -->
+              <div class="col-6">
                 <div class="form-floating">
                   <input 
                     type="text" 
@@ -242,12 +245,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     value="<?php echo htmlspecialchars($_POST['full_name'] ?? ''); ?>"
                   >
                   <label for="full_name">
-                    <i class="bi bi-person-badge me-2"></i>Full Name
+                    <i class="bi bi-person-badge me-1"></i>Full Name
                   </label>
                   <div class="invalid-feedback">Please enter your full name.</div>
                 </div>
               </div>
               
+              <!-- Phone Number (Optional) -->
+              <div class="col-6">
+                <div class="form-floating">
+                  <input 
+                    type="tel" 
+                    class="form-control" 
+                    id="phone" 
+                    name="phone" 
+                    placeholder="Phone Number"
+                    value="<?php echo htmlspecialchars($_POST['phone'] ?? ''); ?>"
+                  >
+                  <label for="phone">
+                    <i class="bi bi-telephone me-1"></i>Phone (Opt.)
+                  </label>
+                </div>
+              </div>
+              
+              <!-- Organization -->
               <div class="col-12">
                 <div class="form-floating">
                   <input 
@@ -260,29 +281,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     value="<?php echo htmlspecialchars($_POST['organization'] ?? ''); ?>"
                   >
                   <label for="organization">
-                    <i class="bi bi-building me-2"></i>Organization
+                    <i class="bi bi-building me-1"></i>Organization
                   </label>
                   <div class="invalid-feedback">Please enter your organization.</div>
                 </div>
               </div>
               
-              <div class="col-12">
-                <div class="form-floating">
-                  <input 
-                    type="tel" 
-                    class="form-control" 
-                    id="phone" 
-                    name="phone" 
-                    placeholder="Phone Number"
-                    value="<?php echo htmlspecialchars($_POST['phone'] ?? ''); ?>"
-                  >
-                  <label for="phone">
-                    <i class="bi bi-telephone me-2"></i>Phone Number (Optional)
-                  </label>
-                </div>
-              </div>
-              
-              <div class="col-12 col-md-6">
+              <!-- Password -->
+              <div class="col-6">
                 <div class="form-floating password-field-container">
                   <input 
                     type="password" 
@@ -293,7 +299,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     required
                   >
                   <label for="password">
-                    <i class="bi bi-lock me-2"></i>Password
+                    <i class="bi bi-lock me-1"></i>Password
                   </label>
                   <i class="bi bi-eye password-toggle" id="togglePassword"></i>
                   <div class="invalid-feedback">Please enter a password.</div>
@@ -301,7 +307,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
               </div>
               
-              <div class="col-12 col-md-6">
+              <!-- Confirm Password -->
+              <div class="col-6">
                 <div class="form-floating password-field-container">
                   <input 
                     type="password" 
@@ -312,7 +319,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     required
                   >
                   <label for="confirm_password">
-                    <i class="bi bi-lock-fill me-2"></i>Confirm Password
+                    <i class="bi bi-lock-fill me-1"></i>Confirm
                   </label>
                   <i class="bi bi-eye password-toggle" id="toggleConfirmPassword"></i>
                   <div class="invalid-feedback">Please confirm your password.</div>
@@ -320,7 +327,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               </div>
             </div>
             
-            <div class="d-grid gap-2 mt-4">
+            <div class="d-grid gap-2 mt-2">
               <button type="submit" class="btn btn-danger btn-signup">
                 <i class="bi bi-person-plus me-2"></i>
                 Create Account
@@ -328,7 +335,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
           </form>
           
-          <div class="text-center mt-4">
+          <div class="text-center mt-2">
             <small class="text-muted">
               Already have an account? 
               <a href="login.php" class="text-decoration-none">Sign in here</a>
