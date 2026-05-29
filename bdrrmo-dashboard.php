@@ -40,13 +40,7 @@ if (isset($_GET['logout'])) {
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
     />
 
-    <!-- Leaflet CSS -->
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-      crossorigin=""
-    />
+    <!-- Leaflet CSS Removed -->
 
     <link rel="stylesheet" href="styles/dashboard.css" />
     <!-- Flaticon UIcons -->
@@ -243,32 +237,7 @@ if (isset($_GET['logout'])) {
             </div>
           </div>
 
-          <!-- Total Users -->
-          <div class="col-xl-4 col-md-6 mb-4">
-            <div class="card border-0 shadow-sm h-100 stats-card hover-lift">
-              <div class="card-body p-4">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                  <div class="stats-icon-wrapper bg-primary bg-opacity-10">
-                    <i class="bi bi-people-fill text-primary fs-3"></i>
-                  </div>
-                  <div class="text-end">
-                    <div class="text-muted small text-uppercase fw-semibold mb-1">Total Users</div>
-                    <h2 class="mb-0 fw-bold" id="totalUsers">0</h2>
-                  </div>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mt-3">
-                  <small class="text-success">
-                    <i class="bi bi-check-circle me-1"></i>
-                    <span id="activeUsers">0</span> Active
-                  </small>
-                  <small class="text-warning">
-                    <i class="bi bi-clock me-1"></i>
-                    <span id="pendingUsers">0</span> Pending
-                  </small>
-                </div>
-              </div>
-            </div>
-          </div>
+
 
           <!-- Total Incidents -->
           <div class="col-xl-4 col-md-6 mb-4">
@@ -352,113 +321,110 @@ if (isset($_GET['logout'])) {
         </div>
       </main>
 
-      <!-- Report Incident Modal (Clean Geotagging Reporting Pop-up) -->
+      <!-- Add Incident Modal -->
       <div class="modal fade" id="addIncidentModal" tabindex="-1" aria-labelledby="addIncidentModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
-          <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header border-0 bg-danger text-white p-4">
-              <h5 class="modal-title fw-bold" id="addIncidentModalLabel">
-                <i class="bi bi-exclamation-triangle-fill me-2"></i>Report Incident
-              </h5>
-              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          <div class="modal-content border-0 shadow-lg" style="overflow: hidden;">
+            <!-- Modal Header with Red Theme -->
+            <div class="modal-header border-0" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); padding: 1.5rem 1.75rem;">
+              <div class="w-100 pe-3">
+                <h5 class="modal-title text-white fw-bold mb-2" id="addIncidentModalLabel" style="font-size: 1.5rem;">
+                  <i class="bi bi-exclamation-triangle-fill me-2"></i>Report New Incident
+                </h5>
+                <p class="text-white mb-0" style="opacity: 0.9; font-size: 0.9rem;">Fill in the details below to create a new incident report</p>
+              </div>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" style="opacity: 0.9;"></button>
             </div>
-            <div class="modal-body p-4">
-              <form id="incidentForm" class="needs-validation" novalidate>
-                <div class="row g-3">
-                  <div class="col-12 col-md-6">
-                    <label for="incidentType" class="form-label fw-semibold">Incident Type <span class="text-danger">*</span></label>
-                    <select id="incidentType" class="form-select" required>
-                      <option value="" selected disabled>Choose type...</option>
-                      <option value="Fire">Fire</option>
-                      <option value="Flood">Flood</option>
-                      <option value="Road Accident">Road Accident</option>
-                      <option value="Medical">Medical</option>
-                      <option value="Landslide">Landslide</option>
-                      <option value="Earthquake">Earthquake</option>
-                      <option value="Power Outage">Power Outage</option>
-                      <option value="Other">Other</option>
-                    </select>
-                    <div class="invalid-feedback">Please select an incident type.</div>
-                  </div>
-                  <div class="col-12 col-md-6">
-                    <label for="severity" class="form-label fw-semibold">Severity Level <span class="text-danger">*</span></label>
-                    <select id="severity" class="form-select" required>
-                      <option value="" selected disabled>Choose severity...</option>
-                      <option value="Low">Low</option>
-                      <option value="Moderate">Moderate</option>
-                      <option value="High">High</option>
-                      <option value="Critical">Critical</option>
-                    </select>
-                    <div class="invalid-feedback">Please select severity.</div>
-                  </div>
-                  <div class="col-12">
-                    <label for="description" class="form-label fw-semibold">Description <span class="text-danger">*</span></label>
-                    <textarea id="description" class="form-control" rows="3" placeholder="Describe the incident (e.g. scale of fire, road blockage, number of injured, landmarks...)" required></textarea>
-                    <div class="invalid-feedback">Please enter a description of the incident.</div>
-                  </div>
-                  
-                  <div class="col-12">
-                    <label class="form-label fw-semibold d-flex align-items-center gap-2">
-                      <i class="bi bi-camera-fill"></i> Upload Photo (geotagged preferred) <span class="text-danger">*</span>
-                    </label>
-                    <input id="photo" type="file" class="form-control" accept="image/*" capture="environment" required />
-                    <div class="invalid-feedback">Incident photo is required.</div>
-                    <div class="form-text text-muted" id="photoMeta">Awaiting image upload...</div>
-                    
-                    <div class="ratio ratio-16x9 mt-2 border rounded overflow-hidden bg-light" id="photoPreviewWrap">
-                      <img id="photoPreview" alt="Preview" class="object-fit-cover w-100 h-100 d-none" />
-                      <div class="d-flex align-items-center justify-content-center text-muted" id="photoPlaceholder">
-                        <div class="text-center small">
-                          <i class="bi bi-image fs-2 d-block mb-1 text-secondary"></i>
-                          Photo Preview
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="col-12 border-top pt-3 mt-3">
-                    <div class="d-flex align-items-center justify-content-between mb-1">
-                      <label class="form-label mb-0 fw-semibold d-flex align-items-center gap-2">
-                        <i class="bi bi-geo-alt-fill"></i> Location Geotagging
-                      </label>
-                      <div class="btn-group btn-group-sm" role="group">
-                        <button type="button" id="btnUseMyLocation" class="btn btn-outline-primary">
-                          <i class="bi bi-crosshair"></i> Use Live GPS
-                        </button>
-                        <button type="button" id="btnClearLocation" class="btn btn-outline-secondary">
-                          <i class="bi bi-x"></i>
-                        </button>
-                      </div>
-                    </div>
-                    <div class="row g-2 align-items-center mb-2">
-                      <div class="col-6">
-                        <input id="lat" class="form-control" placeholder="Latitude" readonly />
-                      </div>
-                      <div class="col-6">
-                        <input id="lng" class="form-control" placeholder="Longitude" readonly />
-                      </div>
-                    </div>
-                    <div id="locationNote" class="small text-muted mb-2">No location geotagged yet</div>
-                    
-                    <!-- Location Map -->
-                    <div class="mt-2">
-                      <div id="locationMap" class="rounded border" style="height: 220px; width: 100%;"></div>
-                      <div class="form-text small mt-1 text-muted">Click the map to select coordinates manually or click "Use Live GPS" to geotag automatically.</div>
-                    </div>
-                  </div>
+            
+            <!-- Modal Body with Improved Padding -->
+            <div class="modal-body" style="padding: 2rem 1.75rem;">
+              <form id="addIncidentForm" class="needs-validation" novalidate>
+                <input type="hidden" id="editIncidentId" value="">
+                <!-- Incident Type -->
+                <div class="mb-4">
+                  <label for="modalIncidentType" class="form-label fw-semibold mb-2" style="font-size: 0.95rem; color: #495057;">
+                    Incident Type <span class="text-danger">*</span>
+                  </label>
+                  <select id="modalIncidentType" class="form-select form-select-lg" required style="padding: 0.75rem 1rem; border: 2px solid #dee2e6; border-radius: 0.5rem; transition: all 0.3s ease;">
+                    <option value="" selected disabled>Select incident type...</option>
+                    <option value="Fire">🔥 Fire</option>
+                    <option value="Flood">💧 Flood</option>
+                    <option value="Road Accident">🚗 Road Accident</option>
+                    <option value="Medical">❤️ Medical</option>
+                    <option value="Landslide">⛰️ Landslide</option>
+                    <option value="Earthquake">🌍 Earthquake</option>
+                    <option value="Power Outage">⚡ Power Outage</option>
+                    <option value="Other">⚠️ Other</option>
+                  </select>
+                  <div class="invalid-feedback">Please select an incident type.</div>
                 </div>
 
-                <div class="modal-footer border-0 bg-light p-3 mt-4 mx-n4 mb-n4 rounded-bottom">
-                  <span class="badge bg-secondary me-auto d-none d-sm-inline-block px-2 py-2" id="clockBadge">--:--</span>
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                  <button type="button" class="btn btn-outline-dark" id="btnResetForm">
-                    <i class="bi bi-arrow-counterclockwise"></i> Reset
-                  </button>
-                  <button class="btn btn-danger px-4 fw-semibold" id="btnAddIncident" type="submit">
-                    <i class="bi bi-send-fill me-1"></i> Submit Report
-                  </button>
+                <!-- Description -->
+                <div class="mb-4">
+                  <label for="modalDescription" class="form-label fw-semibold mb-2" style="font-size: 0.95rem; color: #495057;">
+                    Description <span class="text-danger">*</span>
+                  </label>
+                  <textarea 
+                    id="modalDescription" 
+                    class="form-control" 
+                    rows="6" 
+                    placeholder="Provide detailed information about the incident:
+
+• What happened? (Describe the incident)
+• Where did it occur? (Location details)
+• When did it happen? (Date and time if known)
+• Who's involved? (Number of people, any injuries, etc.)" 
+                    required
+                    style="padding: 0.75rem 1rem; border: 2px solid #dee2e6; border-radius: 0.5rem; resize: vertical; transition: all 0.3s ease;"
+                  ></textarea>
+                  <div class="form-text mt-2" style="font-size: 0.875rem;">
+                    <i class="bi bi-info-circle me-1 text-info"></i>
+                    Include: What, Where, When, and Who's involved
+                  </div>
+                  <div class="invalid-feedback">Please provide a detailed description of the incident.</div>
+                </div>
+
+                <!-- Image Upload -->
+                <div class="mb-0">
+                  <label for="modalPhoto" class="form-label fw-semibold mb-2" style="font-size: 0.95rem; color: #495057;">
+                    Incident Photo <span class="text-danger">*</span>
+                    <small class="text-muted fw-normal">(Geotagged photos preferred)</small>
+                  </label>
+                  <input
+                    id="modalPhoto"
+                    type="file"
+                    class="form-control form-control-lg"
+                    accept="image/*"
+                    capture="environment"
+                    required
+                    style="padding: 0.75rem 1rem; border: 2px solid #dee2e6; border-radius: 0.5rem; transition: all 0.3s ease;"
+                  />
+                  <div class="form-text mt-2" id="modalPhotoMeta" style="font-size: 0.875rem;">
+                    <i class="bi bi-clock me-1 text-muted"></i>Awaiting image upload...
+                  </div>
+                  <div class="invalid-feedback">Please upload a photo of the incident.</div>
+                  
+                  <!-- Photo Preview -->
+                  <div class="mt-3 border rounded-3 p-4 text-center" id="modalPhotoPreviewWrap" style="display: none; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border: 2px dashed #dc3545 !important;">
+                    <img id="modalPhotoPreview" alt="Photo Preview" class="img-fluid rounded shadow-sm" style="max-height: 280px; width: auto; border: 2px solid #fff;" />
+                    <div class="mt-3">
+                      <button type="button" class="btn btn-sm btn-outline-danger" id="modalRemovePhoto" style="border-radius: 0.5rem;">
+                        <i class="bi bi-x-circle me-1"></i> Remove Photo
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </form>
+            </div>
+            
+            <!-- Modal Footer with Improved Padding -->
+            <div class="modal-footer border-top border-2" style="padding: 1.25rem 1.75rem; background: #f8f9fa;">
+              <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal" style="border-radius: 0.5rem; font-weight: 500;">
+                <i class="bi bi-x-circle me-1"></i> Cancel
+              </button>
+              <button type="button" class="btn btn-danger btn-lg px-5" id="modalSubmitIncident" style="border-radius: 0.5rem; font-weight: 600; box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3); transition: all 0.3s ease;">
+                <i class="bi bi-check-circle me-1"></i> Submit Incident Report
+              </button>
             </div>
           </div>
         </div>
@@ -478,19 +444,15 @@ if (isset($_GET['logout'])) {
       crossorigin="anonymous"
     ></script>
 
-    <!-- Leaflet JS -->
-    <script
-      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-      crossorigin=""
-    ></script>
+    <!-- Leaflet JS Removed -->
 
     <!-- EXIF reader -->
     <script src="https://cdn.jsdelivr.net/npm/exif-js@2.3.0/exif.min.js"></script>
 
     <script src="scripts/sidebar-counts.js?v=<?php echo urlencode((string) @filemtime(__DIR__ . '/scripts/sidebar-counts.js')); ?>"></script>
     <script src="scripts/dashboard.js?v=<?php echo urlencode((string) @filemtime(__DIR__ . '/scripts/dashboard.js')); ?>"></script>
-    <script src="scripts/client-dashboard.js?v=<?php echo urlencode((string) @filemtime(__DIR__ . '/scripts/client-dashboard.js')); ?>"></script>
+    <script src="scripts/add-incident-modal.js?v=<?php echo urlencode((string) @filemtime(__DIR__ . '/scripts/add-incident-modal.js')); ?>"></script>
+    <script src="scripts/bdrrmo-dashboard.js?v=<?php echo urlencode((string) @filemtime(__DIR__ . '/scripts/bdrrmo-dashboard.js')); ?>"></script>
     <style>
       /* Dashboard-specific styles */
       .welcome-text {

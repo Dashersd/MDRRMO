@@ -225,6 +225,7 @@ if (isset($_GET['logout'])) {
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <form id="addActivityForm">
+            <input type="hidden" id="editActivityId" value="">
             <div class="modal-body p-4">
               <div class="mb-3">
                 <label for="activityTitle" class="form-label fw-semibold">Activity Title <span class="text-danger">*</span></label>
@@ -265,42 +266,47 @@ if (isset($_GET['logout'])) {
     </div>
 
     <!-- Image Gallery Modal -->
-    <div class="modal fade" id="imageGalleryModal" tabindex="-1" aria-labelledby="imageGalleryModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered modal-xl">
-        <div class="modal-content border-0 shadow-lg bg-dark overflow-hidden">
-          <div class="modal-header border-0 bg-dark">
-            <h5 class="modal-title text-white fw-bold" id="imageGalleryModalLabel">
-              <i class="bi bi-info-circle me-2"></i>Activity Details
-            </h5>
+    <div class="modal fade" id="imageGalleryModal" tabindex="-1" aria-labelledby="imageGalleryModalLabel" aria-hidden="true" style="z-index: 1080;">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+          <div class="modal-header border-0 bg-danger text-white p-4">
+            <h5 class="modal-title font-heading fw-bold" id="imageGalleryModalLabel">Activity Details</h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <div class="modal-body p-0 d-flex flex-column flex-lg-row">
-            <!-- Left side: Carousel -->
-            <div class="flex-grow-1 position-relative" style="min-height: 400px; background: #000;">
-              <div id="galleryCarousel" class="carousel slide h-100" data-bs-ride="carousel">
-                <div class="carousel-inner h-100 d-flex align-items-center" id="galleryCarouselInner"></div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#galleryCarousel" data-bs-slide="prev">
-                  <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                  <span class="visually-hidden">Previous</span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#galleryCarousel" data-bs-slide="next">
-                  <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                  <span class="visually-hidden">Next</span>
-                </button>
+          <div class="modal-body p-0">
+            <div class="row g-0">
+              <!-- Left side: Carousel -->
+              <div class="col-md-6 bg-dark d-flex flex-column align-items-center justify-content-center position-relative" style="min-height: 350px; overflow: hidden;">
+                <div id="galleryCarousel" class="carousel slide w-100 h-100" data-bs-ride="carousel">
+                  <div class="carousel-inner h-100 d-flex align-items-center" id="galleryCarouselInner"></div>
+                  <button class="carousel-control-prev" type="button" data-bs-target="#galleryCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                  </button>
+                  <button class="carousel-control-next" type="button" data-bs-target="#galleryCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                  </button>
+                </div>
+                <div class="position-absolute bottom-0 w-100 p-2 text-white text-center" style="background: rgba(0,0,0,0.6); z-index: 10;">
+                  <span id="galleryImageCounter">1 / 1</span>
+                </div>
               </div>
-              <div class="position-absolute bottom-0 w-100 p-2 text-white text-center" style="background: rgba(0,0,0,0.5);">
-                <span id="galleryImageCounter">1 / 1</span>
-              </div>
-            </div>
-            
-            <!-- Right side: Info -->
-            <div class="bg-light text-dark p-4" style="width: 100%; max-width: 400px; overflow-y: auto;">
-              <h4 id="galleryActivityTitle" class="fw-bold mb-2"></h4>
-              <p id="galleryActivityDate" class="text-muted small mb-4"></p>
               
-              <h6 class="fw-bold text-uppercase text-muted mb-2" style="font-size: 0.8rem;">Description</h6>
-              <p id="galleryActivityDesc" class="mb-0 text-secondary" style="white-space: pre-wrap; font-size: 0.95rem;"></p>
+              <!-- Right side: Info -->
+              <div class="col-md-6 p-4 d-flex flex-column justify-content-between">
+                <div>
+                  <h3 class="font-heading fw-bold mb-1 text-dark" id="galleryActivityTitle">--</h3>
+                  <span class="small text-muted d-block mb-3" id="galleryActivityDate"><i class="bi bi-calendar-event me-1"></i>--</span>
+                  <hr>
+                  <h6 class="fw-bold text-dark mb-2">Description / Log:</h6>
+                  <p class="text-muted small" id="galleryActivityDesc" style="line-height: 1.6; max-height: 220px; overflow-y: auto;">--</p>
+                </div>
+              </div>
             </div>
+          </div>
+          <div class="modal-footer border-0 bg-light p-3">
+            <button type="button" class="btn btn-secondary px-4 rounded-pill" data-bs-dismiss="modal">Close Logs</button>
           </div>
         </div>
       </div>
@@ -310,108 +316,356 @@ if (isset($_GET['logout'])) {
     <script src="../scripts/dashboard.js?v=<?php echo urlencode((string) @filemtime(__DIR__ . '/../scripts/dashboard.js')); ?>"></script>
     <script src="../scripts/activities.js?v=<?php echo urlencode((string) @filemtime(__DIR__ . '/../scripts/activities.js')); ?>"></script>
     <style>
-      /* Activities List Styles */
       .activities-list {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
-      }
-
-      .activity-card {
-        background: white;
-        border: 2px solid #e9ecef;
-        border-radius: 12px;
-        overflow: hidden;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-      }
-
-      .activity-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-        border-color: #dc3545;
-      }
-
-      .activity-card-header {
-        padding: 1.25rem 1.5rem;
-        border-bottom: 1px solid #e9ecef;
-        background: #f8f9fa;
-      }
-
-      .activity-card-title {
-        font-weight: 700;
-        font-size: 1.15rem;
-        color: #212529;
-        margin: 0;
-      }
-
-      .activity-card-date {
-        font-size: 0.85rem;
-        color: #6c757d;
-        margin-top: 0.25rem;
-      }
-
-      .activity-card-body {
-        padding: 1.5rem;
-      }
-
-      .activity-card-description {
-        color: #495057;
-        line-height: 1.6;
-        margin-bottom: 1.25rem;
-      }
-
-      .activity-images-gallery {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-        gap: 0.75rem;
-        margin-top: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: clamp(12px, 2vw, 18px);
+        padding: clamp(0.25rem, 1vw, 0.75rem);
+        align-items: stretch;
       }
 
-      .activity-image-thumb {
+      .activity-card-square {
         position: relative;
         width: 100%;
-        aspect-ratio: 1;
-        border-radius: 8px;
-        overflow: hidden;
+        min-height: 200px;
+        background: white;
+        border-radius: clamp(8px, 1.5vw, 12px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        overflow: visible;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: row;
         cursor: pointer;
-        transition: all 0.2s ease;
-        border: 2px solid #e9ecef;
+        max-width: 480px;
+        box-sizing: border-box;
+        align-items: stretch;
       }
 
-      .activity-image-thumb:hover {
-        transform: scale(1.05);
-        border-color: #dc3545;
-        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+      .activity-card-square.hover-lift:hover {
+        transform: translateY(clamp(-4px, -1vw, -8px));
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
       }
 
-      .activity-image-thumb img {
+      .activity-card-image-wrapper {
+        position: relative;
+        flex: 0 0 clamp(35%, 40%, 45%);
+        max-width: 45%;
+        min-width: 120px;
+        min-height: 180px;
+        height: auto;
+        align-self: stretch;
+        overflow: hidden;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        flex-shrink: 0;
+      }
+
+      .activity-card-image {
         width: 100%;
         height: 100%;
         object-fit: cover;
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       }
 
-      .activity-image-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.4);
+      .activity-card-square:hover .activity-card-image {
+        transform: scale(1.1);
+      }
+
+      .activity-card-image-placeholder {
+        width: 100%;
+        height: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
-        opacity: 0;
-        transition: opacity 0.2s ease;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
       }
 
-      .activity-image-thumb:hover .activity-image-overlay {
-        opacity: 1;
+      .activity-card-image-placeholder i {
+        font-size: clamp(2rem, 8vw, 3rem);
+        color: #adb5bd;
       }
 
-      .activity-image-overlay i {
+      .activity-card-status-overlay {
+        position: absolute;
+        top: clamp(4px, 1vw, 8px);
+        right: clamp(4px, 1vw, 8px);
+        z-index: 2;
+      }
+
+      .activity-status-badge {
+        font-size: clamp(0.6rem, 1.5vw, 0.7rem);
+        padding: clamp(0.25rem, 0.8vw, 0.35rem) clamp(0.4rem, 1.2vw, 0.6rem);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        white-space: nowrap;
+      }
+
+      .activity-card-type-overlay {
+        position: absolute;
+        bottom: clamp(4px, 1vw, 8px);
+        left: clamp(4px, 1vw, 8px);
+        z-index: 2;
+      }
+
+      .activity-type-icon {
+        width: clamp(32px, 8vw, 40px);
+        height: clamp(32px, 8vw, 40px);
+        border-radius: clamp(8px, 2vw, 10px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
         color: white;
-        font-size: 1.5rem;
+        font-size: clamp(1rem, 3vw, 1.2rem);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+      }
+
+      .activity-card-content {
+        flex: 1 1 0;
+        min-width: 0;
+        padding: clamp(8px, 2vw, 14px);
+        display: flex;
+        flex-direction: column;
+        gap: clamp(6px, 1.5vw, 10px);
+        background: white;
+        min-height: 0;
+        position: relative;
+        max-width: 100%;
+        box-sizing: border-box;
+        justify-content: space-between;
+        height: auto;
+        flex-grow: 1;
+      }
+
+      .activity-card-header {
+        margin-bottom: clamp(4px, 1.5vw, 8px);
+        flex-shrink: 0;
+        flex-grow: 0;
+      }
+
+      .activity-card-title {
+        font-size: clamp(0.8rem, 2.2vw, 0.9rem);
+        font-weight: 700;
+        color: #212529;
+        margin: 0;
+        line-height: 1.3;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .activity-card-time {
+        font-size: clamp(0.65rem, 1.8vw, 0.7rem);
+        color: #6c757d;
+        font-weight: 500;
+      }
+
+      .activity-card-description {
+        font-size: clamp(0.7rem, 1.9vw, 0.75rem);
+        color: #495057;
+        margin: 0 0 clamp(8px, 2vw, 10px) 0;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        flex: 0 1 auto;
+        min-height: clamp(3rem, 8vw, 3.5rem);
+        max-height: clamp(3rem, 8vw, 3.5rem);
+        flex-grow: 0;
+      }
+
+      .activity-card-meta {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: clamp(8px, 2vw, 12px);
+        margin-bottom: clamp(8px, 2vw, 10px);
+        padding-top: clamp(6px, 1.5vw, 8px);
+        border-top: 1px solid #e9ecef;
+        flex-shrink: 0;
+        flex-grow: 0;
+        align-items: center;
+      }
+
+      .activity-meta-item {
+        display: flex;
+        align-items: center;
+        gap: clamp(4px, 1.5vw, 6px);
+        font-size: clamp(0.65rem, 1.8vw, 0.7rem);
+        color: #6c757d;
+      }
+
+      .activity-meta-item i {
+        font-size: clamp(0.7rem, 1.9vw, 0.75rem);
+        width: clamp(12px, 3.5vw, 14px);
+        flex-shrink: 0;
+      }
+
+      .activity-card-actions {
+        display: flex !important;
+        gap: clamp(6px, 1.5vw, 10px);
+        margin-top: auto;
+        padding-top: clamp(8px, 1.5vw, 12px);
+        border-top: 1px solid #f1f3f5;
+        flex-shrink: 0;
+        flex-grow: 0;
+        min-height: clamp(40px, 10vw, 50px);
+        align-items: stretch;
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+        width: 100%;
+        max-width: 100%;
+        overflow: visible;
+        position: relative;
+        visibility: visible !important;
+        opacity: 1 !important;
+        box-sizing: border-box;
+      }
+
+      .activity-action-btn {
+        flex: 1 1 0;
+        min-width: 0;
+        max-width: none;
+        padding: clamp(0.4rem, 1vw, 0.55rem) clamp(0.5rem, 1.2vw, 0.8rem);
+        font-size: clamp(0.65rem, 1.7vw, 0.75rem);
+        border-radius: clamp(4px, 1.5vw, 6px);
+        transition: all 0.2s ease;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        box-sizing: border-box;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+
+      .activity-action-btn:hover {
+        transform: translateY(-1px);
+      }
+
+      .activity-action-btn:active {
+        transform: translateY(0);
+      }
+
+      .activity-action-btn i {
+        font-size: clamp(0.7rem, 1.9vw, 0.85rem);
+        flex-shrink: 0;
+        display: inline-block;
+      }
+
+      @media (max-width: 575.98px) {
+        .activities-list {
+          grid-template-columns: 1fr;
+          gap: clamp(10px, 3vw, 14px);
+        }
+
+        .activity-card-square {
+          min-height: 250px;
+          flex-direction: column;
+        }
+
+        .activity-card-image-wrapper {
+          flex: 0 0 auto;
+          max-width: 100%;
+          min-height: 120px;
+          max-height: 200px;
+        }
+
+        .activity-card-content {
+          flex: 1 1 auto;
+          min-width: 0;
+          width: 100%;
+          padding: clamp(8px, 2vw, 10px);
+          overflow: visible;
+          height: auto;
+        }
+
+        .activity-card-description {
+          min-height: 2.5rem;
+          max-height: 2.5rem;
+          -webkit-line-clamp: 2;
+          margin-bottom: 6px;
+        }
+
+        .activity-card-meta {
+          flex-direction: column;
+          gap: 4px;
+          margin-bottom: 6px;
+          padding-top: 6px;
+        }
+
+        .activity-card-actions {
+          gap: clamp(6px, 1.5vw, 8px);
+          min-height: 40px;
+          flex-wrap: nowrap;
+          padding-top: 6px;
+          width: 100%;
+          max-width: 100%;
+        }
+
+        .activity-action-btn {
+          padding: 0.4rem 0.5rem;
+          flex: 1 1 0 !important;
+          min-width: 0 !important;
+          max-width: none !important;
+          font-size: 0.65rem;
+          display: flex !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+        }
+
+        .activity-action-btn i {
+          font-size: 0.75rem;
+        }
+      }
+
+      @media (min-width: 576px) and (max-width: 767.98px) {
+        .activities-list {
+          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        }
+
+        .activity-card-square {
+          min-height: 220px;
+        }
+
+        .activity-card-image-wrapper {
+          flex: 0 0 38%;
+          max-width: 40%;
+          min-height: 180px;
+        }
+
+        .activity-card-content {
+          flex: 1 1 auto;
+          min-width: 0;
+          padding: clamp(8px, 2vw, 12px);
+          height: auto;
+        }
+
+        .activity-card-description {
+          min-height: 3rem;
+          max-height: 3rem;
+        }
+
+        .activity-card-actions {
+          gap: clamp(6px, 1.5vw, 8px);
+          flex-wrap: nowrap;
+        }
+
+        .activity-action-btn {
+          flex: 1 1 0 !important;
+          min-width: 0 !important;
+          max-width: none !important;
+          padding: 0.4rem 0.5rem;
+          display: flex !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+        }
       }
 
       /* Image Preview in Modal */

@@ -6,6 +6,12 @@
 (function () {
   "use strict";
 
+  // Determine API URL based on current page location
+  const isSubdirectory = window.location.pathname.includes('/admin/') || 
+                         window.location.pathname.includes('/client/') || 
+                         window.location.pathname.includes('/bdrrmo/');
+  const API_URL = isSubdirectory ? "../api/incidents.php" : "api/incidents.php";
+
   document.addEventListener("DOMContentLoaded", function () {
     const modal = document.getElementById("addIncidentModal");
     const form = document.getElementById("addIncidentForm");
@@ -71,7 +77,7 @@
       }
       
       if (submitBtn) {
-        submitBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i> Submit Incident Report';
+        submitBtn.innerHTML = '<i class="bi bi-upload me-1"></i> Upload Incident Report';
         submitBtn.disabled = false;
       }
       
@@ -101,7 +107,7 @@
           // Show loading state
           submitBtn.innerHTML = isEdit
             ? '<span class="spinner-border spinner-border-sm me-1"></span> Updating...'
-            : '<span class="spinner-border spinner-border-sm me-1"></span> Submitting...';
+            : '<span class="spinner-border spinner-border-sm me-1"></span> Uploading...';
           submitBtn.disabled = true;
 
           if (isEdit) {
@@ -115,7 +121,7 @@
               updateData.photoDataUrl = await resizeImageToDataURL(file, 1280, 1280);
             }
             
-            const response = await fetch("../api/incidents.php", {
+            const response = await fetch(API_URL, {
               method: "PUT",
               headers: {
                 "Content-Type": "application/json",
@@ -150,7 +156,7 @@
           alert("Failed to submit incident: " + error.message);
           submitBtn.innerHTML = isEdit
             ? '<i class="bi bi-check-circle me-1"></i> Update Incident Report'
-            : '<i class="bi bi-check-circle me-1"></i> Submit Incident Report';
+            : '<i class="bi bi-upload me-1"></i> Upload Incident Report';
           submitBtn.disabled = false;
         }
       });
@@ -252,7 +258,6 @@
       }
 
       // Save to database via API
-      const API_URL = "../api/incidents.php";
       const response = await fetch(API_URL, {
         method: "POST",
         headers: {

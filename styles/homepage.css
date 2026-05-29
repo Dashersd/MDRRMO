@@ -931,3 +931,32 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 0.85rem;
     text-align: center;
 }
+
+/* Custom Homepage search bar focus and shadow aesthetics */
+.search-container {
+    transition: var(--transition);
+}
+.search-container:focus-within {
+    border-color: var(--primary) !important;
+    box-shadow: 0 8px 30px rgba(230, 57, 70, 0.12) !important;
+}
+
+/* Activity and Equipment dynamic styles */
+.activity-log-card {
+    transition: var(--transition);
+    border-bottom: 4px solid transparent !important;
+}
+.activity-log-card:hover {
+    border-bottom: 4px solid var(--primary) !important;
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-lg);
+}
+.activity-log-card .personnel-name {
+    transition: var(--transition);
+}
+.activity-log-card:hover .personnel-name {
+    color: var(--primary) !important;
+}
+.activity-log-card .small {
+    color: #64748b !important;
+}

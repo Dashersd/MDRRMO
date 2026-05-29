@@ -7,8 +7,8 @@ A premium, responsive, state-of-the-art web-based portal for the **Municipal Dis
 ## 🌟 Core Features
 
 ### 1. Premium Public Homepage (`index.php`)
-A 100% pure public safety information board tailored for citizens. 
-- **Zero Portal Distractions:** All dashboard access, login, signup, and portal buttons have been removed from the public page to ensure a clean public bulletin board.
+A 100% pure public safety information board tailored for citizens.
+- **Zero Portal Distractions:** All dashboard access, login, and portal buttons have been removed from the public page to ensure a clean public bulletin board.
 - **Dynamic Threat Alert Engine:** Automatically evaluates the highest threat severity in the active dispatches from the database. It pulses in Green (Normal), Yellow (Active Monitoring/Yellow Alert), Orange (High Severity), or Red (Critical Red Alert) with localized safety notices.
 - **Dynamic Weather & Clock:** A high-end real-time digital clock coupled with interactive weather telemetry widgets.
 - **Official Roster Directory:** Displays active responders and leadership, updated in real time. It features customized profile dimensions ensuring full face visibility (no cropping).
@@ -17,18 +17,34 @@ A 100% pure public safety information board tailored for citizens.
 - **Click-to-Copy Directory:** A beautiful directory of emergency contact hotlines with clipboard-copy indicators.
 
 ### 2. Multi-Role Secured Dashboards
-Admin and responder operations are fully isolated behind standard authentication interfaces:
-- **Admin Dashboard (`admin-dashboard.php`):** Full administration suite to dispatch responders, manage user roles, update rosters, and log real-time geotagged emergency events.
-- **BDRRMO Staff Dashboard (`bdrrmo-dashboard.php`):** Interactive reporting hub for registered responders to send geotagged incident requests with photo uploads.
+Admin and BDRRMO staff operations are fully isolated behind standard authentication interfaces:
+- **Admin Dashboard (`admin-dashboard.php`):** Full administration suite to approve or decline incident reports submitted by BDRRMO staff, dispatch responders, manage user accounts, update rosters, and log real-time geotagged emergency events. Admin can download full PDF incident reports.
+- **BDRRMO Staff Dashboard (`bdrrmo-dashboard.php`):** Interactive reporting hub for registered staff to submit geotagged incident requests with photo uploads. Staff can view the status of their submitted reports (Approved/Declined). The Active Users card has been removed from the BDRRMO dashboard — user management is an Admin-only concern.
 - **Interactive Maps (Internal):** Leaflet maps are kept inside secure panels for precise dispatch coordinates and incident plot rendering.
+
+### 3. Incident Approval Workflow
+BDRRMO staff submit incident reports which are queued for Admin review:
+- **BDRRMO** submits an incident → appears in Admin's pending queue.
+- **Admin** reviews and selects **Approve** or **Decline**.
+- BDRRMO staff sees the updated status (Approved / Declined) on their Incidents page.
+- Incident view modals use a **wide (`modal-lg`) layout** with full-size photo display (380px) across both Admin and BDRRMO views for a comfortable reading experience.
+
+### 4. Admin-Controlled Account Management
+- **Self-registration (`signup.php`) is disabled.** Visiting the URL automatically redirects to the login page.
+- All BDRRMO staff accounts are created exclusively by the **Admin** via the User Management panel (`admin/users.php`).
+- The "Sign up here" link has been removed from the login page.
 
 ---
 
 ## 🔐 Authentication & Roles
 
-- **Admin Account:** `admin` / `mdrrmo2024`
-- **BDRRMO Staff Account:** `client` / `client2024`
+| Role | Default Username | Default Password |
+|---|---|---|
+| Admin | `admin` | `mdrrmo2024` |
+| BDRRMO Staff | `client` | `client2024` |
+
 - **Security Protocols:** Session-based validation, automatic unauthenticated page guards, and secure password hashing using PHP's `password_hash()`.
+- **Account Creation:** Admin-only via `admin/users.php`. Public self-registration is disabled.
 
 ---
 
@@ -38,7 +54,7 @@ Admin and responder operations are fully isolated behind standard authentication
 ├── index.php                          # Pure public landing portal / information board
 ├── login.php                          # Secured dashboard portal entrance
 ├── logout.php                         # Session destruction and redirect handler
-├── signup.php                         # Public user registration page
+├── signup.php                         # DISABLED — redirects to login.php (admin manages accounts)
 ├── incidents.php                      # Public-facing incident view page
 ├── admin-dashboard.php                # Core Admin operation center
 ├── bdrrmo-dashboard.php               # Secured BDRRMO Staff reporting portal
@@ -46,6 +62,7 @@ Admin and responder operations are fully isolated behind standard authentication
 ├── config.php                         # Global database connection and configuration file
 ├── create-admin.php                   # One-time admin account creation utility
 ├── debug-admin.php                    # Admin session/auth debugging utility
+├── mdrrmo_information_system.sql      # Full database dump / backup
 ├── .env                               # Environment variables (DB credentials, ports)
 ├── .htaccess                          # Apache rewrite rules and access control
 ├── xampp-setup.md                     # Walkthrough detailing local Apache/MariaDB setup
@@ -59,14 +76,14 @@ Admin and responder operations are fully isolated behind standard authentication
 │   └── dashboard-stats.php            # Dashboard summary statistics API
 │
 ├── admin/
-│   ├── incidents.php                  # Admin incidents management page
+│   ├── incidents.php                  # Admin incidents management & approval page
 │   ├── organization-chart.php         # Admin organization & roster chart page
 │   ├── equipment.php                  # Admin equipment inventory page
 │   ├── activities.php                 # Admin activity & drill logs page
-│   └── users.php                      # Admin user management panel
+│   └── users.php                      # Admin user management panel (create/edit/delete accounts)
 │
 ├── bdrrmo/
-│   ├── incidents.php                  # Staff incident logs page
+│   ├── incidents.php                  # Staff incident submission & status view page
 │   ├── organization-chart.php         # Staff roster chart view
 │   └── activities.php                 # Staff activities & drills page
 │
@@ -80,20 +97,20 @@ Admin and responder operations are fully isolated behind standard authentication
 ├── scripts/
 │   ├── homepage.js                    # Clock, detail modals, copy logic, and roster engines
 │   ├── login.js                       # Login form handling
-│   ├── signup.js                      # Signup form handling
+│   ├── signup.js                      # Signup form handling (kept but page is disabled)
 │   ├── dashboard.js                   # Legacy dashboard layout scripts
-│   ├── admin-dashboard.js             # Admin dashboard logic
-│   ├── admin-incidents.js             # Admin incidents management logic
-│   ├── client-dashboard.js            # BDRRMO staff dashboard logic
-│   ├── client-incidents.js            # Staff incident management logic
-│   ├── client-organization-chart.js   # Staff organization chart logic
+│   ├── admin-dashboard.js             # Admin dashboard logic & wide incident view modal
+│   ├── admin-incidents.js             # Admin incidents management, approval, and PDF download
+│   ├── bdrrmo-dashboard.js            # BDRRMO staff dashboard logic & wide incident view modal
+│   ├── bdrrmo-incidents.js            # BDRRMO staff incident submission & status view logic
+│   ├── bdrrmo-organization-chart.js   # Staff organization chart logic
 │   ├── incidents.js                   # Public incidents view logic
-│   ├── add-incident-modal.js          # Reusable add-incident modal component
+│   ├── add-incident-modal.js          # Reusable upload-incident modal component
 │   ├── organization-chart.js          # Organization chart shared logic
 │   ├── activities.js                  # Activities page logic
 │   ├── equipment.js                   # Equipment inventory logic
 │   ├── users.js                       # User management logic
-│   └── sidebar-counts.js             # Sidebar notification badge counts
+│   └── sidebar-counts.js              # Sidebar notification badge counts
 │
 └── styles/
     ├── homepage.css                   # Custom styling for public interface
@@ -130,21 +147,34 @@ Use the links below to access the different parts of the system when running loc
 ### Public Gateways
 * **Official Homepage (Citizen Info Board):** [http://localhost/MDRRMO/index.php](http://localhost/MDRRMO/index.php)
 * **Secure Login Entrance:** [http://localhost/MDRRMO/login.php](http://localhost/MDRRMO/login.php)
-* **Responder Registration (Signup):** [http://localhost/MDRRMO/signup.php](http://localhost/MDRRMO/signup.php)
+
+> ⚠️ **Registration is disabled.** All BDRRMO staff accounts are created by the Admin via the [User Management Panel](http://localhost/MDRRMO/admin/users.php).
 
 ### Secured Dashboards (Requires Session)
 * **Admin Command Center:** [http://localhost/MDRRMO/admin-dashboard.php](http://localhost/MDRRMO/admin-dashboard.php)
 * **BDRRMO Staff Dashboard:** [http://localhost/MDRRMO/bdrrmo-dashboard.php](http://localhost/MDRRMO/bdrrmo-dashboard.php)
 
 ### Administrative Panel Suite (`admin/`)
-* **Incidents Manager:** [http://localhost/MDRRMO/admin/incidents.php](http://localhost/MDRRMO/admin/incidents.php)
+* **Incidents Manager & Approval:** [http://localhost/MDRRMO/admin/incidents.php](http://localhost/MDRRMO/admin/incidents.php)
 * **Organization & Roster Chart:** [http://localhost/MDRRMO/admin/organization-chart.php](http://localhost/MDRRMO/admin/organization-chart.php)
 * **Equipment Inventory:** [http://localhost/MDRRMO/admin/equipment.php](http://localhost/MDRRMO/admin/equipment.php)
 * **Activity & Drill Logs:** [http://localhost/MDRRMO/admin/activities.php](http://localhost/MDRRMO/admin/activities.php)
 * **User Management Panel:** [http://localhost/MDRRMO/admin/users.php](http://localhost/MDRRMO/admin/users.php)
 
-### Responder Operations Suite (`bdrrmo/`)
-* **My Incident Logs:** [http://localhost/MDRRMO/bdrrmo/incidents.php](http://localhost/MDRRMO/bdrrmo/incidents.php)
+### BDRRMO Staff Suite (`bdrrmo/`)
+* **Submit & View Incident Reports:** [http://localhost/MDRRMO/bdrrmo/incidents.php](http://localhost/MDRRMO/bdrrmo/incidents.php)
 * **View Roster Chart:** [http://localhost/MDRRMO/bdrrmo/organization-chart.php](http://localhost/MDRRMO/bdrrmo/organization-chart.php)
 * **Activities & Drills:** [http://localhost/MDRRMO/bdrrmo/activities.php](http://localhost/MDRRMO/bdrrmo/activities.php)
 
+---
+
+## 📋 Recent Changes
+
+| Change | Description |
+|---|---|
+| **Signup Disabled** | `signup.php` now redirects to `login.php`. Accounts are created by Admin only. |
+| **BDRRMO Incident Workflow** | BDRRMO staff submit incidents → Admin approves or declines → Status visible to BDRRMO. |
+| **Wide Incident View Modal** | Incident detail popups use `modal-lg` (~800px) with 380px photo display across Admin and BDRRMO. |
+| **Upload Button** | Admin incident submit button renamed to **"Upload Incident Report"** with upload icon. |
+| **Active Users Card Removed** | The Total Users / Active / Pending card has been removed from the BDRRMO dashboard. |
+| **JS Files Renamed** | `client-dashboard.js`, `client-incidents.js`, `client-organization-chart.js` → `bdrrmo-*.js`. |

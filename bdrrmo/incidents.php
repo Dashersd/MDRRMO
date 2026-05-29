@@ -193,8 +193,7 @@ if (isset($_GET['logout'])) {
                     <select id="filterStatus" class="form-select form-select-sm incident-filter-select">
                       <option value="All" selected>All statuses</option>
                       <option value="Approved">Approved</option>
-                      <option value="Dispatched">Dispatched</option>
-                      <option value="Resolved">Resolved</option>
+                      <option value="Decline">Declined</option>
                     </select>
                   </div>
                 </div>
@@ -244,10 +243,10 @@ if (isset($_GET['logout'])) {
     <script src="../scripts/sidebar-counts.js?v=<?php echo urlencode((string) @filemtime(__DIR__ . '/../scripts/sidebar-counts.js')); ?>"></script>
     <script src="../scripts/dashboard.js?v=<?php echo urlencode((string) @filemtime(__DIR__ . '/../scripts/dashboard.js')); ?>"></script>
     <script>
-      // Set current user for client-incidents.js
+      // Set current user for bdrrmo-incidents.js
       window.CURRENT_USER = '<?php echo htmlspecialchars(getCurrentUser(), ENT_QUOTES); ?>';
     </script>
-    <script src="../scripts/client-incidents.js?v=<?php echo urlencode((string) @filemtime(__DIR__ . '/../scripts/client-incidents.js')); ?>"></script>
+    <script src="../scripts/bdrrmo-incidents.js?v=<?php echo urlencode((string) @filemtime(__DIR__ . '/../scripts/bdrrmo-incidents.js')); ?>"></script>
     <style>
       /* Incident Cards - Responsive Rectangle Aspect Ratio */
       .incident-card-square {

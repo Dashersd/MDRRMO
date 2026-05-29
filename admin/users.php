@@ -314,7 +314,7 @@ $users = getAllUsers();
                       <tr>
                         <td colspan="9" class="text-center text-muted py-4">
                           <i class="bi bi-people fs-1 d-block mb-2"></i>
-                          No users found. <a href="../signup.php">Create the first user</a>
+                          No users found. <button class="btn btn-sm btn-success ms-2" data-bs-toggle="modal" data-bs-target="#createUserModal"><i class="bi bi-person-plus me-1"></i>Add New User</button>
                         </td>
                       </tr>
                     <?php else: ?>

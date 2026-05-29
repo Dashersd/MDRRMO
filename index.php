@@ -61,12 +61,17 @@ if ($isUserLoggedIn) {
                         <a class="nav-link" href="#personnels">PERSONNELS</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="#equipment">EQUIPMENT</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="#reports">REPORTS</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#activities">ACTIVITIES</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#contact">CONTACT</a>
                     </li>
-
                 </ul>
             </div>
         </div>
@@ -82,7 +87,7 @@ if ($isUserLoggedIn) {
                         <span>Lapuyan Municipal Safety and Resiliency Portal</span>
                     </div>
                     <h1 class="hero-title">Preparedness Saves Lives. <br><span>24/7 Response</span> at Your Service.</h1>
-                    <p class="hero-description">Welcome to the geotagged incident management hub of Lapuyan Municipal Disaster Risk Reduction and Management Office. We monitor, coordinate, and dispatch emergency response protocols to protect lives and properties.</p>
+                    <p class="hero-description">Welcome to MDRR Lapuyan Municipal Disaster Risk Reduction and Management Office. We monitor, coordinate, and dispatch emergency response protocols to protect lives and properties.</p>
                 </div>
                 
                 <!-- Dynamic Status & Weather Widget Block -->
@@ -213,8 +218,31 @@ if ($isUserLoggedIn) {
         </div>
     </section>
 
+    <!-- Section 3.5: EQUIPMENT INVENTORY -->
+    <section id="equipment" class="homepage-section alt-bg">
+        <div class="container">
+            <div class="section-title-area">
+                <span class="section-subtitle">Resource Readiness</span>
+                <h2 class="section-title">Emergency Equipment Inventory</h2>
+                <p class="text-muted max-width-600 mx-auto">MDRRMO Lapuyan maintains a state-of-the-art rescue and disaster response inventory. Below is our real-time equipment status, managed dynamically from our administrator dashboard.</p>
+            </div>
+
+
+
+            <!-- Dynamic Equipment Grid -->
+            <div class="row g-4 justify-content-center" id="publicEquipmentGrid">
+                <!-- Equipment cards dynamically loaded here -->
+                <div class="col-12 text-center py-5">
+                    <div class="spinner-border text-danger" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Retrieving equipment inventory...</p>
+                </div>
+            </div>
+        </div>
+    </section>
     <!-- Section 4: REPORTS -->
-    <section id="reports" class="homepage-section alt-bg">
+    <section id="reports" class="homepage-section">
         <div class="container">
             <div class="section-title-area">
                 <span class="section-subtitle">Public Emergency Feed</span>
@@ -234,6 +262,32 @@ if ($isUserLoggedIn) {
                         <span class="visually-hidden">Loading...</span>
                     </div>
                     <p class="mt-3 text-muted">Retrieving live reports feed...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 4.5: ACTIVITY LOG -->
+    <section id="activities" class="homepage-section alt-bg">
+        <div class="container">
+            <div class="section-title-area">
+                <span class="section-subtitle">Drills & Training Logs</span>
+                <h2 class="section-title">Activity Log</h2>
+                <p class="text-muted max-width-600 mx-auto">MDRRMO Lapuyan regularly conducts training seminars, fire/earthquake simulation drills, and community safety courses. Follow our dynamic activities log managed from our dashboard.</p>
+            </div>
+
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <h4 class="mb-0 font-heading fw-bold"><i class="bi bi-calendar-check text-primary me-2"></i>Recent Activity Feed</h4>
+                <span class="badge bg-danger rounded-pill px-3 py-2 fs-6" id="totalActivitiesCount">0</span>
+            </div>
+
+            <div class="row" id="publicActivitiesGrid">
+                <!-- Activity cards dynamically loaded here in a beautiful grid -->
+                <div class="col-12 text-center py-5">
+                    <div class="spinner-border text-danger" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Retrieving community logs feed...</p>
                 </div>
             </div>
         </div>
@@ -347,7 +401,9 @@ if ($isUserLoggedIn) {
                         <li><a href="#home">HOME</a></li>
                         <li><a href="#about">ABOUT</a></li>
                         <li><a href="#personnels">PERSONNELS</a></li>
+                        <li><a href="#equipment">EQUIPMENT</a></li>
                         <li><a href="#reports">REPORTS</a></li>
+                        <li><a href="#activities">ACTIVITIES</a></li>
                         <li><a href="#contact">CONTACT</a></li>
                     </ul>
                 </div>
@@ -376,7 +432,7 @@ if ($isUserLoggedIn) {
             </div>
 
             <div class="footer-bottom">
-                <p class="mb-0">© 2026 MDRRMO Lapuyan Geotagged Incident Reporting System. All rights reserved.</p>
+                <p class="mb-0">© 2026 MDRRMO Lapuyan MDRRMO Information System. All rights reserved.</p>
             </div>
         </div>
     </footer>
@@ -464,13 +520,90 @@ if ($isUserLoggedIn) {
         </div>
     </div>
 
+    <!-- Activity Details Modal -->
+    <div id="activityDetailsModal" class="modal fade" tabindex="-1" aria-hidden="true" style="z-index: 1080;">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+                <div class="modal-header border-0 bg-danger text-white p-4">
+                    <h5 class="modal-title font-heading fw-bold" id="activityModalTitle">Activity Logs</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="row g-0">
+                        <div class="col-md-6 bg-dark d-flex align-items-center justify-content-center" id="activityModalImgContainer" style="min-height: 350px; overflow: hidden;">
+                            <!-- Image goes here -->
+                        </div>
+                        <div class="col-md-6 p-4 d-flex flex-column justify-content-between">
+                            <div>
+                                <h3 class="font-heading fw-bold mb-1 text-dark" id="activityModalTitleText">--</h3>
+                                <span class="small text-muted d-block mb-3" id="activityModalDate"><i class="bi bi-calendar-event me-1"></i>--</span>
+                                <hr>
+                                <h6 class="fw-bold text-dark mb-2">Description / Log:</h6>
+                                <p class="text-muted small" id="activityModalDescription" style="line-height: 1.6; max-height: 220px; overflow-y: auto;">--</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 bg-light p-3">
+                    <button type="button" class="btn btn-secondary px-4 rounded-pill" data-bs-dismiss="modal">Close Logs</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Equipment Details Modal -->
+    <div id="equipmentDetailsModal" class="modal fade" tabindex="-1" aria-hidden="true" style="z-index: 1080;">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+                <div class="modal-header border-0 bg-danger text-white p-4">
+                    <h5 class="modal-title font-heading fw-bold" id="equipmentModalTitle">Equipment Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="row g-0">
+                        <div class="col-md-6 bg-dark d-flex align-items-center justify-content-center" id="equipmentModalImgContainer" style="min-height: 350px; overflow: hidden;">
+                            <!-- Image goes here -->
+                        </div>
+                        <div class="col-md-6 p-4 d-flex flex-column justify-content-between">
+                            <div>
+                                <h3 class="font-heading fw-bold mb-1 text-dark" id="equipmentModalName">--</h3>
+                                <div class="d-flex align-items-center gap-2 mb-3">
+                                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-1 fw-semibold" style="font-size:0.85rem;" id="equipmentModalStatus">Operational</span>
+                                    <span class="badge bg-danger rounded-pill px-3 py-1 fw-bold" style="font-size:0.85rem;" id="equipmentModalQty">QTY: --</span>
+                                </div>
+                                <hr>
+                                <div class="row g-3 mt-1">
+                                    <div class="col-6">
+                                        <span class="text-muted d-block small uppercase fw-bold" style="font-size:0.75rem; letter-spacing:0.5px;">ORGANIZATION</span>
+                                        <span class="fw-semibold text-dark">MDRRMO Lapuyan</span>
+                                    </div>
+                                    <div class="col-6">
+                                        <span class="text-muted d-block small uppercase fw-bold" style="font-size:0.75rem; letter-spacing:0.5px;">INVENTORY HUB</span>
+                                        <span class="fw-semibold text-dark">Lapuyan Rescue HQ</span>
+                                    </div>
+                                    <div class="col-12 border-top pt-3 mt-3">
+                                        <span class="text-muted d-block small uppercase fw-bold" style="font-size:0.75rem; letter-spacing:0.5px;">RESOURCE STATUS</span>
+                                        <span class="fw-semibold text-muted small" style="line-height:1.5;">This emergency response resource is certified operational and readily dispatchable for active municipal disaster mitigations and rescue missions.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 bg-light p-3">
+                    <button type="button" class="btn btn-secondary px-4 rounded-pill" data-bs-dismiss="modal">Close Details</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
 
 
     <!-- Custom Homepage Script -->
-    <script src="scripts/homepage.js"></script>
+    <script src="scripts/homepage.js?v=<?php echo time(); ?>"></script>
 
 </body>
 </html>

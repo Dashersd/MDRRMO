@@ -2,11 +2,9 @@
 define('SECURE_ACCESS', true);
 require_once 'auth.php';
 
-// Check if user is already logged in
-if (isLoggedIn()) {
-    header('Location: index.php');
-    exit();
-}
+// Registration is closed — accounts are managed by the admin.
+header('Location: login.php');
+exit();
 
 $error_message = '';
 $success_message = '';

@@ -149,12 +149,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
           </form>
           
-          <div class="text-center mt-4">
-            <small class="text-muted">
-              Don't have an account?
-              <a href="signup.php" class="text-decoration-none">Sign up here</a>
-            </small>
-          </div>
+
         </div>
       </div>
     </div>

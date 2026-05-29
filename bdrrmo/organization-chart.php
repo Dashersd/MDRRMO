@@ -274,7 +274,7 @@ if (isset($_GET['logout'])) {
 
     <script src="../scripts/sidebar-counts.js?v=<?php echo urlencode((string) @filemtime(__DIR__ . '/../scripts/sidebar-counts.js')); ?>"></script>
     <script src="../scripts/dashboard.js?v=<?php echo urlencode((string) @filemtime(__DIR__ . '/../scripts/dashboard.js')); ?>"></script>
-    <script src="../scripts/client-organization-chart.js?v=<?php echo urlencode((string) @filemtime(__DIR__ . '/../scripts/client-organization-chart.js')); ?>"></script>
+    <script src="../scripts/bdrrmo-organization-chart.js?v=<?php echo urlencode((string) @filemtime(__DIR__ . '/../scripts/bdrrmo-organization-chart.js')); ?>"></script>
     <style>
       /* Organization Chart Styles - Same as admin but read-only */
       .org-chart-wrapper {

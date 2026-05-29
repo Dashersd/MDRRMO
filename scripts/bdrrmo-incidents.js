@@ -73,9 +73,7 @@
       
       // Fetch incidents from API (now returns ALL incidents for clients)
       const statusFilter = filterStatus ? filterStatus.value : 'All';
-      const url = statusFilter !== 'All' 
-        ? `${API_URL}?status=${encodeURIComponent(statusFilter)}`
-        : API_URL;
+      const url = API_URL;
       
       let allIncidents = [];
       
@@ -101,10 +99,10 @@
         allIncidents = [];
       }
       
-      // Filter out unapproved, declined or cancelled incidents from the client view
+      // Filter out unapproved, or cancelled incidents from the client view (allow Approved, Dispatched, Resolved, and Declined)
       const visibleIncidents = allIncidents.filter(inc => {
         const status = (inc.status || '').toLowerCase().trim();
-        return status === 'approved' || status === 'dispatched' || status === 'resolved';
+        return status === 'approved' || status === 'dispatched' || status === 'resolved' || status === 'decline' || status === 'declined';
       });
 
       // Store incidents for quick access in modal functions
@@ -125,7 +123,7 @@
           
           // Handle Approved
           if (filterStatusLower === 'approved') {
-            return incStatus === 'approved';
+            return incStatus === 'approved' || incStatus === 'dispatched' || incStatus === 'resolved';
           }
           
           // Handle Declined/Decline
@@ -271,12 +269,10 @@
                 <i class="bi bi-eye me-1"></i>
                 <span>View</span>
               </button>
-              ${incident.photoDataUrl ? `
-                <button class="btn btn-sm btn-outline-dark incident-action-btn" onclick="downloadIncidentPhoto('${incident.id}')" title="Download Photo">
-                  <i class="bi bi-download me-1"></i>
-                  <span>Download</span>
-                </button>
-              ` : ''}
+              <button class="btn btn-sm btn-outline-dark incident-action-btn" onclick="showDownloadOptions('${incident.id}')" title="Download Options">
+                <i class="bi bi-download me-1"></i>
+                <span>Download</span>
+              </button>
             </div>
           </div>
         </div>
@@ -487,7 +483,7 @@
       modal.className = 'modal fade';
       modal.id = 'incidentDetailsModal';
       modal.innerHTML = `
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
           <div class="modal-content border-0 shadow-lg" style="overflow: hidden;">
             <!-- Enhanced Header -->
             <div class="modal-header border-0 pb-0" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 1.25rem 1.5rem;">
@@ -602,7 +598,7 @@
                       <img src="${incident.photoDataUrl}" 
                            alt="Incident Photo" 
                            class="img-fluid rounded shadow-sm" 
-                           style="max-height: 250px; width: auto; cursor: pointer; transition: transform 0.3s ease;"
+                           style="max-height: 380px; width: 100%; object-fit: cover; cursor: pointer; transition: transform 0.3s ease;"
                            onclick="viewReportImage('${incident.id}')"
                            onmouseover="this.style.transform='scale(1.02)'"
                            onmouseout="this.style.transform='scale(1)'">
@@ -613,11 +609,9 @@
             </div>
             
             <div class="modal-footer border-top bg-light" style="padding: 1rem 1.75rem;">
-              ${incident.photoDataUrl ? `
-                <button type="button" class="btn btn-outline-danger" onclick="downloadIncidentPhoto('${incident.id}'); bootstrap.Modal.getInstance(document.getElementById('incidentDetailsModal')).hide();">
-                  <i class="bi bi-download me-1"></i> Download Photo
-                </button>
-              ` : ''}
+              <button type="button" class="btn btn-outline-danger" onclick="showDownloadOptions('${incident.id}')">
+                <i class="bi bi-download me-1"></i> Download Report
+              </button>
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                 <i class="bi bi-x-circle me-1"></i> Close
               </button>
@@ -653,6 +647,482 @@
     } catch (error) {
       console.error('Error downloading incident photo:', error);
       alert('Error downloading photo');
+    }
+  };
+
+  window.showDownloadOptions = async function(incidentId) {
+    try {
+      const incident = await getIncidentById(incidentId);
+      if (!incident) {
+        alert('Incident not found');
+        return;
+      }
+      
+      const hasPhoto = !!incident.photoDataUrl;
+      
+      if (!document.getElementById('downloadOptionsStyles')) {
+        const style = document.createElement('style');
+        style.id = 'downloadOptionsStyles';
+        style.textContent = `
+          .download-option-card {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #fff;
+            margin-bottom: 0.75rem;
+          }
+          .download-option-card:hover {
+            border-color: #dc3545;
+            background-color: #fdf2f2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.08);
+          }
+          .download-option-card .option-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            flex-shrink: 0;
+          }
+          .download-option-card .option-details {
+            flex-grow: 1;
+          }
+          .download-option-card .option-arrow {
+            margin-left: 0.5rem;
+            flex-shrink: 0;
+          }
+          .download-option-card .option-details h6 {
+            margin: 0;
+            font-weight: 700;
+            color: #212529;
+            font-size: 0.95rem;
+          }
+          .download-option-card .option-details p {
+            margin: 0;
+            color: #6c757d;
+            font-size: 0.8rem;
+          }
+        `;
+        document.head.appendChild(style);
+      }
+
+      // Check if details modal is open and close it
+      let closedDetailsModal = false;
+      const detailsModalEl = document.getElementById('incidentDetailsModal');
+      if (detailsModalEl && detailsModalEl.classList.contains('show')) {
+        const detailsModal = bootstrap.Modal.getInstance(detailsModalEl);
+        if (detailsModal) {
+          detailsModal.hide();
+          closedDetailsModal = true;
+        }
+      }
+
+      const modalEl = document.createElement('div');
+      modalEl.className = 'modal fade';
+      modalEl.id = 'downloadOptionsModal';
+      modalEl.innerHTML = `
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 450px;">
+          <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header border-0 pb-0" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 1.5rem 1.5rem 1rem;">
+              <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" style="font-size: 1.2rem;">
+                <i class="bi bi-download text-danger"></i> Download Options
+              </h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4" style="background-color: #fdfdfd;">
+              <p class="text-muted small mb-4">Select the format in which you would like to download or print this official incident report.</p>
+              
+              <div class="d-flex flex-column">
+                <div class="download-option-card" onclick="downloadIncidentReport('${incidentId}', 'print'); bootstrap.Modal.getInstance(document.getElementById('downloadOptionsModal')).hide();">
+                  <div class="option-icon bg-primary bg-opacity-10 text-primary">
+                    <i class="bi bi-printer-fill fs-4"></i>
+                  </div>
+                  <div class="option-details">
+                    <h6>Printed Report</h6>
+                    <p>Format and print a hard copy of the report.</p>
+                  </div>
+                  <div class="option-arrow">
+                    <i class="bi bi-chevron-right text-muted"></i>
+                  </div>
+                </div>
+                
+                <div class="download-option-card" onclick="downloadIncidentReport('${incidentId}', 'pdf'); bootstrap.Modal.getInstance(document.getElementById('downloadOptionsModal')).hide();">
+                  <div class="option-icon bg-danger bg-opacity-10 text-danger">
+                    <i class="bi bi-file-pdf-fill fs-4"></i>
+                  </div>
+                  <div class="option-details">
+                    <h6>PDF File</h6>
+                    <p>Save a digital PDF copy of the report.</p>
+                  </div>
+                  <div class="option-arrow">
+                    <i class="bi bi-chevron-right text-muted"></i>
+                  </div>
+                </div>
+                
+                ${hasPhoto ? `
+                <div class="download-option-card" onclick="downloadIncidentPhoto('${incidentId}'); bootstrap.Modal.getInstance(document.getElementById('downloadOptionsModal')).hide();">
+                  <div class="option-icon bg-success bg-opacity-10 text-success">
+                    <i class="bi bi-image-fill fs-4"></i>
+                  </div>
+                  <div class="option-details">
+                    <h6>Incident Photo Only</h6>
+                    <p>Download the geotagged JPG photo evidence.</p>
+                  </div>
+                  <div class="option-arrow">
+                    <i class="bi bi-chevron-right text-muted"></i>
+                  </div>
+                </div>
+                ` : ''}
+              </div>
+            </div>
+            <div class="modal-footer border-0 bg-light py-2 px-4 d-flex justify-content-end">
+              <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modalEl);
+      const bsModal = new bootstrap.Modal(modalEl);
+      bsModal.show();
+      
+      modalEl.addEventListener('hidden.bs.modal', () => {
+        modalEl.remove();
+        if (closedDetailsModal) {
+          const detailsEl = document.getElementById('incidentDetailsModal');
+          if (detailsEl) {
+            const bsDetails = new bootstrap.Modal(detailsEl);
+            bsDetails.show();
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Error showing download options:', error);
+      alert('Error loading download settings');
+    }
+  };
+
+  window.downloadIncidentReport = async function(incidentId, format = 'print') {
+    try {
+      const incident = await getIncidentById(incidentId);
+      if (!incident) {
+        alert('Incident not found');
+        return;
+      }
+
+      const date = new Date(incident.createdAt || Date.now());
+      const dateStr = date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      const statusBadge = getStatusBadge(incident.status || 'New');
+      
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        alert('Please allow popups to print/download the report.');
+        return;
+      }
+
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>MDRRMO Incident Report - ${escapeHtml(incident.type || 'Incident')}</title>
+          <style>
+            html, body {
+              margin: 0;
+              padding: 0;
+              font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+              color: #212529;
+              background: #fff;
+              line-height: 1.6;
+            }
+            .report-container {
+              max-width: 800px;
+              margin: 0 auto;
+              padding: 2.5rem 2rem;
+            }
+            /* Official Header */
+            .report-header {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              border-bottom: 3px double #dc3545;
+              padding-bottom: 1.5rem;
+              margin-bottom: 2rem;
+              text-align: center;
+            }
+            .header-logo {
+              width: 70px;
+              height: 70px;
+              object-fit: contain;
+              margin-right: 1.5rem;
+            }
+            .header-text {
+              flex-grow: 1;
+              text-align: center;
+            }
+            .header-text h5 {
+              margin: 0;
+              font-size: 0.8rem;
+              letter-spacing: 1px;
+              text-transform: uppercase;
+              color: #6c757d;
+              font-weight: 600;
+            }
+            .header-text h4 {
+              margin: 2px 0;
+              font-size: 0.95rem;
+              font-weight: 700;
+              color: #343a40;
+            }
+            .header-text h3 {
+              margin: 4px 0 0 0;
+              font-size: 1.25rem;
+              font-weight: 800;
+              color: #dc3545;
+              letter-spacing: 0.5px;
+            }
+            /* Title Section */
+            .report-title-section {
+              text-align: center;
+              margin-bottom: 2rem;
+            }
+            .report-title {
+              display: inline-block;
+              font-size: 1.4rem;
+              font-weight: 800;
+              text-transform: uppercase;
+              color: #212529;
+              border-bottom: 2px solid #212529;
+              padding-bottom: 4px;
+            }
+            /* Metadata Table */
+            .metadata-table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-bottom: 2rem;
+              font-size: 0.9rem;
+            }
+            .metadata-table th, .metadata-table td {
+              border: 1px solid #dee2e6;
+              padding: 10px 12px;
+              text-align: left;
+            }
+            .metadata-table th {
+              background-color: #f8f9fa;
+              font-weight: 700;
+              color: #495057;
+              width: 25%;
+            }
+            .metadata-table td {
+              color: #212529;
+            }
+            /* Description Block */
+            .report-section-title {
+              font-size: 1.05rem;
+              font-weight: 700;
+              color: #212529;
+              border-left: 4px solid #dc3545;
+              padding-left: 8px;
+              margin-bottom: 1rem;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            }
+            .report-description {
+              font-size: 0.95rem;
+              color: #333;
+              text-align: justify;
+              background-color: #f8f9fa;
+              border: 1px solid #e9ecef;
+              border-radius: 6px;
+              padding: 15px;
+              margin-bottom: 2.5rem;
+              white-space: pre-wrap;
+            }
+            /* Photo Evidence */
+            .evidence-section {
+              margin-bottom: 3rem;
+            }
+            .evidence-card {
+              border: 1px solid #dee2e6;
+              border-radius: 8px;
+              overflow: hidden;
+              background: #fff;
+              padding: 8px;
+              max-width: 450px;
+              margin: 0 auto;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            }
+            .evidence-img-container {
+              width: 100%;
+              height: 300px;
+              background: #f8f9fa;
+              overflow: hidden;
+              border-radius: 4px;
+            }
+            .evidence-img-container img {
+              width: 100%;
+              height: 100%;
+              object-fit: contain;
+            }
+            .evidence-caption {
+              font-size: 0.8rem;
+              color: #6c757d;
+              text-align: center;
+              margin-top: 8px;
+              font-weight: 600;
+            }
+            /* Signatures */
+            .signature-section {
+              display: flex;
+              justify-content: space-between;
+              margin-top: 4rem;
+              font-size: 0.9rem;
+            }
+            .signature-block {
+              width: 40%;
+              text-align: center;
+            }
+            .signature-line {
+              border-bottom: 1.5px solid #212529;
+              height: 45px;
+              margin-bottom: 8px;
+            }
+            .signature-title {
+              font-weight: 700;
+              color: #212529;
+              margin: 0;
+            }
+            .signature-sub {
+              font-size: 0.75rem;
+              color: #6c757d;
+              margin: 2px 0 0 0;
+            }
+            /* Page breaks and print rules */
+            @media print {
+              body {
+                background: white;
+                color: black;
+              }
+              .report-container {
+                padding: 0;
+                max-width: 100%;
+              }
+              .no-print {
+                display: none !important;
+              }
+              .page-break-inside-avoid {
+                page-break-inside: avoid;
+              }
+              .evidence-card {
+                page-break-inside: avoid;
+              }
+              .signature-section {
+                page-break-inside: avoid;
+              }
+              @page {
+                size: portrait;
+                margin: 1.5cm;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          ${format === 'pdf' ? `
+            <div class="no-print" style="background-color: #dc3545; color: white; text-align: center; padding: 12px; font-weight: bold; font-size: 0.9rem; font-family: sans-serif; border-radius: 4px; margin-bottom: 20px;">
+              ℹ️ PDF EXPORT MODE: Set "Destination" to "Save as PDF" in the print dialog.
+            </div>
+          ` : ''}
+
+          <div class="report-container">
+            <!-- Official Government Header -->
+            <div class="report-header">
+              <img src="../assets/icon.png" class="header-logo" alt="MDRRMO Logo">
+              <div class="header-text">
+                <h5>Republic of the Philippines</h5>
+                <h4>Province of Zamboanga del Sur</h4>
+                <h4>Municipality of Lapuyan</h4>
+                <h3>MUNICIPAL DISASTER RISK REDUCTION & MANAGEMENT OFFICE</h3>
+              </div>
+            </div>
+
+            <!-- Report Title -->
+            <div class="report-title-section">
+              <div class="report-title">Official Incident Report</div>
+            </div>
+
+            <!-- Details Grid -->
+            <table class="metadata-table">
+              <tr>
+                <th>Report ID</th>
+                <td>${escapeHtml(incident.id)}</td>
+                <th>Incident Type</th>
+                <td><strong>${escapeHtml(incident.type || 'Unknown')}</strong></td>
+              </tr>
+              <tr>
+                <th>Date & Time Logged</th>
+                <td>${escapeHtml(dateStr)}</td>
+                <th>Current Status</th>
+                <td><span style="font-weight:700; color: ${incident.status === 'Approved' ? '#198754' : (incident.status === 'Decline' ? '#dc3545' : '#6c757d')}">${escapeHtml(statusBadge.text)}</span></td>
+              </tr>
+              <tr>
+                <th>GPS Location</th>
+                <td>${incident.lat != null && incident.lng != null ? incident.lat.toFixed(6) + ', ' + incident.lng.toFixed(6) : 'Not Available (Standard Reporting)'}</td>
+                <th>Reporting Center</th>
+                <td>MDRRMO Lapuyan (Rescue HQ)</td>
+              </tr>
+            </table>
+
+            <!-- Narrative / Logs -->
+            <div class="report-section-title">Incident Details & Narrative</div>
+            <div class="report-description">${escapeHtml(incident.description || 'No description or logs provided for this incident.')}</div>
+
+            <!-- Evidence Gallery -->
+            ${incident.photoDataUrl ? `
+              <div class="evidence-section page-break-inside-avoid">
+                <div class="report-section-title">Photo Evidence</div>
+                <div class="evidence-card">
+                  <div class="evidence-img-container">
+                    <img src="${incident.photoDataUrl}" alt="Incident Photo Evidence">
+                  </div>
+                  <div class="evidence-caption">Figure 1: Geotagged Photo Evidence for Incident ID ${escapeHtml(incident.id)}</div>
+                </div>
+              </div>
+            ` : ''}
+
+            <!-- Signature Section -->
+            <div class="signature-section">
+              <div class="signature-block">
+                <div class="signature-line"></div>
+                <h5 class="signature-title">Reported By</h5>
+                <p class="signature-sub">BDRRMO Responder / Citizen Representative</p>
+              </div>
+              <div class="signature-block">
+                <div class="signature-line"></div>
+                <h5 class="signature-title">Approved By</h5>
+                <p class="signature-sub">MDRRMO Operations Administrator</p>
+              </div>
+            </div>
+          </div>
+          <script>
+            window.addEventListener('load', () => {
+              setTimeout(() => {
+                window.print();
+                window.close();
+              }, 300);
+            });
+          </script>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+    } catch (error) {
+      console.error('Error downloading incident report:', error);
+      alert('Error generating PDF report');
     }
   };
 

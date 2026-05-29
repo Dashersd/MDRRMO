@@ -325,7 +325,7 @@ if (isset($_GET['logout'])) {
               <i class="bi bi-x-circle me-1"></i> Cancel
             </button>
             <button type="button" class="btn btn-danger btn-lg px-5" id="modalSubmitIncident" style="border-radius: 0.5rem; font-weight: 600; box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3); transition: all 0.3s ease;">
-              <i class="bi bi-check-circle me-1"></i> Submit Incident Report
+              <i class="bi bi-upload me-1"></i> Upload Incident Report
             </button>
           </div>
         </div>

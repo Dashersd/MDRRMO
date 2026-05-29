@@ -7,6 +7,8 @@
     // Global variables
     let publicIncidents = [];
     let publicPersonnel = [];
+    let publicEquipment = [];
+    let publicActivities = [];
 
     // Initialize UI elements on DOM Content Loaded
     document.addEventListener("DOMContentLoaded", () => {
@@ -15,6 +17,14 @@
         initClock();
         initCopyToClipboard();
         initImageModal();
+
+        // Equipment Search Filter
+        const searchInput = $("#equipmentSearchInput");
+        if (searchInput) {
+            searchInput.addEventListener("input", () => {
+                renderEquipmentGrid(searchInput.value.trim());
+            });
+        }
 
         // Initial Data Fetch
         fetchPublicData();
@@ -95,10 +105,14 @@
             if (data.success) {
                 publicPersonnel = data.personnels || [];
                 publicIncidents = data.incidents || [];
+                publicEquipment = data.equipment || [];
+                publicActivities = data.activities || [];
 
                 // Render components
                 renderRosterGrid();
                 renderIncidentsSection();
+                renderEquipmentGrid();
+                renderActivitiesSection();
                 updateEmergencyAlertStatus();
 
                 // Update dynamic counts on the page
@@ -112,6 +126,11 @@
                     // count non-cancelled incidents
                     const activeCount = publicIncidents.filter(inc => inc.status !== 'Cancelled').length;
                     totalIncidentsCount.textContent = activeCount;
+                }
+
+                const totalActivitiesCount = $("#totalActivitiesCount");
+                if (totalActivitiesCount) {
+                    totalActivitiesCount.textContent = publicActivities.length;
                 }
             }
         } catch (e) {
@@ -482,7 +501,177 @@
                 const bootstrapModal = new bootstrap.Modal(document.getElementById("incidentDetailsModal"));
                 bootstrapModal.show();
             });
+
+            // 9d. Interactive click to view full details of Activity cards
+            document.addEventListener("click", (e) => {
+                const card = e.target.closest(".activity-log-card");
+                if (!card) return;
+
+                const id = card.getAttribute("data-id");
+                const activity = publicActivities.find(x => x.id === id);
+                if (!activity) return;
+
+                const date = new Date(activity.createdAt).toLocaleDateString([], { year: 'numeric', month: 'long', day: 'numeric' });
+
+                const mTitle = document.getElementById("activityModalTitle");
+                const mTitleText = document.getElementById("activityModalTitleText");
+                const mDate = document.getElementById("activityModalDate");
+                const mDescription = document.getElementById("activityModalDescription");
+                const mImgContainer = document.getElementById("activityModalImgContainer");
+
+                if (mTitle) mTitle.textContent = `Activity Logs: ${activity.title}`;
+                if (mTitleText) mTitleText.textContent = activity.title;
+                if (mDate) mDate.innerHTML = `<i class="bi bi-calendar-event me-1"></i>Conducted: ${date}`;
+                if (mDescription) mDescription.textContent = activity.description || "No detailed log was provided.";
+                
+                if (mImgContainer) {
+                    const firstImage = activity.images && activity.images.length > 0 ? activity.images[0] : null;
+                    mImgContainer.innerHTML = firstImage
+                        ? `<img src="${firstImage}" alt="${escapeHtml(activity.title)}" style="width: 100%; height: 100%; object-fit: contain; cursor: zoom-in;" class="incident-image-clickable" data-image="${firstImage}" data-title="${escapeHtml(activity.title)}" />`
+                        : `<div class="d-flex align-items-center justify-content-center h-100 text-white-50"><i class="bi bi-image display-1"></i></div>`;
+                }
+
+                const bootstrapModal = new bootstrap.Modal(document.getElementById("activityDetailsModal"));
+                bootstrapModal.show();
+            });
+
+            // 9e. Interactive click to view full details of Equipment cards
+            document.addEventListener("click", (e) => {
+                const card = e.target.closest(".equipment-item-card");
+                if (!card) return;
+
+                const id = card.getAttribute("data-id");
+                const item = publicEquipment.find(x => x.id === id);
+                if (!item) return;
+
+                const mTitle = document.getElementById("equipmentModalTitle");
+                const mName = document.getElementById("equipmentModalName");
+                const mQty = document.getElementById("equipmentModalQty");
+                const mImgContainer = document.getElementById("equipmentModalImgContainer");
+
+                if (mTitle) mTitle.textContent = `Equipment Details: ${item.name}`;
+                if (mName) mName.textContent = item.name;
+                if (mQty) mQty.textContent = `QTY: ${item.count}`;
+                
+                if (mImgContainer) {
+                    const firstImage = item.imageDataUrl ? item.imageDataUrl : null;
+                    mImgContainer.innerHTML = firstImage
+                        ? `<img src="${firstImage}" alt="${escapeHtml(item.name)}" style="width: 100%; height: 100%; object-fit: contain; cursor: zoom-in;" class="incident-image-clickable" data-image="${firstImage}" data-title="${escapeHtml(item.name)}" />`
+                        : `<div class="d-flex align-items-center justify-content-center h-100 text-white-50"><i class="bi bi-tools display-1"></i></div>`;
+                }
+
+                const bootstrapModal = new bootstrap.Modal(document.getElementById("equipmentDetailsModal"));
+                bootstrapModal.show();
+            });
         }
+
+    // 6b. Render Equipment Grid
+    function renderEquipmentGrid(filterText = "") {
+        const gridContainer = $("#publicEquipmentGrid");
+        const typesCountEl = $("#totalEquipTypesCount");
+        const itemsCountEl = $("#totalEquipItemsCount");
+        
+        if (!gridContainer) return;
+        
+        const query = filterText.toLowerCase().trim();
+        const filteredEquipment = publicEquipment.filter(item => 
+            item.name.toLowerCase().includes(query)
+        );
+        
+        // Update stats
+        if (typesCountEl) typesCountEl.textContent = publicEquipment.length;
+        if (itemsCountEl) {
+            const totalCount = publicEquipment.reduce((acc, curr) => acc + curr.count, 0);
+            itemsCountEl.textContent = totalCount;
+        }
+
+        gridContainer.innerHTML = "";
+
+        if (filteredEquipment.length === 0) {
+            gridContainer.innerHTML = `
+                <div class="col-12 text-center py-5 text-muted">
+                    <i class="bi bi-search display-4 d-block mb-3 text-secondary"></i>
+                    No matching equipment found in inventory.
+                </div>
+            `;
+            return;
+        }
+
+        filteredEquipment.forEach(item => {
+            const col = document.createElement("div");
+            col.className = "col-sm-6 col-md-4 col-lg-3 mb-4";
+            
+            const photoSrc = item.imageDataUrl ? item.imageDataUrl : '';
+            const imgBlock = photoSrc 
+                ? `<img src="${photoSrc}" alt="${escapeHtml(item.name)}" class="personnel-img" style="height: 100%; width: 100%; object-fit: cover;" />`
+                : `<div class="personnel-placeholder-img text-muted"><i class="bi bi-tools fs-2 mb-2"></i><span class="small">No Photo</span></div>`;
+
+            col.innerHTML = `
+                <div class="personnel-card equipment-item-card h-100 d-flex flex-column justify-content-between" data-id="${item.id}" style="cursor: pointer;">
+                    <div>
+                        <div class="personnel-img-wrap" style="height: 180px; overflow: hidden; position: relative;">
+                            ${imgBlock}
+                            <span class="badge bg-danger rounded-pill px-3 py-2" style="position: absolute; bottom: 12px; right: 12px; font-weight: 700; font-size: 0.85rem; box-shadow: 0 4px 6px rgba(0,0,0,0.15);">QTY: ${item.count}</span>
+                        </div>
+                        <div class="p-3 text-center">
+                            <h5 class="personnel-name text-dark font-heading fw-bold mb-0" style="font-size: 1.05rem; line-height: 1.4;">${escapeHtml(item.name)}</h5>
+                            <span class="text-danger small fw-bold font-heading mt-2 d-inline-block">View Details <i class="bi bi-arrow-right-short fs-5 align-middle"></i></span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            gridContainer.appendChild(col);
+        });
+    }
+
+    // 7b. Render Activities Grid
+    function renderActivitiesSection() {
+        const gridContainer = $("#publicActivitiesGrid");
+        if (!gridContainer) return;
+
+        gridContainer.innerHTML = "";
+
+        if (publicActivities.length === 0) {
+            gridContainer.innerHTML = `
+                <div class="col-12 text-center py-5 text-muted">
+                    <i class="bi bi-info-circle display-4 d-block mb-3 text-secondary"></i>
+                    No training drills or seminars logged yet.
+                </div>
+            `;
+            return;
+        }
+
+        publicActivities.forEach(activity => {
+            const date = new Date(activity.createdAt).toLocaleDateString([], { year: 'numeric', month: 'long', day: 'numeric' });
+            const col = document.createElement("div");
+            col.className = "col-sm-6 col-md-4 mb-4";
+            
+            const photoSrc = activity.images && activity.images.length > 0 ? activity.images[0] : '';
+            const imgBlock = photoSrc
+                ? `<img src="${photoSrc}" alt="${escapeHtml(activity.title)}" class="personnel-img" style="height: 100%; width: 100%; object-fit: cover;" />`
+                : `<div class="personnel-placeholder-img text-muted"><i class="bi bi-calendar4-event fs-1 mb-2"></i><span class="small">No Photo</span></div>`;
+
+            col.innerHTML = `
+                <div class="personnel-card activity-log-card h-100 d-flex flex-column justify-content-between" data-id="${activity.id}" style="cursor: pointer;">
+                    <div>
+                        <div class="personnel-img-wrap" style="height: 180px; overflow: hidden; position: relative;">
+                            ${imgBlock}
+                            <span class="badge bg-danger rounded-pill px-3 py-1" style="position: absolute; top: 12px; left: 12px; font-size: 0.75rem; font-weight: 600;"><i class="bi bi-bookmark-star-fill me-1"></i>Official Activity</span>
+                        </div>
+                        <div class="p-4">
+                            <h5 class="personnel-name text-dark font-heading fw-bold text-start mb-2" style="font-size: 1.15rem; line-height: 1.4;">${escapeHtml(activity.title)}</h5>
+                            <span class="small text-muted d-block mb-3 text-start"><i class="bi bi-calendar-event me-1"></i>${date}</span>
+                            <p class="text-muted small mb-0 text-start" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.6;">${escapeHtml(activity.description)}</p>
+                        </div>
+                    </div>
+                    <div class="p-4 pt-0 border-top-0 d-flex justify-content-start">
+                        <span class="text-danger small fw-bold font-heading">Read Full Details <i class="bi bi-arrow-right-short fs-5 align-middle"></i></span>
+                    </div>
+                </div>
+            `;
+            gridContainer.appendChild(col);
+        });
+    }
 
     // Helper functions
     function typeToIcon(type) {
