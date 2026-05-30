@@ -15,6 +15,7 @@
         initNavbarScroll();
         initActiveSectionObserver();
         initClock();
+        initWeather();
         initCopyToClipboard();
         initImageModal();
 
@@ -90,6 +91,203 @@
         }
         update();
         setInterval(update, 1000);
+    }
+
+    // 4. Dynamic Weather System (Lapuyan, Zamboanga del Sur - 7.6258, 123.1892)
+    function initWeather() {
+        fetchWeatherData();
+        // Fetch weather telemetry every 5 minutes
+        setInterval(fetchWeatherData, 300000);
+    }
+
+    async function fetchWeatherData() {
+        const defaultWeather = {
+            temperature_2m: 29.0,
+            relative_humidity_2m: 82,
+            precipitation: 0.0,
+            rain: 0.0,
+            weather_code: 2, // Partly cloudy default
+            wind_speed_10m: 12.0
+        };
+
+        try {
+            // Call Open-Meteo API (Keyless and highly reliable)
+            const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=7.6258&longitude=123.1892&current=temperature_2m,relative_humidity_2m,precipitation,rain,weather_code,wind_speed_10m");
+            if (!res.ok) {
+                throw new Error("Failed to fetch weather telemetry");
+            }
+            const data = await res.json();
+            if (data && data.current) {
+                const currentWeather = data.current;
+                // Save state to localStorage for offline cache capability
+                localStorage.setItem("mdrrmo_weather_cache", JSON.stringify({
+                    weather: currentWeather,
+                    timestamp: Date.now()
+                }));
+                updateWeatherWidget(currentWeather);
+                return;
+            }
+        } catch (error) {
+            console.warn("Weather API fetch failed, loading offline telemetry cache:", error);
+        }
+
+        // Offline / Cache fallback mechanism
+        try {
+            const cachedData = localStorage.getItem("mdrrmo_weather_cache");
+            if (cachedData) {
+                const parsed = JSON.parse(cachedData);
+                // Allow cached weather if it is under 6 hours old, otherwise fall back to favorable baseline defaults
+                if (Date.now() - parsed.timestamp < 21600000) {
+                    updateWeatherWidget(parsed.weather);
+                    return;
+                }
+            }
+        } catch (cacheError) {
+            console.error("Failed to parse weather cache:", cacheError);
+        }
+
+        // Favorable fallback if API is offline and cache is absent or stale
+        updateWeatherWidget(defaultWeather);
+    }
+
+    function updateWeatherWidget(current) {
+        const tempEl = $("#weatherTemp");
+        const conditionEl = $("#weatherCondition");
+        const iconContainerEl = $("#weatherIconContainer");
+        const rainEl = $("#weatherRain");
+        const humidityEl = $("#weatherHumidity");
+        const windEl = $("#weatherWind");
+
+        if (tempEl) {
+            tempEl.textContent = `${Math.round(current.temperature_2m)}°C`;
+        }
+        if (humidityEl) {
+            humidityEl.textContent = `${current.relative_humidity_2m}%`;
+        }
+        if (windEl) {
+            windEl.textContent = `${Math.round(current.wind_speed_10m)} km/h`;
+        }
+
+        // Map Rain/Precipitation Threat
+        if (rainEl) {
+            const rainVal = current.rain ?? current.precipitation ?? 0.0;
+            rainEl.className = "weather-metric-value"; // Reset classes
+            if (rainVal === 0) {
+                rainEl.textContent = "None";
+                rainEl.classList.add("text-success");
+            } else if (rainVal <= 2.0) {
+                rainEl.textContent = "Light Rain";
+                rainEl.classList.add("text-info");
+            } else if (rainVal <= 8.0) {
+                rainEl.textContent = "Moderate Rain";
+                rainEl.classList.add("text-warning");
+            } else {
+                rainEl.textContent = "Heavy Rain Alert";
+                rainEl.classList.add("text-danger");
+                rainEl.style.animation = "blink 1.5s infinite";
+            }
+        }
+
+        // Map Weather Code to description and gorgeous inline vector SVG
+        const code = current.weather_code ?? 0;
+        let condText = "Scattered Clouds";
+        let iconSvg = `
+            <svg class="weather-icon-svg" viewBox="0 0 64 64">
+                <circle cx="32" cy="24" r="12" fill="#ffb703" />
+                <path d="M46,38a8,8,0,0,0-8-8,9.88,9.88,0,0,0-3.1.5A11,11,0,1,0,16,40a7,7,0,0,0,7,7H45A8,8,0,0,0,46,38Z" fill="#e2e8f0" />
+            </svg>
+        `; // Default fallback: Partly Cloudy SVG
+
+        if (code === 0) {
+            condText = "Clear Sky";
+            iconSvg = `
+                <svg class="weather-icon-svg" viewBox="0 0 64 64">
+                    <circle cx="32" cy="32" r="16" fill="#ffb703" />
+                    <line x1="32" y1="8" x2="32" y2="0" stroke="#ffb703" stroke-width="4" stroke-linecap="round" />
+                    <line x1="32" y1="56" x2="32" y2="64" stroke="#ffb703" stroke-width="4" stroke-linecap="round" />
+                    <line x1="8" y1="32" x2="0" y2="32" stroke="#ffb703" stroke-width="4" stroke-linecap="round" />
+                    <line x1="56" y1="32" x2="64" y2="32" stroke="#ffb703" stroke-width="4" stroke-linecap="round" />
+                    <line x1="15" y1="15" x2="9" y2="9" stroke="#ffb703" stroke-width="4" stroke-linecap="round" />
+                    <line x1="49" y1="49" x2="55" y2="55" stroke="#ffb703" stroke-width="4" stroke-linecap="round" />
+                    <line x1="15" y1="49" x2="9" y2="55" stroke="#ffb703" stroke-width="4" stroke-linecap="round" />
+                    <line x1="49" y1="15" x2="55" y2="9" stroke="#ffb703" stroke-width="4" stroke-linecap="round" />
+                </svg>
+            `;
+        } else if (code === 1) {
+            condText = "Mainly Clear";
+            iconSvg = `
+                <svg class="weather-icon-svg" viewBox="0 0 64 64">
+                    <circle cx="32" cy="24" r="12" fill="#ffb703" />
+                    <path d="M46,38a8,8,0,0,0-8-8,9.88,9.88,0,0,0-3.1.5A11,11,0,1,0,16,40a7,7,0,0,0,7,7H45A8,8,0,0,0,46,38Z" fill="#e2e8f0" />
+                </svg>
+            `;
+        } else if (code === 2) {
+            condText = "Partly Cloudy";
+            iconSvg = `
+                <svg class="weather-icon-svg" viewBox="0 0 64 64">
+                    <circle cx="32" cy="24" r="12" fill="#ffb703" />
+                    <path d="M46,38a8,8,0,0,0-8-8,9.88,9.88,0,0,0-3.1.5A11,11,0,1,0,16,40a7,7,0,0,0,7,7H45A8,8,0,0,0,46,38Z" fill="#e2e8f0" />
+                </svg>
+            `;
+        } else if (code === 3) {
+            condText = "Overcast";
+            iconSvg = `
+                <svg class="weather-icon-svg" viewBox="0 0 64 64">
+                    <path d="M46,38a8,8,0,0,0-8-8,9.88,9.88,0,0,0-3.1.5A11,11,0,1,0,16,40a7,7,0,0,0,7,7H45A8,8,0,0,0,46,38Z" fill="#cbd5e1" />
+                    <path d="M36,28a6,6,0,0,0-6-6,7.41,7.41,0,0,0-2.3.4A8.25,8.25,0,1,0,14,30a5.25,5.25,0,0,0,5.25,5.25H35A6,6,0,0,0,36,28Z" fill="#94a3b8" opacity="0.8" transform="translate(4, 4)" />
+                </svg>
+            `;
+        } else if (code === 45 || code === 48) {
+            condText = "Foggy";
+            iconSvg = `
+                <svg class="weather-icon-svg" viewBox="0 0 64 64">
+                    <path d="M46,28a8,8,0,0,0-8-8,9.88,9.88,0,0,0-3.1.5A11,11,0,1,0,16,30a7,7,0,0,0,7,7H45A8,8,0,0,0,46,28Z" fill="#94a3b8" opacity="0.7" />
+                    <line x1="12" y1="44" x2="52" y2="44" stroke="#cbd5e1" stroke-width="4" stroke-linecap="round" />
+                    <line x1="18" y1="52" x2="46" y2="52" stroke="#cbd5e1" stroke-width="4" stroke-linecap="round" />
+                </svg>
+            `;
+        } else if ((code >= 51 && code <= 57) || (code >= 61 && code <= 67) || (code >= 80 && code <= 82)) {
+            // Rain / Drizzle / Showers
+            if (code >= 51 && code <= 55) condText = "Drizzle";
+            else if (code === 56 || code === 57 || code === 66 || code === 67) condText = "Freezing Rain";
+            else if (code === 61 || code === 80) condText = "Light Rain";
+            else if (code === 63 || code === 81) condText = "Moderate Rain";
+            else condText = "Heavy Rain";
+
+            iconSvg = `
+                <svg class="weather-icon-svg" viewBox="0 0 64 64">
+                    <path d="M46,32a8,8,0,0,0-8-8,9.88,9.88,0,0,0-3.1.5A11,11,0,1,0,16,34a7,7,0,0,0,7,7H45A8,8,0,0,0,46,32Z" fill="#cbd5e1" />
+                    <line x1="22" y1="46" x2="18" y2="54" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" />
+                    <line x1="32" y1="46" x2="28" y2="54" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" />
+                    <line x1="42" y1="46" x2="38" y2="54" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" />
+                </svg>
+            `;
+        } else if (code === 95 || code === 96 || code === 99) {
+            condText = "Thunderstorms";
+            iconSvg = `
+                <svg class="weather-icon-svg" viewBox="0 0 64 64">
+                    <path d="M46,32a8,8,0,0,0-8-8,9.88,9.88,0,0,0-3.1.5A11,11,0,1,0,16,34a7,7,0,0,0,7,7H45A8,8,0,0,0,46,32Z" fill="#475569" />
+                    <polygon points="30,42 24,52 32,52 28,62 38,48 30,48" fill="#eab308" />
+                </svg>
+            `;
+        } else if ((code >= 71 && code <= 77) || code === 85 || code === 86) {
+            condText = "Snowy";
+            iconSvg = `
+                <svg class="weather-icon-svg" viewBox="0 0 64 64">
+                    <path d="M46,32a8,8,0,0,0-8-8,9.88,9.88,0,0,0-3.1.5A11,11,0,1,0,16,34a7,7,0,0,0,7,7H45A8,8,0,0,0,46,32Z" fill="#cbd5e1" />
+                    <circle cx="22" cy="48" r="2.5" fill="#f8fafc" />
+                    <circle cx="32" cy="52" r="2.5" fill="#f8fafc" />
+                    <circle cx="42" cy="48" r="2.5" fill="#f8fafc" />
+                </svg>
+            `;
+        }
+
+        if (conditionEl) {
+            conditionEl.textContent = condText;
+        }
+        if (iconContainerEl) {
+            iconContainerEl.innerHTML = iconSvg;
+        }
     }
 
 

@@ -204,7 +204,7 @@ if (isset($_GET['logout'])) {
 
       <footer class="container pb-4 small text-center text-muted">
         <span class="d-inline-flex align-items-center gap-1">
-          <i class="bi bi-info-circle"></i> MDRRMO Admin Dashboard - Geotagged Incident Reporting System
+          <i class="bi bi-info-circle"></i> MDRRMO Admin Dashboard - MDRRMO Information System
         </span>
       </footer>
     </div>

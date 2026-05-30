@@ -20,7 +20,7 @@ if (isset($_GET['logout'])) {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Organization Chart | MDRRMO Incident Reporting</title>
+    <title>Equipment Inventory | BDRRMO Staff</title>
 
     <!-- Tab Icon / Favicon -->
     <link rel="icon" type="image/png" href="../assets/icon.png" />
@@ -74,7 +74,7 @@ if (isset($_GET['logout'])) {
             <div class="nav-text">Dashboard</div>
           </a>
           
-          <a href="organization-chart.php" class="nav-item active">
+          <a href="organization-chart.php" class="nav-item">
             <div class="nav-icon">
               <i data-filled="fi fi-sr-sitemap" data-unfilled="fi fi-rr-sitemap"></i>
             </div>
@@ -89,7 +89,7 @@ if (isset($_GET['logout'])) {
             <div class="nav-badge warning" id="incidentCount">0</div>
           </a>
           
-          <a href="equipment.php" class="nav-item">
+          <a href="equipment.php" class="nav-item active">
             <div class="nav-icon">
               <i data-filled="fi fi-sr-box" data-unfilled="fi fi-rr-box"></i>
             </div>
@@ -184,10 +184,10 @@ if (isset($_GET['logout'])) {
         <!-- Page Header -->
         <div class="row mb-4">
           <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
               <div>
-                <h1 class="h3 mb-1 fw-bold">Organization Chart</h1>
-                <p class="text-muted mb-0">View organizational structure and personnel</p>
+                <h1 class="h3 mb-1 fw-bold">Equipment Inventory</h1>
+                <p class="text-muted mb-0">View active equipment and search resources</p>
               </div>
               <div class="d-flex gap-2">
                 <button class="btn btn-outline-secondary" id="btnRefresh">
@@ -198,37 +198,95 @@ if (isset($_GET['logout'])) {
           </div>
         </div>
 
-        <!-- Organization Chart Content -->
+        <!-- Stats Cards -->
+        <div class="row mb-4">
+          <!-- Total Equipment Types -->
+          <div class="col-xl-6 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100 stats-card hover-lift">
+              <div class="card-body p-4">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <div class="stats-icon-wrapper bg-primary bg-opacity-10">
+                    <i class="bi bi-tools text-primary fs-3"></i>
+                  </div>
+                  <div class="text-end">
+                    <div class="text-muted small text-uppercase fw-semibold mb-1">Equipment Types</div>
+                    <h2 class="mb-0 fw-bold" id="totalEquipmentTypes">0</h2>
+                  </div>
+                </div>
+                <div class="mt-2">
+                  <small class="text-muted">
+                    <i class="bi bi-list-ul me-1"></i>
+                    Different equipment categories
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Overall Total Equipment -->
+          <div class="col-xl-6 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100 stats-card hover-lift">
+              <div class="card-body p-4">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <div class="stats-icon-wrapper bg-success bg-opacity-10">
+                    <i class="bi bi-box-seam text-success fs-3"></i>
+                  </div>
+                  <div class="text-end">
+                    <div class="text-muted small text-uppercase fw-semibold mb-1">Total Available Items</div>
+                    <h2 class="mb-0 fw-bold" id="totalEquipmentCount">0</h2>
+                  </div>
+                </div>
+                <div class="mt-2">
+                  <small class="text-muted">
+                    <i class="bi bi-calculator me-1"></i>
+                    Total items in active inventory
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Equipment Controls & Content -->
         <div class="row">
           <div class="col-12">
             <div class="card border-0 shadow-sm">
-              <div class="card-header bg-white border-0">
-                <h5 class="mb-0 d-flex align-items-center gap-2">
-                  <i class="bi bi-diagram-3 text-primary"></i> Organizational Structure
-                </h5>
+              <div class="card-header bg-white border-0 pt-4">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                  <h5 class="mb-0 d-flex align-items-center gap-2 fw-bold text-dark">
+                    <i class="bi bi-tools text-primary"></i> Resource Directory
+                  </h5>
+                  <!-- Search controls -->
+                  <div class="d-flex gap-2 flex-wrap flex-grow-1 flex-md-grow-0">
+                    <div class="input-group search-input-group">
+                      <span class="input-group-text bg-white border-end-0">
+                        <i class="bi bi-search text-muted"></i>
+                      </span>
+                      <input type="text" id="searchEquipment" class="form-control border-start-0" placeholder="Search equipment...">
+                    </div>
+                  </div>
+                </div>
               </div>
               <div class="card-body">
                 <!-- Loading State -->
-                <div id="orgChartLoading" class="text-center py-5" style="display: none;">
+                <div id="equipmentLoading" class="text-center py-5">
                   <div class="spinner-border text-primary" role="status">
                     <span class="visually-hidden">Loading...</span>
                   </div>
-                  <p class="mt-3 text-muted">Loading organization chart...</p>
+                  <p class="mt-3 text-muted">Loading active inventory...</p>
                 </div>
 
                 <!-- Empty State -->
-                <div id="orgChartEmpty" class="text-center py-5">
+                <div id="equipmentEmpty" class="text-center py-5" style="display: none;">
                   <div class="mb-4">
-                    <i class="bi bi-people fs-1 text-muted d-block mb-3"></i>
-                    <h5 class="fw-semibold mb-2">No Organization Chart Available</h5>
-                    <p class="text-muted mb-4">The organization chart has not been set up yet.</p>
+                    <i class="bi bi-toolbox fs-1 text-muted d-block mb-3"></i>
+                    <h5 class="fw-semibold mb-2">No Equipment Found</h5>
+                    <p class="text-muted mb-0">No equipment items are currently matching your filters.</p>
                   </div>
                 </div>
 
-                <!-- Organization Chart Container -->
-                <div id="orgChartContainer" style="display: none;">
-                  <div id="orgChart" class="org-chart-wrapper"></div>
-                </div>
+                <!-- Equipment Grid -->
+                <div id="equipmentGrid" class="equipment-grid" style="display: none;"></div>
               </div>
             </div>
           </div>
@@ -242,26 +300,36 @@ if (isset($_GET['logout'])) {
       </footer>
     </div>
 
-    <!-- View Personnel Modal -->
-    <div class="modal fade" id="viewPersonnelModal" tabindex="-1" aria-labelledby="viewPersonnelModalLabel" aria-hidden="true">
+    <!-- Bootstrap JS -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- View Equipment Modal -->
+    <div class="modal fade" id="viewEquipmentModal" tabindex="-1" aria-labelledby="viewEquipmentModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
           <div class="modal-header border-0 bg-primary text-white">
-            <h5 class="modal-title fw-bold" id="viewPersonnelModalLabel">
-              <i class="bi bi-person-badge me-2"></i>Personnel Details
+            <h5 class="modal-title fw-bold" id="viewEquipmentModalLabel">
+              <i class="bi bi-info-circle me-2"></i>Resource Details
             </h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body p-0 text-center">
-            <div id="viewPersonnelImageContainer" class="bg-light p-4" style="border-bottom: 1px solid #dee2e6;">
+            <div id="viewEquipmentImageContainer" class="bg-light p-3" style="border-bottom: 1px solid #dee2e6;">
               <!-- Image will be injected here -->
             </div>
-            <div class="p-4 text-center">
-              <h4 id="viewPersonnelName" class="fw-bold mb-1 text-dark"></h4>
-              <p id="viewPersonnelRole" class="text-primary fw-semibold mb-3 fs-5"></p>
-              <div id="viewPersonnelReportToContainer" class="d-flex justify-content-center align-items-center mb-2" style="display: none !important;">
-                <span class="text-muted"><i class="bi bi-diagram-3 me-2"></i>Reports To:</span>
-                <span id="viewPersonnelReportTo" class="ms-2 text-dark fw-medium"></span>
+            <div class="p-4 text-start">
+              <h4 id="viewEquipmentName" class="fw-bold mb-3 text-dark"></h4>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-muted"><i class="bi bi-boxes me-2"></i>Total Available Quantity:</span>
+                <span id="viewEquipmentCount" class="badge bg-primary fs-6 rounded-pill"></span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="text-muted"><i class="bi bi-clock-history me-2"></i>Registered On:</span>
+                <span id="viewEquipmentDate" class="text-dark fw-semibold"></span>
               </div>
             </div>
           </div>
@@ -272,280 +340,122 @@ if (isset($_GET['logout'])) {
       </div>
     </div>
 
-    <!-- Bootstrap JS -->
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-      crossorigin="anonymous"
-    ></script>
-
     <script src="../scripts/sidebar-counts.js?v=<?php echo urlencode((string) @filemtime(__DIR__ . '/../scripts/sidebar-counts.js')); ?>"></script>
     <script src="../scripts/dashboard.js?v=<?php echo urlencode((string) @filemtime(__DIR__ . '/../scripts/dashboard.js')); ?>"></script>
-    <script src="../scripts/bdrrmo-organization-chart.js?v=<?php echo urlencode((string) @filemtime(__DIR__ . '/../scripts/bdrrmo-organization-chart.js')); ?>"></script>
+    <script src="../scripts/bdrrmo-equipment.js?v=<?php echo urlencode((string) @filemtime(__DIR__ . '/../scripts/bdrrmo-equipment.js')); ?>"></script>
     <style>
-      /* Organization Chart Styles - Same as admin but read-only */
-      .org-chart-wrapper {
-        padding: 2rem 1rem;
-        overflow-x: auto;
-        overflow-y: visible;
-        min-height: 400px;
+      /* Stats Card Styles */
+      .stats-card {
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
       }
-
-      .org-node {
+      
+      .stats-card.hover-lift:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+      }
+      
+      .stats-icon-wrapper {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
         display: flex;
-        flex-direction: column;
         align-items: center;
-        position: relative;
-        margin: 0 auto;
-        padding: 0 1rem;
+        justify-content: center;
+        transition: all 0.3s ease;
+      }
+      
+      .stats-card:hover .stats-icon-wrapper {
+        transform: scale(1.1);
       }
 
-      .org-node-card {
+      /* Control Inputs */
+      .search-input-group {
+        max-width: 250px;
+      }
+      .search-input-group .form-control:focus {
+        border-color: #ced4da;
+        box-shadow: none;
+      }
+      .equipment-sort-select {
+        width: auto;
+        min-width: 200px;
+      }
+
+      /* Equipment Grid Styles */
+      .equipment-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 1.25rem;
+        padding: 1rem 0;
+      }
+
+      .equipment-card {
         background: white;
         border: 2px solid #e9ecef;
-        border-radius: 12px;
-        padding: 1.25rem 1.5rem;
-        min-width: 200px;
-        max-width: 250px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        border-radius: 10px;
+        overflow: hidden;
         transition: all 0.3s ease;
-        position: relative;
-        z-index: 2;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        display: flex;
+        flex-direction: column;
+        cursor: pointer;
       }
 
-      .org-node-card:hover {
+      .equipment-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        box-shadow: 0 8px 20px rgba(13, 110, 253, 0.15);
         border-color: #0d6efd;
       }
 
-      .org-node-ceo {
-        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-        border-color: #dc3545;
-        color: white;
-        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
-      }
-
-      .org-node-ceo:hover {
-        box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);
-      }
-
-      .org-node-photo-wrapper {
-        width: 80px;
-        height: 80px;
-        margin: 0 auto 1rem auto;
-        position: relative;
-      }
-
-      .org-node-photo {
+      .equipment-card-image {
         width: 100%;
-        height: 100%;
-        border-radius: 50%;
+        height: 140px;
         object-fit: cover;
-        object-position: top;
-        border: 3px solid white;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
       }
 
-      .org-node-ceo .org-node-photo {
-        border-color: rgba(255, 255, 255, 0.5);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      }
-
-      .org-node-photo-placeholder {
+      .equipment-card-placeholder {
         width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        background: #e9ecef;
+        height: 140px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
         display: flex;
         align-items: center;
         justify-content: center;
-        border: 3px solid white;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
       }
 
-      .org-node-ceo .org-node-photo-placeholder {
-        background: rgba(255, 255, 255, 0.2);
-        border-color: rgba(255, 255, 255, 0.5);
-      }
-
-      .org-node-photo-placeholder i {
+      .equipment-card-placeholder i {
         font-size: 2.5rem;
-        color: #6c757d;
+        color: #adb5bd;
       }
 
-      .org-node-ceo .org-node-photo-placeholder i {
-        color: rgba(255, 255, 255, 0.9);
-      }
-
-      .org-node-name {
-        font-weight: 700;
-        font-size: 1.1rem;
-        margin-bottom: 0.5rem;
-        text-align: center;
-      }
-
-      .org-node-role {
-        font-size: 0.9rem;
-        opacity: 0.85;
-        text-align: center;
-        font-weight: 500;
-      }
-
-      .org-node-ceo .org-node-name,
-      .org-node-ceo .org-node-role {
-        color: white;
-      }
-
-      .org-node[data-level="0"] .org-node-card {
-        min-width: 220px;
-        padding: 1.5rem 2rem;
-      }
-
-      .org-node[data-level="0"] .org-node-photo-wrapper {
-        width: 100px;
-        height: 100px;
-      }
-
-      .org-node[data-level="0"] .org-node-photo-placeholder i {
-        font-size: 3rem;
-      }
-
-      .org-children {
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-        margin-top: 2rem;
-        position: relative;
-        padding-top: 1.5rem;
-      }
-
-      .org-children::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background: #dee2e6;
-      }
-
-      .org-children::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 2px;
-        height: 1.5rem;
-        background: #dee2e6;
-      }
-
-      .org-child-wrapper {
+      .equipment-card-body {
+        padding: 1rem;
+        flex: 1;
         display: flex;
         flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .equipment-card-title {
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: #212529;
+        margin-bottom: 0.75rem;
+        line-height: 1.3;
+      }
+
+      .equipment-card-count {
+        display: inline-flex;
         align-items: center;
-        position: relative;
-        flex: 1;
-        padding-top: 1.5rem;
-      }
-
-      .org-child-wrapper::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 2px;
-        height: 1.5rem;
-        background: #dee2e6;
-        z-index: 1;
-      }
-
-      .org-child-wrapper:first-child:not(:only-child)::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 50%;
-        right: 0;
-        height: 2px;
-        background: #dee2e6;
-        z-index: 1;
-      }
-
-      .org-child-wrapper:last-child:not(:first-child):not(:only-child)::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 50%;
-        height: 2px;
-        background: #dee2e6;
-        z-index: 1;
-      }
-
-      .org-child-wrapper:not(:first-child):not(:last-child)::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background: #dee2e6;
-        z-index: 1;
-      }
-
-      .org-child-wrapper:only-child::after {
-        display: none;
-      }
-
-      @media (max-width: 768px) {
-        .org-chart-wrapper {
-          padding: 1rem 0.5rem;
-        }
-
-        .org-node-card {
-          min-width: 160px;
-          max-width: 180px;
-          padding: 1rem 1.25rem;
-        }
-
-        .org-node-photo-wrapper {
-          width: 60px;
-          height: 60px;
-          margin-bottom: 0.75rem;
-        }
-
-        .org-node-photo-placeholder i {
-          font-size: 2rem;
-        }
-
-        .org-node-name {
-          font-size: 1rem;
-        }
-
-        .org-node-role {
-          font-size: 0.85rem;
-        }
-
-        .org-children {
-          flex-direction: column;
-          align-items: center;
-        }
-
-        .org-child-wrapper {
-          width: 100%;
-          margin-bottom: 1.5rem;
-        }
-
-        .org-child-wrapper::after,
-        .org-child-wrapper::before {
-          display: none;
-        }
-
-        .org-children::before {
-          display: none;
-        }
+        gap: 0.5rem;
+        padding: 0.4rem 0.85rem;
+        background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+        color: white;
+        border-radius: 18px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        width: fit-content;
       }
 
       @keyframes spin {
@@ -555,6 +465,42 @@ if (isset($_GET['logout'])) {
 
       .spinning {
         animation: spin 1s linear;
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        .search-input-group,
+        .equipment-sort-select {
+          max-width: 100%;
+          width: 100%;
+        }
+
+        .equipment-grid {
+          grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+          gap: 1rem;
+        }
+
+        .equipment-card-image,
+        .equipment-card-placeholder {
+          height: 120px;
+        }
+
+        .equipment-card-placeholder i {
+          font-size: 2rem;
+        }
+
+        .equipment-card-body {
+          padding: 0.85rem;
+        }
+
+        .equipment-card-title {
+          font-size: 0.9rem;
+        }
+
+        .equipment-card-count {
+          padding: 0.35rem 0.75rem;
+          font-size: 0.8rem;
+        }
       }
     </style>
     <script>
@@ -567,7 +513,7 @@ if (isset($_GET['logout'])) {
           if (!filled || !unfilled) return;
           icon.className = item.classList.contains('active') ? filled : unfilled;
         });
-        
+
         // Copy hotline to clipboard
         const copyHotlineBtn = document.getElementById('copyHotlineBtn');
         if (copyHotlineBtn) {
@@ -576,9 +522,7 @@ if (isset($_GET['logout'])) {
             const hotlineValue = document.getElementById('hotlineValue');
             const hotlineIcon = document.getElementById('hotlineIcon');
             
-            // Copy to clipboard
             navigator.clipboard.writeText(hotline).then(function() {
-              // Visual feedback
               const originalText = hotlineValue.textContent;
               const originalIcon = hotlineIcon.className;
               
@@ -593,33 +537,6 @@ if (isset($_GET['logout'])) {
               }, 2000);
             }).catch(function(err) {
               console.error('Failed to copy: ', err);
-              // Fallback for older browsers
-              const textArea = document.createElement('textarea');
-              textArea.value = hotline;
-              textArea.style.position = 'fixed';
-              textArea.style.opacity = '0';
-              document.body.appendChild(textArea);
-              textArea.select();
-              try {
-                document.execCommand('copy');
-                const hotlineValue = document.getElementById('hotlineValue');
-                const hotlineIcon = document.getElementById('hotlineIcon');
-                const originalText = hotlineValue.textContent;
-                const originalIcon = hotlineIcon.className;
-                
-                hotlineValue.textContent = 'Copied!';
-                hotlineIcon.className = 'bi bi-check-circle-fill';
-                copyHotlineBtn.style.color = '#198754';
-                
-                setTimeout(function() {
-                  hotlineValue.textContent = originalText;
-                  hotlineIcon.className = originalIcon;
-                  copyHotlineBtn.style.color = '';
-                }, 2000);
-              } catch (err) {
-                console.error('Fallback copy failed: ', err);
-              }
-              document.body.removeChild(textArea);
             });
           });
         }
@@ -627,4 +544,3 @@ if (isset($_GET['logout'])) {
     </script>
   </body>
 </html>
-

@@ -91,6 +91,13 @@ if (isset($_GET['logout'])) {
             <div class="nav-badge warning" id="incidentCount">0</div>
           </a>
           
+          <a href="bdrrmo/equipment.php" class="nav-item">
+            <div class="nav-icon">
+              <i data-filled="fi fi-sr-box" data-unfilled="fi fi-rr-box"></i>
+            </div>
+            <div class="nav-text">Equipment</div>
+          </a>
+          
           <a href="bdrrmo/activities.php" class="nav-item">
             <div class="nav-icon">
               <i data-filled="fi fi-sr-calendar-check" data-unfilled="fi fi-rr-calendar-check"></i>
@@ -432,7 +439,7 @@ if (isset($_GET['logout'])) {
 
       <footer class="container pb-4 small text-center text-muted">
         <span class="d-inline-flex align-items-center gap-1">
-          <i class="bi bi-info-circle"></i> MDRRMO Geotagged Incident Reporting System
+          <i class="bi bi-info-circle"></i> MDRRMO Information System
         </span>
       </footer>
     </div>

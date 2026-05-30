@@ -44,12 +44,13 @@ function loadEnvFile(): void
         $key = trim(substr($line, 0, $delimiterPos));
         $value = trim(substr($line, $delimiterPos + 1));
 
-        if ($key === '' || array_key_exists($key, $_ENV) || array_key_exists($key, $_SERVER)) {
+        if ($key === '') {
             continue;
         }
 
         putenv("{$key}={$value}");
         $_ENV[$key] = $value;
+        $_SERVER[$key] = $value;
     }
 
     $loaded = true;
@@ -62,18 +63,27 @@ function getDatabaseConfig(): array
 {
     loadEnvFile();
 
-    $host = getenv('DB_HOST') ?: '127.0.0.1';
-    $port = getenv('DB_PORT') ?: '3306';
+    // Helper to get environment variables from $_ENV, $_SERVER, or getenv
+    $getEnvVar = function(string $key, $default = false) {
+        if (isset($_ENV[$key]) && $_ENV[$key] !== '') {
+            return $_ENV[$key];
+        }
+        if (isset($_SERVER[$key]) && $_SERVER[$key] !== '') {
+            return $_SERVER[$key];
+        }
+        $val = getenv($key);
+        return $val !== false ? $val : $default;
+    };
+
+    $host = $getEnvVar('DB_HOST', '127.0.0.1');
+    $port = $getEnvVar('DB_PORT', '3306');
 
     // Support both DB_DATABASE/DB_NAME and DB_USERNAME/DB_USER naming conventions.
-    $dbname = getenv('DB_DATABASE') ?: (getenv('DB_NAME') ?: 'mdrrmo_information_system');
-    $username = getenv('DB_USERNAME') ?: (getenv('DB_USER') ?: 'root');
+    $dbname = $getEnvVar('DB_DATABASE', $getEnvVar('DB_NAME', 'mdrrmo_information_system'));
+    $username = $getEnvVar('DB_USERNAME', $getEnvVar('DB_USER', 'root'));
     
     // Check if DB_PASSWORD is set in environment (even if empty)
-    $password = getenv('DB_PASSWORD');
-    if ($password === false) {
-        $password = '';
-    }
+    $password = $getEnvVar('DB_PASSWORD', '');
 
     $options = [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,

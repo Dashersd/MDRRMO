@@ -103,29 +103,31 @@ if ($isUserLoggedIn) {
                             </div>
                             <div class="weather-info">
                                 <div class="d-flex align-items-center gap-2">
-                                    <h2 class="weather-temp mb-0">29°C</h2>
-                                    <svg class="weather-icon-svg" viewBox="0 0 64 64">
-                                        <!-- Sun and Cloud SVG -->
-                                        <circle cx="32" cy="24" r="12" fill="#ffb703" />
-                                        <path d="M46,38a8,8,0,0,0-8-8,9.88,9.88,0,0,0-3.1.5A11,11,0,1,0,16,40a7,7,0,0,0,7,7H45A8,8,0,0,0,46,38Z" fill="#e2e8f0" />
-                                    </svg>
+                                    <h2 class="weather-temp mb-0" id="weatherTemp">29°C</h2>
+                                    <span id="weatherIconContainer">
+                                        <svg class="weather-icon-svg" viewBox="0 0 64 64">
+                                            <!-- Sun and Cloud SVG -->
+                                            <circle cx="32" cy="24" r="12" fill="#ffb703" />
+                                            <path d="M46,38a8,8,0,0,0-8-8,9.88,9.88,0,0,0-3.1.5A11,11,0,1,0,16,40a7,7,0,0,0,7,7H45A8,8,0,0,0,46,38Z" fill="#e2e8f0" />
+                                        </svg>
+                                    </span>
                                 </div>
-                                <p class="weather-condition small text-white-50 mb-0">Scattered Clouds</p>
+                                <p class="weather-condition small text-white-50 mb-0" id="weatherCondition">Scattered Clouds</p>
                             </div>
                         </div>
                         
                         <div class="weather-metrics">
                             <div class="weather-metric-item">
                                 <span class="weather-metric-label">Rain Threat</span>
-                                <span class="weather-metric-value text-success">None</span>
+                                <span class="weather-metric-value text-success" id="weatherRain">None</span>
                             </div>
                             <div class="weather-metric-item">
                                 <span class="weather-metric-label">Humidity</span>
-                                <span class="weather-metric-value">82%</span>
+                                <span class="weather-metric-value" id="weatherHumidity">82%</span>
                             </div>
                             <div class="weather-metric-item">
                                 <span class="weather-metric-label">Wind</span>
-                                <span class="weather-metric-value">12 km/h</span>
+                                <span class="weather-metric-value" id="weatherWind">12 km/h</span>
                             </div>
                         </div>
                     </div>
@@ -173,26 +175,6 @@ if ($isUserLoggedIn) {
                 </div>
             </div>
 
-            <div class="row g-4 mt-5">
-                <div class="col-6 col-md-4">
-                    <div class="stat-counter-box">
-                        <div class="stat-counter-num">24/7</div>
-                        <div class="stat-counter-label">Operation</div>
-                    </div>
-                </div>
-                <div class="col-6 col-md-4">
-                    <div class="stat-counter-box">
-                        <div class="stat-counter-num" id="activeRespondersCount">50+</div>
-                        <div class="stat-counter-label">Active Responders</div>
-                    </div>
-                </div>
-                <div class="col-6 col-md-4">
-                    <div class="stat-counter-box">
-                        <div class="stat-counter-num">100%</div>
-                        <div class="stat-counter-label">Barangay Coverage</div>
-                    </div>
-                </div>
-            </div>
         </div>
     </section>
 

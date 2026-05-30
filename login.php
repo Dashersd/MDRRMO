@@ -90,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <img src="assets/icon.png" alt="MDRRMO Logo" style="max-width: 80px; height: auto;" />
           </div>
           <h4 class="mb-1">MDRRMO Incident Desk</h4>
-          <p class="mb-0 small opacity-75">Geotagged Photo Reporting System</p>
+          <p class="mb-0 small opacity-75">MDRRMO Information System</p>
         </div>
         
         <div class="login-body">

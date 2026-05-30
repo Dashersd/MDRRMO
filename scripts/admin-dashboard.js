@@ -241,9 +241,14 @@
           <div class="incident-card-content">
             <!-- Header -->
             <div class="incident-card-header">
-              <h6 class="incident-card-title" title="${escapeHtml(incident.type || 'Unknown')}">
-                ${escapeHtml(incident.type || 'Unknown')}
-              </h6>
+              <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
+                <h6 class="incident-card-title mb-0" title="${escapeHtml(incident.type || 'Unknown')}">
+                  ${escapeHtml(incident.type || 'Unknown')}
+                </h6>
+                <span class="badge bg-light text-dark border small py-0.5 px-1.5" style="font-size: 0.65rem; border-radius: 4px; white-space: nowrap; background-color: #f1f3f5; color: #495057; border: 1px solid #dee2e6; font-weight: 600;" title="Reported by BDRRMO Staff">
+                  <i class="bi bi-person-fill me-1 text-primary"></i>${escapeHtml(incident.reportedBy || 'Staff')}
+                </span>
+              </div>
               <small class="incident-card-time">${timeAgo}</small>
             </div>
             
@@ -564,6 +569,21 @@
                       <small class="text-muted d-block mb-0.5" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">Status</small>
                       <div class="fw-semibold" style="color: #212529; font-size: 0.9rem;">
                         <span class="badge ${statusBadge.class}" style="font-size: 0.75rem;">${escapeHtml(statusBadge.text)}</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Reported By -->
+                  <div class="d-flex align-items-start mb-2 pb-2 border-bottom">
+                    <div class="flex-shrink-0 me-3">
+                      <div class="bg-secondary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                        <i class="bi bi-person-fill text-secondary" style="font-size: 0.85rem;"></i>
+                      </div>
+                    </div>
+                    <div class="flex-grow-1">
+                      <small class="text-muted d-block mb-0.5" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">Reported By</small>
+                      <div class="fw-semibold text-dark" style="font-size: 0.9rem;">
+                        ${escapeHtml(incident.reportedBy || 'System / Citizen')}
                       </div>
                     </div>
                   </div>
@@ -1092,8 +1112,8 @@
               <tr>
                 <th>GPS Location</th>
                 <td>${incident.lat != null && incident.lng != null ? incident.lat.toFixed(6) + ', ' + incident.lng.toFixed(6) : 'Not Available (Standard Reporting)'}</td>
-                <th>Reporting Center</th>
-                <td>MDRRMO Lapuyan (Rescue HQ)</td>
+                <th>Reported By</th>
+                <td>${escapeHtml(incident.reportedBy || 'BDRRMO Staff')}</td>
               </tr>
             </table>
 
@@ -1117,12 +1137,14 @@
             <!-- Signature Section -->
             <div class="signature-section">
               <div class="signature-block">
-                <div class="signature-line"></div>
+                <div style="font-weight: 700; text-transform: uppercase; margin-bottom: 2px;">${escapeHtml(incident.reportedBy || 'BDRRMO Responder')}</div>
+                <div class="signature-line" style="height: 10px; margin-top: 0;"></div>
                 <h5 class="signature-title">Reported By</h5>
                 <p class="signature-sub">BDRRMO Responder / Citizen Representative</p>
               </div>
               <div class="signature-block">
-                <div class="signature-line"></div>
+                <div style="font-weight: 700; text-transform: uppercase; margin-bottom: 2px;">MDRRMO ADMIN</div>
+                <div class="signature-line" style="height: 10px; margin-top: 0;"></div>
                 <h5 class="signature-title">Approved By</h5>
                 <p class="signature-sub">MDRRMO Operations Administrator</p>
               </div>
