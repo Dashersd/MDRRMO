@@ -405,17 +405,9 @@ if ($isUserLoggedIn) {
                         <p class="text-danger fw-semibold mb-4" id="personnelModalRole" style="font-size: 1.1rem;">--</p>
                         
                         <div class="row g-3">
-                            <div class="col-6">
+                            <div class="col-12">
                                 <span class="text-muted d-block small uppercase fw-bold" style="font-size:0.75rem; letter-spacing:0.5px;">ORGANIZATION</span>
                                 <span class="fw-semibold text-dark">MDRRMO Lapuyan</span>
-                            </div>
-                            <div class="col-6">
-                                <span class="text-muted d-block small uppercase fw-bold" style="font-size:0.75rem; letter-spacing:0.5px;">STATUS</span>
-                                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-1">Active Duty</span>
-                            </div>
-                            <div class="col-12 border-top pt-3 mt-3">
-                                <span class="text-muted d-block small uppercase fw-bold" style="font-size:0.75rem; letter-spacing:0.5px;">REPORTS TO</span>
-                                <span class="fw-semibold text-dark" id="personnelModalReportsTo">--</span>
                             </div>
                         </div>
                     </div>

@@ -127,16 +127,6 @@ if (isset($_GET['logout'])) {
             <div class="sidebar-footer-item-value">Facebook</div>
           </div>
         </a>
-        
-        <div class="sidebar-footer-divider"></div>
-        
-        <div class="sidebar-footer-item" style="cursor: default; pointer-events: none;">
-          <i class="bi bi-info-circle"></i>
-          <div class="sidebar-footer-item-text">
-            <div class="sidebar-footer-item-label">Need Help?</div>
-            <div class="sidebar-footer-item-value">Contact Support</div>
-          </div>
-        </div>
       </div>
     </div>
     
