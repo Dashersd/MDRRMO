@@ -966,3 +966,213 @@ h1, h2, h3, h4, h5, h6 {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.4; }
 }
+
+/* ==========================================
+   ORGANIZATION CHART TREE & CONNECTOR LINES
+   ========================================== */
+.org-chart-outer-wrapper {
+    overflow-x: auto;
+    padding: 20px 5px;
+    margin-top: 10px;
+    -webkit-overflow-scrolling: touch;
+}
+
+.org-chart-wrapper {
+    display: inline-block;
+    min-width: 100%;
+    padding: 0.5rem 0;
+    vertical-align: top;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.org-chart-wrapper .personnel-card {
+    width: 130px;
+    max-width: 130px;
+    margin: 0 auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    background-color: var(--white);
+    display: flex;
+    flex-direction: column;
+}
+
+.org-chart-wrapper .personnel-card.org-node-ceo-card {
+    width: 155px;
+    max-width: 155px;
+    border: 2px solid var(--primary);
+    background: linear-gradient(135deg, #ffffff 0%, #fff5f5 100%);
+    box-shadow: 0 6px 20px rgba(230, 57, 70, 0.1);
+}
+
+.org-chart-wrapper .personnel-card.org-node-ceo-card:hover {
+    box-shadow: 0 10px 25px rgba(230, 57, 70, 0.15);
+    border-color: var(--primary-hover);
+}
+
+.org-chart-wrapper .personnel-img-wrap {
+    height: 110px;
+    overflow: hidden;
+    position: relative;
+    background-color: #e2e8f0;
+}
+
+.org-chart-wrapper .personnel-body {
+    padding: 10px 6px;
+    text-align: center;
+}
+
+.org-chart-wrapper .personnel-name {
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-bottom: 2px;
+    white-space: normal;
+    line-height: 1.2;
+}
+
+.org-chart-wrapper .personnel-role {
+    font-size: 0.65rem;
+    color: var(--primary);
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: normal;
+}
+
+.org-node {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    margin: 0;
+    padding: 0 0.35rem;
+    vertical-align: top;
+}
+
+.org-children {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    margin-top: 1.5rem;
+    position: relative;
+    padding-top: 1rem;
+}
+
+/* Horizontal connector bar */
+.org-children::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--primary);
+    opacity: 0.5;
+}
+
+/* Vertical line from parent node down */
+.org-children::after {
+    content: '';
+    position: absolute;
+    top: -1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 2.5rem;
+    background: var(--primary);
+    opacity: 0.5;
+}
+
+.org-child-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    flex: 1;
+    padding-top: 1rem;
+}
+
+/* Vertical line down to child node */
+.org-child-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 1rem;
+    background: var(--primary);
+    opacity: 0.5;
+    z-index: 1;
+}
+
+/* Horizontal connectors for siblings edge caps */
+.org-child-wrapper:first-child:not(:only-child)::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    right: 0;
+    height: 2px;
+    background: var(--primary);
+    opacity: 0.5;
+    z-index: 1;
+}
+
+.org-child-wrapper:last-child:not(:first-child):not(:only-child)::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 50%;
+    height: 2px;
+    background: var(--primary);
+    opacity: 0.5;
+    z-index: 1;
+}
+
+.org-child-wrapper:not(:first-child):not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--primary);
+    opacity: 0.5;
+    z-index: 1;
+}
+
+.org-child-wrapper:only-child::after {
+    display: none;
+}
+
+/* Responsive view: horizontal tree on desktop, scrollable; stacked tree on smaller screens */
+@media (max-width: 991px) {
+    .org-chart-wrapper {
+        white-space: normal;
+    }
+    .org-children {
+        flex-direction: column;
+        align-items: center;
+        margin-top: 1.5rem;
+        padding-top: 0;
+    }
+    .org-child-wrapper {
+        width: 100%;
+        padding-top: 1rem;
+    }
+    .org-child-wrapper::before {
+        display: none;
+    }
+    .org-child-wrapper::after {
+        display: none;
+    }
+    .org-children::before {
+        display: none;
+    }
+    .org-children::after {
+        display: none;
+    }
+}
+

@@ -261,16 +261,16 @@ if (isset($_GET['logout'])) {
         align-items: center;
         position: relative;
         margin: 0 auto;
-        padding: 0 1rem;
+        padding: 0 0.35rem;
       }
 
       .org-node-card {
         background: white;
         border: 2px solid #e9ecef;
         border-radius: 12px;
-        padding: 1.25rem 1.5rem;
-        min-width: 200px;
-        max-width: 250px;
+        padding: 0.75rem 0.5rem;
+        min-width: 130px;
+        max-width: 130px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         transition: all 0.3s ease;
         position: relative;
@@ -295,9 +295,9 @@ if (isset($_GET['logout'])) {
       }
 
       .org-node-photo-wrapper {
-        width: 80px;
-        height: 80px;
-        margin: 0 auto 1rem auto;
+        width: 50px;
+        height: 50px;
+        margin: 0 auto 0.5rem auto;
         position: relative;
       }
 
@@ -307,7 +307,7 @@ if (isset($_GET['logout'])) {
         border-radius: 50%;
         object-fit: cover;
         object-position: top;
-        border: 3px solid white;
+        border: 2px solid white;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
       }
 
@@ -324,7 +324,7 @@ if (isset($_GET['logout'])) {
         display: flex;
         align-items: center;
         justify-content: center;
-        border: 3px solid white;
+        border: 2px solid white;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
       }
 
@@ -334,7 +334,7 @@ if (isset($_GET['logout'])) {
       }
 
       .org-node-photo-placeholder i {
-        font-size: 2.5rem;
+        font-size: 1.5rem;
         color: #6c757d;
       }
 
@@ -344,16 +344,18 @@ if (isset($_GET['logout'])) {
 
       .org-node-name {
         font-weight: 700;
-        font-size: 1.1rem;
-        margin-bottom: 0.5rem;
+        font-size: 0.8rem;
+        margin-bottom: 0.2rem;
         text-align: center;
+        line-height: 1.2;
       }
 
       .org-node-role {
-        font-size: 0.9rem;
+        font-size: 0.65rem;
         opacity: 0.85;
         text-align: center;
         font-weight: 500;
+        line-height: 1.2;
       }
 
       .org-node-ceo .org-node-name,
@@ -362,26 +364,27 @@ if (isset($_GET['logout'])) {
       }
 
       .org-node[data-level="0"] .org-node-card {
-        min-width: 220px;
-        padding: 1.5rem 2rem;
+        min-width: 150px;
+        max-width: 150px;
+        padding: 1rem 0.75rem;
       }
 
       .org-node[data-level="0"] .org-node-photo-wrapper {
-        width: 100px;
-        height: 100px;
+        width: 65px;
+        height: 65px;
       }
 
       .org-node[data-level="0"] .org-node-photo-placeholder i {
-        font-size: 3rem;
+        font-size: 2rem;
       }
 
       .org-children {
         display: flex;
         justify-content: center;
         align-items: flex-start;
-        margin-top: 2rem;
+        margin-top: 1.5rem;
         position: relative;
-        padding-top: 1.5rem;
+        padding-top: 1rem;
       }
 
       .org-children::before {
@@ -397,11 +400,11 @@ if (isset($_GET['logout'])) {
       .org-children::after {
         content: '';
         position: absolute;
-        top: 0;
+        top: -1.5rem;
         left: 50%;
         transform: translateX(-50%);
         width: 2px;
-        height: 1.5rem;
+        height: 2.5rem;
         background: #dee2e6;
       }
 
@@ -411,7 +414,7 @@ if (isset($_GET['logout'])) {
         align-items: center;
         position: relative;
         flex: 1;
-        padding-top: 1.5rem;
+        padding-top: 1rem;
       }
 
       .org-child-wrapper::before {
@@ -421,7 +424,7 @@ if (isset($_GET['logout'])) {
         left: 50%;
         transform: translateX(-50%);
         width: 2px;
-        height: 1.5rem;
+        height: 1rem;
         background: #dee2e6;
         z-index: 1;
       }

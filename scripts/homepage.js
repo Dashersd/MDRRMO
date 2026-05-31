@@ -382,39 +382,103 @@
         }
     }
 
-    // 6. Render Personnel Organizational Grid
-    function renderRosterGrid() {
-        const ceoContainer = $("#ceoRosterContainer");
-        const gridContainer = $("#personnelRosterGrid");
+    // 6. Build hierarchical tree structure for Organization Chart
+    function buildRosterHierarchy(personnel) {
+        if (personnel.length === 0) return null;
 
-        if (!ceoContainer || !gridContainer) return;
+        // Find root (CEO or top-level personnel without reportsTo)
+        let root = personnel.find(p => p.isCEO === true);
+        if (!root) {
+            root = personnel.find(p => !p.reportsTo);
+        }
+        if (!root) return null;
 
-        // Clear previous cards
-        ceoContainer.innerHTML = "";
-        gridContainer.innerHTML = "";
+        const rootIdStr = root.id.toString();
 
-        // Find CEO
-        const ceo = publicPersonnel.find(p => p.isCEO === true);
-        if (ceo) {
-            ceoContainer.innerHTML = renderPersonnelCard(ceo);
-        } else {
-            ceoContainer.innerHTML = `<div class="text-center text-muted small py-3">Leadership team vacancy</div>`;
+        // Normalize: link orphans to the root
+        const normalized = personnel.map(p => {
+            if (p.id.toString() !== rootIdStr && !p.isCEO && !p.reportsTo) {
+                return { ...p, reportsTo: rootIdStr };
+            }
+            return p;
+        });
+
+        function buildTree(personId) {
+            const personIdStr = personId.toString();
+            const person = normalized.find(p => p.id.toString() === personIdStr);
+            if (!person) return null;
+
+            const children = normalized
+                .filter(p => p.reportsTo && p.reportsTo.toString() === personIdStr)
+                .map(child => buildTree(child.id))
+                .filter(Boolean)
+                .sort((a, b) => a.name.localeCompare(b.name));
+
+            return {
+                ...person,
+                children: children.length > 0 ? children : undefined
+            };
         }
 
-        // Filter other personnel
-        const filteredList = publicPersonnel.filter(p => p.isCEO !== true);
+        return buildTree(root.id);
+    }
 
-        if (filteredList.length === 0) {
-            gridContainer.innerHTML = `<div class="col-12 text-center text-muted py-5">No roster profiles listed in this category.</div>`;
+    // Render Roster Organization Chart
+    function renderRosterGrid() {
+        const chartWrapper = $("#homepageOrgChart");
+        if (!chartWrapper) return;
+
+        chartWrapper.innerHTML = "";
+
+        if (publicPersonnel.length === 0) {
+            chartWrapper.innerHTML = `<div class="text-center text-muted py-5">No organization chart profiles listed.</div>`;
             return;
         }
 
-        filteredList.forEach(person => {
-            const col = document.createElement("div");
-            col.className = "col-sm-6 col-md-4 col-lg-3 mb-4";
-            col.innerHTML = renderPersonnelCard(person);
-            gridContainer.appendChild(col);
-        });
+        const tree = buildRosterHierarchy(publicPersonnel);
+        if (!tree) {
+            chartWrapper.innerHTML = `<div class="text-center text-muted py-5">Unable to construct organization structure.</div>`;
+            return;
+        }
+
+        // Render the tree starting at Level 0
+        renderRosterNode(tree, chartWrapper, 0);
+    }
+
+    // Render a single node in the organization chart recursively
+    function renderRosterNode(node, container, level) {
+        const nodeElement = document.createElement("div");
+        nodeElement.className = "org-node";
+        nodeElement.setAttribute("data-level", level);
+
+        // Node card using the premium homepage personnel card style
+        const cardHtml = renderPersonnelCard(node);
+        
+        // Create card element
+        const cardWrapper = document.createElement("div");
+        cardWrapper.style.display = "inline-block";
+        cardWrapper.style.position = "relative";
+        cardWrapper.style.zIndex = "2";
+        cardWrapper.innerHTML = cardHtml;
+        
+        nodeElement.appendChild(cardWrapper.firstElementChild);
+
+        // Render children if present
+        if (node.children && node.children.length > 0) {
+            const childrenContainer = document.createElement("div");
+            childrenContainer.className = "org-children";
+
+            node.children.forEach(child => {
+                const childWrapper = document.createElement("div");
+                childWrapper.className = "org-child-wrapper";
+                renderRosterNode(child, childWrapper, level + 1);
+                childrenContainer.appendChild(childWrapper);
+            });
+
+            nodeElement.appendChild(childrenContainer);
+        }
+
+        container.appendChild(nodeElement);
     }
 
     function renderPersonnelCard(p) {
@@ -423,13 +487,13 @@
             ? `<img src="${photoSrc}" alt="${escapeHtml(p.name)}" class="personnel-img" />`
             : `<div class="personnel-placeholder-img"><i class="bi bi-person-fill"></i><span class="small">No Photo</span></div>`;
 
-        const badge = '';
+        const isCeo = p.isCEO === true;
+        const ceoClass = isCeo ? 'org-node-ceo-card' : '';
 
         return `
-            <div class="personnel-card team-member-card" data-id="${p.id}" style="cursor: pointer;">
+            <div class="personnel-card team-member-card ${ceoClass}" data-id="${p.id}" style="cursor: pointer;">
                 <div class="personnel-img-wrap">
                     ${imgBlock}
-                    ${badge}
                 </div>
                 <div class="personnel-body">
                     <h5 class="personnel-name">${escapeHtml(p.name)}</h5>

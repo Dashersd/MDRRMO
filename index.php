@@ -35,7 +35,7 @@ if ($isUserLoggedIn) {
 
 
     <!-- Custom Homepage CSS -->
-    <link rel="stylesheet" href="styles/homepage.css">
+    <link rel="stylesheet" href="styles/homepage.css?v=<?php echo time(); ?>_homepage_chart">
 </head>
 <body>
 
@@ -188,14 +188,9 @@ if ($isUserLoggedIn) {
             </div>
 
 
-            <!-- Director Card Block (CEO) -->
-            <div class="ceo-wrapper" id="ceoRosterContainer">
-                <!-- CEO / Director profile card dynamically loaded here -->
-            </div>
-
-            <!-- Personnel Roster Grid -->
-            <div class="row justify-content-center" id="personnelRosterGrid">
-                <!-- Personnel cards dynamically loaded here -->
+            <!-- Dynamic Organization Chart Tree -->
+            <div class="org-chart-outer-wrapper text-center">
+                <div id="homepageOrgChart" class="org-chart-wrapper"></div>
             </div>
         </div>
     </section>
