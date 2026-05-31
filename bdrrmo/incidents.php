@@ -105,29 +105,6 @@ if (isset($_GET['logout'])) {
         </div>
       </div>
       
-      <!-- Sidebar Footer -->
-      <div class="sidebar-footer">
-        <div class="sidebar-footer-title">
-          <i class="bi bi-telephone-fill"></i>
-          <span>Contact Us</span>
-        </div>
-        
-        <button type="button" class="sidebar-footer-item" id="copyHotlineBtn" data-hotline="09300488682">
-          <i class="bi bi-telephone" id="hotlineIcon"></i>
-          <div class="sidebar-footer-item-text">
-            <div class="sidebar-footer-item-label">Hotline</div>
-            <div class="sidebar-footer-item-value" id="hotlineValue">0930 048 8682</div>
-          </div>
-        </button>
-        
-        <a href="https://www.facebook.com/lapuyan.mdrrmo" target="_blank" rel="noopener noreferrer" class="sidebar-footer-item">
-          <i class="bi bi-facebook"></i>
-          <div class="sidebar-footer-item-text">
-            <div class="sidebar-footer-item-label">Follow Us</div>
-            <div class="sidebar-footer-item-value">Facebook</div>
-          </div>
-        </a>
-      </div>
     </div>
     
     <!-- Main Content -->

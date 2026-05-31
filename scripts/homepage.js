@@ -423,7 +423,7 @@
             ? `<img src="${photoSrc}" alt="${escapeHtml(p.name)}" class="personnel-img" />`
             : `<div class="personnel-placeholder-img"><i class="bi bi-person-fill"></i><span class="small">No Photo</span></div>`;
 
-        const badge = p.isCEO ? `<span class="personnel-ceo-badge">Director</span>` : '';
+        const badge = '';
 
         return `
             <div class="personnel-card team-member-card" data-id="${p.id}" style="cursor: pointer;">
