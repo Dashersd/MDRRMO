@@ -390,10 +390,7 @@
 
   function serializeFormToIncident() {
     const type = $("#incidentType").value;
-    const severity = $("#severity").value;
     const description = $("#description").value.trim();
-    const lat = latEl.value ? Number(latEl.value) : null;
-    const lng = lngEl.value ? Number(lngEl.value) : null;
     const file = photoInput.files && photoInput.files[0];
     if (!file) throw new Error("Photo missing");
     
@@ -406,13 +403,10 @@
     return resizeImageToDataURL(file, 1280, 1280).then((dataUrl) => ({
       id: uid(),
       type,
-      severity,
       description,
       status: "New",
-      reportedBy: currentUser, // Add reportedBy field for database
+      reportedBy: currentUser,
       createdAt: Date.now(),
-      lat,
-      lng,
       photoDataUrl: dataUrl,
     }));
   }
@@ -453,10 +447,6 @@
   function renderIncidentCard(inc) {
     const date = new Date(inc.createdAt).toLocaleString();
     const badgeClass = statusToBadge(inc.status);
-    const gps =
-      inc.lat != null && inc.lng != null
-        ? `${inc.lat.toFixed(6)}, ${inc.lng.toFixed(6)}`
-        : "No GPS";
 
     // Check if the current user is an admin by inspecting the path
     const isAdmin = window.location.pathname.includes('admin-dashboard.php') || 
@@ -473,14 +463,10 @@
     ` : '';
 
     return `
-			<div class="card incident-card sev-${inc.severity} shadow-sm">
+			<div class="card incident-card shadow-sm">
 				<div class="row g-0">
 														<div class="col-4 col-sm-3">
-										<img src="${inc.photoDataUrl}" alt="${
-      inc.type
-    } photo" class="w-100 h-100 incident-image-clickable" style="object-fit:cover;min-height:100%;cursor:pointer;" data-image="${
-      inc.photoDataUrl
-    }" data-title="${inc.type} - ${inc.severity}"/>
+										<img src="${inc.photoDataUrl}" alt="${inc.type} photo" class="w-100 h-100 incident-image-clickable" style="object-fit:cover;min-height:100%;cursor:pointer;" data-image="${inc.photoDataUrl}" data-title="${inc.type}"/>
 									</div>
 					<div class="col-8 col-sm-9">
 						<div class="card-body py-2">
@@ -488,28 +474,18 @@
 								<div class="d-flex align-items-center gap-2">
 									<i class="bi ${typeToIcon(inc.type)}"></i>
 									<strong>${escapeHtml(inc.type)}</strong>
-									<span class="badge severity-badge sev-${inc.severity.toLowerCase()}">${escapeHtml(
-      inc.severity
-    )}</span>
 								</div>
 								<span class="badge ${badgeClass} status-badge">${inc.status}</span>
 							</div>
-							<div class="small text-muted">${date} • ${gps}</div>
+							<div class="small text-muted">${date}</div>
 							<p class="mb-2 mt-1">${escapeHtml(inc.description)}</p>
 							<div class="d-flex flex-wrap gap-2">
 								<div class="btn-group btn-group-sm" role="group">
-									<button class="btn btn-outline-secondary" data-action="view" data-id="${
-                    inc.id
-                  }"><i class="bi bi-map"></i> Map</button>
 									${adminButtons}
 								</div>
 								<div class="btn-group btn-group-sm" role="group">
-									<button class="btn btn-outline-dark" data-action="download" data-id="${
-                    inc.id
-                  }"><i class="bi bi-download"></i> Photo</button>
-									<button class="btn btn-outline-dark" data-action="copy" data-id="${
-                    inc.id
-                  }"><i class="bi bi-clipboard"></i> Copy</button>
+									<button class="btn btn-outline-dark" data-action="download" data-id="${inc.id}"><i class="bi bi-download"></i> Photo</button>
+									<button class="btn btn-outline-dark" data-action="copy" data-id="${inc.id}"><i class="bi bi-clipboard"></i> Copy</button>
 									${adminDeleteButton}
 								</div>
 							</div>
@@ -598,13 +574,7 @@
   }
 
   function viewOnMap(id) {
-    const inc = incidents.find((x) => x.id === id);
-    if (!inc) return;
-    if (inc.lat != null && inc.lng != null) {
-      setLocation(inc.lat, inc.lng, inc.status);
-    } else {
-      alert("No GPS for this report.");
-    }
+    alert("GPS location is no longer available for incidents.");
   }
 
   async function updateStatus(id, status) {
@@ -676,12 +646,8 @@
     if (!inc) return;
     const text = [
       `Type: ${inc.type}`,
-      `Severity: ${inc.severity}`,
       `Status: ${inc.status}`,
       `When: ${new Date(inc.createdAt).toLocaleString()}`,
-      `Location: ${inc.lat != null ? inc.lat.toFixed(6) : "-"}, ${
-        inc.lng != null ? inc.lng.toFixed(6) : "-"
-      }`,
       `Description: ${inc.description}`,
     ].join("\n");
     try {

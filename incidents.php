@@ -126,9 +126,6 @@ if (isset($_GET['logout'])) {
                 </span>
               </a>
               <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
-                <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
-                <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
               </ul>
             </div>
@@ -263,7 +260,7 @@ if (isset($_GET['logout'])) {
               <div class="card-body">
                 <div class="row g-3">
                   <!-- Search -->
-                  <div class="col-md-4">
+                  <div class="col-md-6">
                     <label for="searchInput" class="form-label">Search</label>
                     <div class="input-group">
                       <span class="input-group-text">
@@ -301,25 +298,12 @@ if (isset($_GET['logout'])) {
                     </select>
                   </div>
 
-                  <!-- Severity Filter -->
-                  <div class="col-md-2">
-                    <label for="filterSeverity" class="form-label">Severity</label>
-                    <select id="filterSeverity" class="form-select">
-                      <option value="All">All Severities</option>
-                      <option value="Low">Low</option>
-                      <option value="Moderate">Moderate</option>
-                      <option value="High">High</option>
-                      <option value="Critical">Critical</option>
-                    </select>
-                  </div>
-
                   <!-- Sort By -->
                   <div class="col-md-2">
                     <label for="sortBy" class="form-label">Sort By</label>
                     <select id="sortBy" class="form-select">
                       <option value="newest">Newest First</option>
                       <option value="oldest">Oldest First</option>
-                      <option value="severity">Severity</option>
                       <option value="status">Status</option>
                       <option value="type">Type</option>
                     </select>

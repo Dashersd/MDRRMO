@@ -22,10 +22,10 @@ try {
     $stmt = $pdo->query('SELECT COUNT(*) as total FROM users');
     $totalUsers = $stmt->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
     
-    // Get pending users count
-    $stmt = $pdo->prepare('SELECT COUNT(*) as total FROM users WHERE status = "pending"');
+    // Get inactive users count
+    $stmt = $pdo->prepare('SELECT COUNT(*) as total FROM users WHERE status IN ("pending", "inactive") OR status IS NULL OR status = ""');
     $stmt->execute();
-    $pendingUsers = $stmt->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
+    $inactiveUsers = $stmt->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
     
     // Get approved/active users count
     $stmt = $pdo->prepare('SELECT COUNT(*) as total FROM users WHERE status IN ("approved", "active")');
@@ -48,7 +48,7 @@ try {
     $stats = [
         'users' => [
             'total' => (int)$totalUsers,
-            'pending' => (int)$pendingUsers,
+            'inactive' => (int)$inactiveUsers,
             'active' => (int)$activeUsers
         ],
         'incidents' => [

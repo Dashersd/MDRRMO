@@ -65,7 +65,7 @@
       // Update user statistics
       updateElement('totalUsers', data.users.total || 0);
       updateElement('activeUsers', data.users.active || 0);
-      updateElement('pendingUsers', data.users.pending || 0);
+      updateElement('inactiveUsers', data.users.inactive || 0);
       
       // Update sidebar counts
       const userCountBadge = document.getElementById('userCount');
@@ -78,7 +78,7 @@
       // Set defaults on error
       updateElement('totalUsers', 0);
       updateElement('activeUsers', 0);
-      updateElement('pendingUsers', 0);
+      updateElement('inactiveUsers', 0);
     }
 
     // Load incident statistics from database
@@ -208,7 +208,6 @@
     const statusBadge = getStatusBadge(incident.status || 'New');
     const typeIcon = getTypeIcon(incident.type);
     const typeClass = getTypeClass(incident.type);
-    const hasLocation = incident.lat != null && incident.lng != null;
 
     return `
       <div class="incident-grid-item">
@@ -259,16 +258,6 @@
             
             <!-- Metadata -->
             <div class="incident-card-meta">
-              <div class="incident-meta-item">
-                <i class="bi bi-calendar3"></i>
-                <span>${dateStr}</span>
-              </div>
-              ${hasLocation ? `
-                <div class="incident-meta-item">
-                  <i class="bi bi-geo-alt-fill"></i>
-                  <span>Located</span>
-                </div>
-              ` : ''}
             </div>
             
             <!-- Actions -->
@@ -329,19 +318,7 @@
     }
   }
 
-  /**
-   * Get severity CSS class
-   */
-  function getSeverityClass(severity) {
-    if (!severity) return 'bg-secondary';
-    const sev = severity.toLowerCase();
-    if (sev === 'critical') return 'bg-danger';
-    if (sev === 'high') return 'bg-warning';
-    if (sev === 'moderate') return 'bg-info';
-    return 'bg-secondary';
-  }
-
-  /**
+/**
    * Get type CSS class for icon colors
    */
   function getTypeClass(type) {
@@ -451,12 +428,7 @@
     }
   };
 
-  window.viewOnMap = function(lat, lng) {
-    // For now, just show coordinates
-    alert(`Location: ${lat.toFixed(6)}, ${lng.toFixed(6)}\n\nMap view integration coming soon.`);
-  };
-
-  /**
+/**
    * Get incident by ID from cached data or fetch if needed
    */
   async function getIncidentById(incidentId) {
@@ -587,22 +559,7 @@
                       </div>
                     </div>
                   </div>
-                  
-                  <!-- Location -->
-                  <div class="d-flex align-items-start">
-                    <div class="flex-shrink-0 me-3">
-                      <div class="bg-warning bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                        <i class="bi bi-geo-alt-fill text-warning" style="font-size: 0.85rem;"></i>
-                      </div>
-                    </div>
-                    <div class="flex-grow-1">
-                      <small class="text-muted d-block mb-0.5" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">Location</small>
-                      <div class="fw-semibold text-dark" style="font-size: 0.9rem;">
-                        ${(incident.lat != null && incident.lng != null) ? `${incident.lat.toFixed(6)}, ${incident.lng.toFixed(6)}` : 'Not available'}
-                      </div>
-                    </div>
                   </div>
-                </div>
               </div>
               
               <!-- Description Card -->
@@ -1110,8 +1067,6 @@
                 <td><span style="font-weight:700; color: ${incident.status === 'Approved' ? '#198754' : (incident.status === 'Decline' ? '#dc3545' : '#6c757d')}">${escapeHtml(statusBadge.text)}</span></td>
               </tr>
               <tr>
-                <th>GPS Location</th>
-                <td>${incident.lat != null && incident.lng != null ? incident.lat.toFixed(6) + ', ' + incident.lng.toFixed(6) : 'Not Available (Standard Reporting)'}</td>
                 <th>Reported By</th>
                 <td>${escapeHtml(incident.reportedBy || 'BDRRMO Staff')}</td>
               </tr>

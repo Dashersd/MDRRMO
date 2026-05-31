@@ -112,15 +112,15 @@ if (isset($_GET['logout'])) {
           <span>Contact Us</span>
         </div>
         
-        <button type="button" class="sidebar-footer-item" id="copyHotlineBtn" data-hotline="+639123456789">
+        <button type="button" class="sidebar-footer-item" id="copyHotlineBtn" data-hotline="09300488682">
           <i class="bi bi-telephone" id="hotlineIcon"></i>
           <div class="sidebar-footer-item-text">
             <div class="sidebar-footer-item-label">Hotline</div>
-            <div class="sidebar-footer-item-value" id="hotlineValue">+63 912 345 6789</div>
+            <div class="sidebar-footer-item-value" id="hotlineValue">0930 048 8682</div>
           </div>
         </button>
         
-        <a href="https://www.facebook.com/mdrrmo" target="_blank" rel="noopener noreferrer" class="sidebar-footer-item">
+        <a href="https://www.facebook.com/lapuyan.mdrrmo" target="_blank" rel="noopener noreferrer" class="sidebar-footer-item">
           <i class="bi bi-facebook"></i>
           <div class="sidebar-footer-item-text">
             <div class="sidebar-footer-item-label">Follow Us</div>
@@ -170,9 +170,6 @@ if (isset($_GET['logout'])) {
                 <span class="badge bg-primary ms-1">BDRRMO STAFF</span>
               </a>
               <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
-                <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
-                <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="../logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
               </ul>
             </div>

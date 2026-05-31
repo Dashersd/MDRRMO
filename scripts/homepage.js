@@ -336,7 +336,7 @@
         }
     }
 
-    // 5b. Compute and update page emergency status dynamically based on unresolved report severities
+    // 5b. Compute and update page emergency status dynamically based on unresolved reports
     function updateEmergencyAlertStatus() {
         const pulseRing = $("#alertPulseRing");
         const pulseCore = $("#alertPulseCore");
@@ -347,51 +347,31 @@
 
         // Find active un-resolved reports
         const activeAlerts = publicIncidents.filter(inc => inc.status !== 'Resolved' && inc.status !== 'Cancelled');
-        
-        let maxSeverity = "None";
-        if (activeAlerts.length > 0) {
-            // Find highest severity: Critical > High > Moderate > Low
-            const severities = activeAlerts.map(a => a.severity);
-            if (severities.includes("Critical")) {
-                maxSeverity = "Critical";
-            } else if (severities.includes("High")) {
-                maxSeverity = "High";
-            } else if (severities.includes("Moderate")) {
-                maxSeverity = "Moderate";
-            } else {
-                maxSeverity = "Low";
-            }
-        }
+        const count = activeAlerts.length;
 
         // Remove all previous level classes
         pulseRing.className = "alert-pulse-ring";
         pulseCore.className = "alert-pulse-core";
         statusText.className = "alert-status-text";
 
-        if (maxSeverity === "Critical") {
+        if (count >= 5) {
             pulseRing.classList.add("level-red-ring");
             pulseCore.classList.add("level-red");
             statusText.classList.add("text-level-red");
             statusText.textContent = "RED ALERT ACTIVE";
-            statusDesc.textContent = `Critical emergency dispatches active. ${activeAlerts.length} reported situations require extreme caution. Response units are operational.`;
-        } else if (maxSeverity === "High") {
+            statusDesc.textContent = `Critical emergency dispatches active. ${count} reported situations require extreme caution. Response units are operational.`;
+        } else if (count >= 3) {
             pulseRing.classList.add("level-red-ring");
             pulseCore.classList.add("level-red");
             statusText.classList.add("text-level-red");
             statusText.textContent = "ORANGE ALERT ACTIVE";
-            statusDesc.textContent = `High-severity conditions. Rescue squads actively managing ${activeAlerts.length} emergency scenes. Track announcements.`;
-        } else if (maxSeverity === "Moderate") {
+            statusDesc.textContent = `Multiple incidents active. Rescue squads actively managing ${count} emergency scenes. Track announcements.`;
+        } else if (count >= 1) {
             pulseRing.classList.add("level-yellow-ring");
             pulseCore.classList.add("level-yellow");
             statusText.classList.add("text-level-yellow");
             statusText.textContent = "YELLOW ALERT STATUS";
-            statusDesc.textContent = `Moderate weather warnings or incidents registered. ${activeAlerts.length} scenes currently monitored by rescue teams.`;
-        } else if (maxSeverity === "Low") {
-            pulseRing.classList.add("level-yellow-ring");
-            pulseCore.classList.add("level-yellow");
-            statusText.classList.add("text-level-yellow");
-            statusText.textContent = "ACTIVE MONITORING";
-            statusDesc.textContent = `Minor incident alerts logged. Standard patrols monitoring local conditions. General areas safe for transit.`;
+            statusDesc.textContent = `Incident alerts logged. ${count} scene(s) currently monitored by rescue teams.`;
         } else {
             // Safe / Normal
             pulseRing.classList.add("level-green-ring");
@@ -487,14 +467,14 @@
             
             const thumbnail = inc.photoDataUrl 
                 ? `<div class="personnel-img-wrap" style="height: 180px; overflow: hidden; position: relative;">
-                    <img src="${inc.photoDataUrl}" alt="${escapeHtml(inc.type)}" class="personnel-img incident-image-clickable" data-image="${inc.photoDataUrl}" data-title="${escapeHtml(inc.type)} - ${inc.severity}" style="cursor: pointer; transition: all 0.3s ease; width:100%; height:100%; object-fit:cover;" />
+                    <img src="${inc.photoDataUrl}" alt="${escapeHtml(inc.type)}" class="personnel-img incident-image-clickable" data-image="${inc.photoDataUrl}" data-title="${escapeHtml(inc.type)}" style="cursor: pointer; transition: all 0.3s ease; width:100%; height:100%; object-fit:cover;" />
                    </div>`
                 : `<div class="personnel-placeholder-img bg-light d-flex align-items-center justify-content-center border-bottom text-muted" style="height: 180px;">
                     <i class="bi bi-image fs-1 text-secondary"></i>
                    </div>`;
 
             col.innerHTML = `
-                <div class="personnel-card incident-report-card h-100 d-flex flex-column justify-content-between" data-id="${inc.id}" style="border-left: 5px solid ${severityColor(inc.severity)}; cursor: pointer;">
+                <div class="personnel-card incident-report-card h-100 d-flex flex-column justify-content-between" data-id="${inc.id}" style="border-left: 5px solid #dc3545; cursor: pointer;">
                     <div>
                         ${thumbnail}
                         <div class="p-4">
@@ -509,30 +489,13 @@
                             <p class="text-muted small mb-0" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.5;">${escapeHtml(inc.description)}</p>
                         </div>
                     </div>
-                    <div class="p-4 pt-0 border-top-0 d-flex align-items-center justify-content-between">
-                        <span class="small text-muted fw-semibold">Severity: <span style="color: ${severityColor(inc.severity)}; font-weight:700;">${inc.severity}</span></span>
-                        ${inc.lat != null && inc.lng != null 
-                            ? `<span class="small text-success" style="font-size:0.75rem;"><i class="bi bi-geo-alt-fill text-danger me-1"></i>Geotagged</span>`
-                            : ''
-                        }
-                    </div>
                 </div>
             `;
             feedContainer.appendChild(col);
         });
     }
 
-    function severityColor(sev) {
-        switch(sev) {
-            case 'Low': return '#2ec4b6';
-            case 'Moderate': return '#ffb703';
-            case 'High': return '#fb8500';
-            case 'Critical': return '#e63946';
-            default: return '#94a3b8';
-        }
-    }
-
-    // 8. Clipboard Contact Action Utility
+// 8. Clipboard Contact Action Utility
     function initCopyToClipboard() {
         const cards = $$(".contact-hotline-card");
         cards.forEach(card => {
@@ -652,12 +615,9 @@
                 const mTitle = document.getElementById("incidentModalTitle");
                 const mType = document.getElementById("incidentModalType");
                 const mStatus = document.getElementById("incidentModalStatus");
-                const mSeverity = document.getElementById("incidentModalSeverity");
                 const mDate = document.getElementById("incidentModalDate");
                 const mDescription = document.getElementById("incidentModalDescription");
                 const mImgContainer = document.getElementById("incidentModalImgContainer");
-                const mGpsBlock = document.getElementById("incidentModalGpsBlock");
-                const mCoordinates = document.getElementById("incidentModalCoordinates");
 
                 if (mTitle) mTitle.textContent = `Incident Detail: ${inc.type}`;
                 if (mType) mType.textContent = inc.type;
@@ -673,27 +633,11 @@
                         mStatus.textContent = inc.status;
                     }
                 }
-                if (mSeverity) {
-                    const sevColor = severityColor(inc.severity);
-                    mSeverity.style.backgroundColor = sevColor + '15';
-                    mSeverity.style.color = sevColor;
-                    mSeverity.style.border = `1px solid ${sevColor}30`;
-                    mSeverity.textContent = `Severity: ${inc.severity}`;
-                }
 
                 if (mImgContainer) {
                     mImgContainer.innerHTML = inc.photoDataUrl
                         ? `<img src="${inc.photoDataUrl}" alt="${escapeHtml(inc.type)}" style="width: 100%; height: 100%; object-fit: contain;" />`
                         : `<div class="d-flex align-items-center justify-content-center h-100 text-white-50"><i class="bi bi-image display-1"></i></div>`;
-                }
-
-                if (mGpsBlock && mCoordinates) {
-                    if (inc.lat != null && inc.lng != null) {
-                        mGpsBlock.style.display = "block";
-                        mCoordinates.textContent = `Latitude: ${Number(inc.lat).toFixed(6)} | Longitude: ${Number(inc.lng).toFixed(6)}`;
-                    } else {
-                        mGpsBlock.style.display = "none";
-                    }
                 }
 
                 const bootstrapModal = new bootstrap.Modal(document.getElementById("incidentDetailsModal"));

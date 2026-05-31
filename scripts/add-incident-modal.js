@@ -198,8 +198,7 @@
       reportedBy: currentUser, // Add reportedBy field
       createdAt: Date.now(),
       photoDataUrl: photoDataUrl,
-      lat: null, // Location removed as per requirements
-      lng: null,
+
     };
   }
 

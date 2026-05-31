@@ -205,7 +205,6 @@
     const statusBadge = getStatusBadge(incident.status || 'New');
     const typeIcon = getTypeIcon(incident.type);
     const typeClass = getTypeClass(incident.type);
-    const hasLocation = incident.lat != null && incident.lng != null;
 
     return `
       <div class="incident-grid-item">
@@ -253,20 +252,6 @@
             <p class="incident-card-description" title="${escapeHtml(incident.description || 'No description provided')}">
               ${escapeHtml(incident.description || 'No description provided')}
             </p>
-            
-            <!-- Metadata -->
-            <div class="incident-card-meta">
-              <div class="incident-meta-item">
-                <i class="bi bi-calendar3"></i>
-                <span>${dateStr}</span>
-              </div>
-              ${hasLocation ? `
-                <div class="incident-meta-item">
-                  <i class="bi bi-geo-alt-fill"></i>
-                  <span>Located</span>
-                </div>
-              ` : ''}
-            </div>
             
             <!-- Actions (View and Download only - no approve/decline) -->
             <div class="incident-card-actions">
@@ -559,37 +544,6 @@
                     </div>
                   </div>
                   
-                  <!-- Reported By -->
-                  <div class="d-flex align-items-start ${(incident.lat != null && incident.lng != null) ? 'mb-2 pb-2 border-bottom' : ''}">
-                    <div class="flex-shrink-0 me-3">
-                      <div class="bg-secondary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                        <i class="bi bi-person-fill text-secondary" style="font-size: 0.85rem;"></i>
-                      </div>
-                    </div>
-                    <div class="flex-grow-1">
-                      <small class="text-muted d-block mb-0.5" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">Reported By</small>
-                      <div class="fw-semibold text-dark" style="font-size: 0.9rem;">
-                        ${escapeHtml(incident.reportedBy || 'System / Citizen')}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <!-- Location -->
-                  ${(incident.lat != null && incident.lng != null) ? `
-                    <div class="d-flex align-items-start">
-                      <div class="flex-shrink-0 me-3">
-                        <div class="bg-warning bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                          <i class="bi bi-geo-alt-fill text-warning" style="font-size: 0.85rem;"></i>
-                        </div>
-                      </div>
-                      <div class="flex-grow-1">
-                        <small class="text-muted d-block mb-0.5" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">Location</small>
-                        <div class="fw-semibold" style="color: #212529; font-size: 0.9rem;">
-                          ${incident.lat.toFixed(6)}, ${incident.lng.toFixed(6)}
-                        </div>
-                      </div>
-                    </div>
-                  ` : ''}
                 </div>
               </div>
               
@@ -1090,8 +1044,6 @@
                 <td><span style="font-weight:700; color: ${incident.status === 'Approved' ? '#198754' : (incident.status === 'Decline' ? '#dc3545' : '#6c757d')}">${escapeHtml(statusBadge.text)}</span></td>
               </tr>
               <tr>
-                <th>GPS Location</th>
-                <td>${incident.lat != null && incident.lng != null ? incident.lat.toFixed(6) + ', ' + incident.lng.toFixed(6) : 'Not Available (Standard Reporting)'}</td>
                 <th>Reported By</th>
                 <td>${escapeHtml(incident.reportedBy || 'BDRRMO Staff')}</td>
               </tr>

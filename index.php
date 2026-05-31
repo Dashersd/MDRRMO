@@ -87,7 +87,7 @@ if ($isUserLoggedIn) {
                         <span>Lapuyan Municipal Safety and Resiliency Portal</span>
                     </div>
                     <h1 class="hero-title">Preparedness Saves Lives. <br><span>24/7 Response</span> at Your Service.</h1>
-                    <p class="hero-description">Welcome to MDRR Lapuyan Municipal Disaster Risk Reduction and Management Office. We monitor, coordinate, and dispatch emergency response protocols to protect lives and properties.</p>
+                    <p class="hero-description">Welcome to Municipal Disaster Risk Reduction and Management Office of Lapuyan (MDRRMO) <br><br><strong>#SulongParaSaKaligtasan</strong></p>
                 </div>
                 
                 <!-- Dynamic Status & Weather Widget Block -->
@@ -284,84 +284,62 @@ if ($isUserLoggedIn) {
                 <p class="text-muted max-width-600 mx-auto">Do you have an emergency to report? Access our 24/7 hotlines. Click on any contact card below to copy the number directly to your clipboard.</p>
             </div>
 
-            <div class="row g-4 align-items-center">
+            <div class="row justify-content-center">
                 <!-- Click to Copy Directory -->
-                <div class="col-lg-6">
-                    <h4 class="mb-4 font-heading">24/7 Hotline Roster</h4>
-                    <div class="d-grid gap-3">
-                        <div class="contact-hotline-card" data-number="+639123456789">
-                            <div class="contact-icon-wrap">
-                                <i class="bi bi-telephone-fill"></i>
+                <div class="col-12">
+                    <h4 class="mb-4 font-heading text-center">24/7 Hotline Roster</h4>
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-4 g-4 justify-content-center">
+                        <div class="col">
+                            <div class="contact-hotline-card h-100" data-number="09300488682">
+                                <div class="contact-icon-wrap">
+                                    <i class="bi bi-telephone-fill"></i>
+                                </div>
+                                <div>
+                                    <span class="contact-label">MDRRMO HOTLINE</span>
+                                    <h5 class="contact-number">0930 048 8682</h5>
+                                </div>
+                                <i class="bi bi-clipboard-plus copy-indicator"></i>
                             </div>
-                            <div>
-                                <span class="contact-label">MDRRMO HOTLINE</span>
-                                <h5 class="contact-number">+63 912 345 6789</h5>
-                            </div>
-                            <i class="bi bi-clipboard-plus copy-indicator"></i>
                         </div>
 
-                        <div class="contact-hotline-card" data-number="+639987654321">
-                            <div class="contact-icon-wrap">
-                                <i class="bi bi-shield-fill"></i>
+                        <div class="col">
+                            <div class="contact-hotline-card h-100" data-number="09985986817">
+                                <div class="contact-icon-wrap">
+                                    <i class="bi bi-shield-fill"></i>
+                                </div>
+                                <div>
+                                    <span class="contact-label">LAPUYAN PNP (POLICE)</span>
+                                    <h5 class="contact-number">0998 598 6817</h5>
+                                </div>
+                                <i class="bi bi-clipboard-plus copy-indicator"></i>
                             </div>
-                            <div>
-                                <span class="contact-label">LAPUYAN POLICE STATION</span>
-                                <h5 class="contact-number">+63 998 765 4321</h5>
-                            </div>
-                            <i class="bi bi-clipboard-plus copy-indicator"></i>
                         </div>
 
-                        <div class="contact-hotline-card" data-number="+639456789012">
-                            <div class="contact-icon-wrap">
-                                <i class="bi bi-fire"></i>
+                        <div class="col">
+                            <div class="contact-hotline-card h-100" data-number="09488221100">
+                                <div class="contact-icon-wrap">
+                                    <i class="bi bi-fire"></i>
+                                </div>
+                                <div>
+                                    <span class="contact-label">LAPUYAN FIRE STATION</span>
+                                    <h5 class="contact-number">0948 822 1100</h5>
+                                </div>
+                                <i class="bi bi-clipboard-plus copy-indicator"></i>
                             </div>
-                            <div>
-                                <span class="contact-label">BFP - LAPUYAN FIRE RESCUE</span>
-                                <h5 class="contact-number">+63 945 678 9012</h5>
-                            </div>
-                            <i class="bi bi-clipboard-plus copy-indicator"></i>
                         </div>
 
-                        <div class="contact-hotline-card" data-number="+639334455667">
-                            <div class="contact-icon-wrap">
-                                <i class="bi bi-heart-pulse-fill"></i>
+                        <div class="col">
+                            <div class="contact-hotline-card h-100" data-number="09300840430">
+                                <div class="contact-icon-wrap">
+                                    <i class="bi bi-heart-pulse-fill"></i>
+                                </div>
+                                <div>
+                                    <span class="contact-label">RURAL HEALTH UNIT (RHU)</span>
+                                    <h5 class="contact-number">0930 084 0430</h5>
+                                </div>
+                                <i class="bi bi-clipboard-plus copy-indicator"></i>
                             </div>
-                            <div>
-                                <span class="contact-label">RURAL HEALTH UNIT (RHU)</span>
-                                <h5 class="contact-number">+63 933 445 5667</h5>
-                            </div>
-                            <i class="bi bi-clipboard-plus copy-indicator"></i>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Office Contact Form & Map details -->
-                <div class="col-lg-6">
-                    <div class="p-4 bg-light rounded-4 border" style="height: 100%;">
-                        <h4 class="mb-4 font-heading">Send Us a Message</h4>
-                        <form id="contactForm" onsubmit="event.preventDefault(); alert('Message sent successfully. Thank you!'); this.reset();">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label small fw-semibold">Name</label>
-                                    <input type="text" class="form-control" placeholder="Your Name" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label small fw-semibold">Email</label>
-                                    <input type="email" class="form-control" placeholder="your@email.com" required>
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label small fw-semibold">Subject</label>
-                                    <input type="text" class="form-control" placeholder="Subject" required>
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label small fw-semibold">Message</label>
-                                    <textarea class="form-control" rows="4" placeholder="How can we assist you?" required></textarea>
-                                </div>
-                                <div class="col-12">
-                                    <button class="btn btn-danger w-100 rounded-pill py-2 shadow-sm font-heading fw-semibold" type="submit">Send Message</button>
-                                </div>
-                            </div>
-                        </form>
                     </div>
                 </div>
             </div>
@@ -375,7 +353,7 @@ if ($isUserLoggedIn) {
                 <div class="col-lg-4">
                     <img src="assets/icon.png" class="footer-brand-logo" alt="MDRRMO Logo">
                     <h5 class="text-white mt-2 mb-3 font-heading fw-bold">MDRRMO LAPUYAN</h5>
-                    <p class="footer-desc">Municipal Disaster Risk Reduction and Management Office of Lapuyan. Building emergency resiliency, fast responders coordination, and dynamic mapping since 2024.</p>
+                    <p class="footer-desc">Welcome to Municipal Disaster Risk Reduction and Management Office of Lapuyan (MDRRMO)<br><br>#SulongParaSaKaligtasan</p>
                 </div>
                 <div class="col-sm-6 col-md-4 col-lg-3">
                     <h5 class="font-heading">Quick Shortcuts</h5>
@@ -398,17 +376,8 @@ if ($isUserLoggedIn) {
                             <p>Municipal Hall Compound, Lapuyan, Zamboanga del Sur, Philippines</p>
                         </div>
                     </div>
-                    <div class="info-block mb-3">
-                        <i class="bi bi-envelope info-icon"></i>
-                        <div class="info-text">
-                            <h5 class="text-white mb-1">Email Support</h5>
-                            <p>mdrrmo.lapuyan@gmail.com</p>
-                        </div>
-                    </div>
                     <div class="social-links mt-4">
-                        <a href="https://www.facebook.com/mdrrmo" target="_blank" class="social-btn"><i class="bi bi-facebook"></i></a>
-                        <a href="#" class="social-btn"><i class="bi bi-twitter-x"></i></a>
-                        <a href="#" class="social-btn"><i class="bi bi-youtube"></i></a>
+                        <a href="https://www.facebook.com/lapuyan.mdrrmo" target="_blank" class="social-btn" title="Follow us on Facebook"><i class="bi bi-facebook"></i></a>
                     </div>
                 </div>
             </div>
@@ -475,7 +444,6 @@ if ($isUserLoggedIn) {
                             <div>
                                 <div class="d-flex align-items-center justify-content-between mb-2">
                                     <span class="badge status-badge" id="incidentModalStatus">--</span>
-                                    <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-1" id="incidentModalSeverity">--</span>
                                 </div>
                                 <h3 class="font-heading fw-bold mb-1 text-dark" id="incidentModalType">--</h3>
                                 <span class="small text-muted d-block mb-3" id="incidentModalDate"><i class="bi bi-calendar-event me-1"></i>--</span>
@@ -484,14 +452,7 @@ if ($isUserLoggedIn) {
                                 <p class="text-muted small" id="incidentModalDescription" style="line-height: 1.6; max-height: 180px; overflow-y: auto;">--</p>
                             </div>
                             
-                            <div class="border-top pt-3 mt-3">
-                                <div class="row g-2">
-                                    <div class="col-12" id="incidentModalGpsBlock" style="display:none;">
-                                        <span class="text-muted d-block small uppercase fw-bold" style="font-size:0.75rem; letter-spacing:0.5px;"><i class="bi bi-geo-alt-fill text-danger me-1"></i>GEOTAG COORDINATES</span>
-                                        <span class="fw-semibold text-dark small" id="incidentModalCoordinates">--</span>
-                                    </div>
-                                </div>
-                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -555,13 +516,9 @@ if ($isUserLoggedIn) {
                                 </div>
                                 <hr>
                                 <div class="row g-3 mt-1">
-                                    <div class="col-6">
+                                    <div class="col-12">
                                         <span class="text-muted d-block small uppercase fw-bold" style="font-size:0.75rem; letter-spacing:0.5px;">ORGANIZATION</span>
                                         <span class="fw-semibold text-dark">MDRRMO Lapuyan</span>
-                                    </div>
-                                    <div class="col-6">
-                                        <span class="text-muted d-block small uppercase fw-bold" style="font-size:0.75rem; letter-spacing:0.5px;">INVENTORY HUB</span>
-                                        <span class="fw-semibold text-dark">Lapuyan Rescue HQ</span>
                                     </div>
                                     <div class="col-12 border-top pt-3 mt-3">
                                         <span class="text-muted d-block small uppercase fw-bold" style="font-size:0.75rem; letter-spacing:0.5px;">RESOURCE STATUS</span>

@@ -144,9 +144,6 @@ if (isset($_GET['logout'])) {
                 <span class="badge bg-danger ms-1">Admin</span>
               </a>
               <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
-                <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
-                <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
               </ul>
             </div>
@@ -235,9 +232,9 @@ if (isset($_GET['logout'])) {
                     <i class="bi bi-check-circle me-1"></i>
                     <span id="activeUsers">0</span> Active
                   </small>
-                  <small class="text-warning">
-                    <i class="bi bi-clock me-1"></i>
-                    <span id="pendingUsers">0</span> Pending
+                  <small class="text-danger">
+                    <i class="bi bi-x-circle me-1"></i>
+                    <span id="inactiveUsers">0</span> Inactive
                   </small>
                 </div>
               </div>

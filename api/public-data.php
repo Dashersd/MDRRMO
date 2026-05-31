@@ -39,9 +39,6 @@ try {
         description TEXT NOT NULL,
         status VARCHAR(50) NOT NULL DEFAULT 'New',
         reported_by VARCHAR(255) NOT NULL,
-        severity VARCHAR(50) DEFAULT NULL,
-        lat DECIMAL(10, 8) DEFAULT NULL,
-        lng DECIMAL(11, 8) DEFAULT NULL,
         photo_data_url LONGTEXT DEFAULT NULL,
         created_at BIGINT NOT NULL,
         updated_at BIGINT DEFAULT NULL,
@@ -94,7 +91,7 @@ try {
     }, $personnels);
 
     // 2. Fetch Incidents (Only approved, dispatched, or resolved)
-    $stmtInc = $pdo->query("SELECT id, type, description, status, severity, lat, lng, photo_data_url, created_at FROM incidents WHERE status IN ('Approved', 'Dispatched', 'Resolved') ORDER BY created_at DESC LIMIT 50");
+    $stmtInc = $pdo->query("SELECT id, type, description, status, photo_data_url, created_at FROM incidents WHERE status IN ('Approved', 'Dispatched', 'Resolved') ORDER BY created_at DESC LIMIT 50");
     $incidents = $stmtInc->fetchAll(PDO::FETCH_ASSOC);
     $formattedIncidents = array_map(function($incident) {
         return [
@@ -102,9 +99,6 @@ try {
             'type' => $incident['type'],
             'description' => $incident['description'],
             'status' => $incident['status'],
-            'severity' => $incident['severity'],
-            'lat' => $incident['lat'] ? (float)$incident['lat'] : null,
-            'lng' => $incident['lng'] ? (float)$incident['lng'] : null,
             'photoDataUrl' => $incident['photo_data_url'],
             'createdAt' => (int)$incident['created_at']
         ];

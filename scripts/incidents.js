@@ -15,7 +15,6 @@
   const searchInput = $("#searchInput");
   const filterStatus = $("#filterStatus");
   const filterType = $("#filterType");
-  const filterSeverity = $("#filterSeverity");
   const sortBy = $("#sortBy");
 
   // Control buttons
@@ -83,7 +82,6 @@
     searchInput.addEventListener("input", debounce(applyFilters, 300));
     filterStatus.addEventListener("change", applyFilters);
     filterType.addEventListener("change", applyFilters);
-    filterSeverity.addEventListener("change", applyFilters);
     sortBy.addEventListener("change", applyFilters);
 
     // Control events
@@ -286,7 +284,6 @@
     const searchTerm = searchInput.value.toLowerCase();
     const statusFilter = filterStatus.value;
     const typeFilter = filterType.value;
-    const severityFilter = filterSeverity.value;
     const sortOption = sortBy.value;
 
     // Filter incidents
@@ -299,10 +296,8 @@
       const matchesStatus =
         statusFilter === "All" || incident.status === statusFilter;
       const matchesType = typeFilter === "All" || incident.type === typeFilter;
-      const matchesSeverity =
-        severityFilter === "All" || incident.severity === severityFilter;
 
-      return matchesSearch && matchesStatus && matchesType && matchesSeverity;
+      return matchesSearch && matchesStatus && matchesType;
     });
 
     // Sort incidents
@@ -324,13 +319,7 @@
       case "oldest":
         filteredIncidents.sort((a, b) => a.createdAt - b.createdAt);
         break;
-      case "severity":
-        const severityOrder = { Critical: 4, High: 3, Moderate: 2, Low: 1 };
-        filteredIncidents.sort(
-          (a, b) =>
-            (severityOrder[b.severity] || 0) - (severityOrder[a.severity] || 0)
-        );
-        break;
+
       case "status":
         const statusOrder = {
           New: 1,
@@ -389,10 +378,6 @@
   function renderIncidentCard(incident) {
     const date = new Date(incident.createdAt).toLocaleString();
     const timeAgo = getTimeAgo(incident.createdAt);
-    const gps =
-      incident.lat != null && incident.lng != null
-        ? `${incident.lat.toFixed(6)}, ${incident.lng.toFixed(6)}`
-        : "No GPS";
 
     return `
       <div class="incident-card-enhanced" data-incident-id="${incident.id}">
@@ -407,13 +392,8 @@
             <div class="incident-title-text">
               <h6>${escapeHtml(incident.type)}</h6>
               <div class="incident-meta">
-                <span class="badge ${getStatusBadgeClass(incident.status)}">${
-      incident.status
-    }</span>
-                <span class="badge ${getSeverityBadgeClass(
-                  incident.severity
-                )}">${incident.severity}</span>
-                <small class="text-muted">${timeAgo}</small>
+                 <span class="badge ${getStatusBadgeClass(incident.status)}">${incident.status}</span>
+                 <small class="text-muted">${timeAgo}</small>
               </div>
             </div>
           </div>
@@ -423,7 +403,7 @@
           ${
             incident.photoDataUrl
               ? `
-            <div class="incident-image-container" data-image="${incident.photoDataUrl}" data-title="${incident.type} - ${incident.severity}">
+            <div class="incident-image-container" data-image="${incident.photoDataUrl}" data-title="${incident.type}">
               <img src="${incident.photoDataUrl}" alt="${incident.type} photo">
               <div class="incident-image-overlay">
                 <i class="bi bi-zoom-in"></i>
@@ -441,10 +421,6 @@
             <div class="incident-detail-item">
               <i class="bi bi-calendar3"></i>
               <span>${date}</span>
-            </div>
-            <div class="incident-detail-item">
-              <i class="bi bi-geo-alt"></i>
-              <span>${gps}</span>
             </div>
           </div>
           
@@ -737,13 +713,7 @@
   }
 
   function viewOnMap(id) {
-    const incident = allIncidents.find((inc) => inc.id === id);
-    if (incident && incident.lat != null && incident.lng != null) {
-      // Redirect to map view with incident coordinates
-      window.location.href = `map-view.php?lat=${incident.lat}&lng=${incident.lng}&zoom=15`;
-    } else {
-      alert("No GPS coordinates available for this incident.");
-    }
+    alert("Map view is not available as GPS coordinates have been removed.");
   }
 
   function showImageModal(imageSrc, imageTitle) {
@@ -773,7 +743,6 @@
     searchInput.value = "";
     filterStatus.value = "All";
     filterType.value = "All";
-    filterSeverity.value = "All";
     sortBy.value = "newest";
     applyFilters();
   }
@@ -870,15 +839,7 @@
     return classes[status] || "status-badge-new";
   }
 
-  function getSeverityBadgeClass(severity) {
-    const classes = {
-      Low: "severity-badge-low",
-      Moderate: "severity-badge-moderate",
-      High: "severity-badge-high",
-      Critical: "severity-badge-critical",
-    };
-    return classes[severity] || "severity-badge-low";
-  }
+
 
   function getTimeAgo(timestamp) {
     const now = Date.now();

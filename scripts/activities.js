@@ -448,12 +448,14 @@
             
             <!-- Actions -->
             <div class="activity-card-actions" onclick="event.stopPropagation();">
-              <button class="btn btn-sm btn-outline-dark activity-action-btn" onclick="event.stopPropagation(); downloadActivityReport('${activity.id}')" title="Download Report">
+              <button class="btn btn-sm btn-outline-dark activity-action-btn" onclick="event.stopPropagation(); showDownloadOptions('${activity.id}')" title="Download Options">
                 <i class="bi bi-download"></i>
               </button>
+              ${!window.location.pathname.includes('/bdrrmo/') ? `
               <button class="btn btn-sm btn-outline-warning activity-action-btn" onclick="event.stopPropagation(); editActivity('${activity.id}')" title="Edit">
                 <i class="bi bi-pencil"></i>
               </button>
+              ` : ''}
               <button class="btn btn-sm btn-outline-danger activity-action-btn" onclick="event.stopPropagation(); deleteActivity('${activity.id}')" title="Delete">
                 <i class="bi bi-trash"></i>
               </button>
@@ -498,7 +500,173 @@
     }
   };
 
-  window.downloadActivityReport = function(activityId) {
+  window.showDownloadOptions = async function(activityId) {
+    try {
+      const activity = allActivities.find(x => x.id === activityId);
+      if (!activity) {
+        alert('Activity not found');
+        return;
+      }
+      
+      const hasPhotos = activity.images && activity.images.length > 0;
+      
+      if (!document.getElementById('downloadOptionsStyles')) {
+        const style = document.createElement('style');
+        style.id = 'downloadOptionsStyles';
+        style.textContent = `
+          .download-option-card {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #fff;
+            margin-bottom: 0.75rem;
+          }
+          .download-option-card:hover {
+            border-color: #0d6efd;
+            background-color: #f2f7ff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(13, 110, 253, 0.08);
+          }
+          .download-option-card .option-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            flex-shrink: 0;
+          }
+          .download-option-card .option-details {
+            flex-grow: 1;
+          }
+          .download-option-card .option-arrow {
+            margin-left: 0.5rem;
+            flex-shrink: 0;
+          }
+          .download-option-card .option-details h6 {
+            margin: 0;
+            font-weight: 700;
+            color: #212529;
+            font-size: 0.95rem;
+          }
+          .download-option-card .option-details p {
+            margin: 0;
+            color: #6c757d;
+            font-size: 0.8rem;
+          }
+        `;
+        document.head.appendChild(style);
+      }
+
+      const modalEl = document.createElement('div');
+      modalEl.className = 'modal fade';
+      modalEl.id = 'downloadOptionsModal';
+      modalEl.innerHTML = `
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 450px;">
+          <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header border-0 pb-0" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 1.5rem 1.5rem 1rem;">
+              <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" style="font-size: 1.2rem;">
+                <i class="bi bi-download text-primary"></i> Download Options
+              </h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4" style="background-color: #fdfdfd;">
+              <p class="text-muted small mb-4">Select the format in which you would like to download or print this official activity report.</p>
+              
+              <div class="d-flex flex-column">
+                <div class="download-option-card" onclick="downloadActivityReport('${activityId}', 'print'); bootstrap.Modal.getInstance(document.getElementById('downloadOptionsModal')).hide();">
+                  <div class="option-icon bg-primary bg-opacity-10 text-primary">
+                    <i class="bi bi-printer-fill fs-4"></i>
+                  </div>
+                  <div class="option-details">
+                    <h6>Printed Report</h6>
+                    <p>Format and print a hard copy of the report.</p>
+                  </div>
+                  <div class="option-arrow">
+                    <i class="bi bi-chevron-right text-muted"></i>
+                  </div>
+                </div>
+                
+                <div class="download-option-card" onclick="downloadActivityReport('${activityId}', 'pdf'); bootstrap.Modal.getInstance(document.getElementById('downloadOptionsModal')).hide();">
+                  <div class="option-icon bg-danger bg-opacity-10 text-danger">
+                    <i class="bi bi-file-pdf-fill fs-4"></i>
+                  </div>
+                  <div class="option-details">
+                    <h6>PDF File</h6>
+                    <p>Save a digital PDF copy of the report.</p>
+                  </div>
+                  <div class="option-arrow">
+                    <i class="bi bi-chevron-right text-muted"></i>
+                  </div>
+                </div>
+                
+                ${hasPhotos ? `
+                <div class="download-option-card" onclick="downloadActivityPhotos('${activityId}'); bootstrap.Modal.getInstance(document.getElementById('downloadOptionsModal')).hide();">
+                  <div class="option-icon bg-success bg-opacity-10 text-success">
+                    <i class="bi bi-image-fill fs-4"></i>
+                  </div>
+                  <div class="option-details">
+                    <h6>Activity Photos Only</h6>
+                    <p>Download the JPG photo evidence.</p>
+                  </div>
+                  <div class="option-arrow">
+                    <i class="bi bi-chevron-right text-muted"></i>
+                  </div>
+                </div>
+                ` : ''}
+              </div>
+            </div>
+            <div class="modal-footer border-0 bg-light py-2 px-4 d-flex justify-content-end">
+              <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modalEl);
+      const bsModal = new bootstrap.Modal(modalEl);
+      bsModal.show();
+      
+      modalEl.addEventListener('hidden.bs.modal', () => {
+        modalEl.remove();
+      });
+    } catch (error) {
+      console.error('Error showing download options:', error);
+      alert('Error loading download settings');
+    }
+  };
+
+  window.downloadActivityPhotos = async function(activityId) {
+    try {
+      const activity = allActivities.find(x => x.id === activityId);
+      if (!activity) {
+        alert('Activity not found');
+        return;
+      }
+      if (!activity.images || activity.images.length === 0) {
+        alert('No photos available for this activity');
+        return;
+      }
+      // Download each image
+      activity.images.forEach((imgUrl, index) => {
+        const a = document.createElement('a');
+        a.href = imgUrl;
+        a.download = `${activity.title || 'activity'}_image_${index + 1}.jpg`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      });
+    } catch (error) {
+      console.error('Error downloading activity photos:', error);
+      alert('Error downloading photos');
+    }
+  };
+
+  window.downloadActivityReport = function(activityId, format = 'print') {
     const activity = allActivities.find(x => x.id === activityId);
     if (!activity) {
       alert('Activity not found');
@@ -744,6 +912,11 @@
         </style>
       </head>
       <body>
+        ${format === 'pdf' ? `
+          <div class="no-print" style="background-color: #0d6efd; color: white; text-align: center; padding: 12px; font-weight: bold; font-size: 0.9rem; font-family: sans-serif; border-radius: 4px; margin-bottom: 20px;">
+            ℹ️ PDF EXPORT MODE: Set "Destination" to "Save as PDF" in the print dialog.
+          </div>
+        ` : ''}
         <div class="report-container">
           <!-- Official Government Header -->
           <div class="report-header">

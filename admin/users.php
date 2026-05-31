@@ -90,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'role' => $role,
                 'organization' => $organization,
                 'phone' => $phone,
-                'status' => 'approved' // Admin-created accounts are auto-approved
+                'status' => 'active' // Admin-created accounts are auto-approved
             ];
             
             if (createUser($user_data)) {
@@ -230,9 +230,6 @@ $users = getAllUsers();
                 <span class="badge bg-danger ms-1">Admin</span>
               </a>
               <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
-                <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
-                <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="../logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
               </ul>
             </div>
@@ -334,18 +331,16 @@ $users = getAllUsers();
                           <td><?php echo htmlspecialchars($user['organization'] ?? ''); ?></td>
                           <td>
                             <?php 
-                            $status = $user['status'] ?? 'pending';
-                            $statusClass = 'secondary';
+                            $status = $user['status'] ?? 'inactive';
+                            $statusLabel = 'Inactive';
+                            $statusClass = 'danger';
                             if ($status === 'approved' || $status === 'active') {
+                                $statusLabel = 'Active';
                                 $statusClass = 'success';
-                            } elseif ($status === 'pending') {
-                                $statusClass = 'warning';
-                            } elseif ($status === 'inactive') {
-                                $statusClass = 'danger';
                             }
                             ?>
                             <span class="badge bg-<?php echo $statusClass; ?>">
-                              <?php echo ucfirst($status); ?>
+                              <?php echo $statusLabel; ?>
                             </span>
                           </td>
                           <td>
@@ -420,10 +415,8 @@ $users = getAllUsers();
                 <div class="mb-3">
                   <label class="form-label">Status</label>
                   <select class="form-select" name="status">
-                    <option value="pending" <?php echo ($user['status'] ?? 'pending') === 'pending' ? 'selected' : ''; ?>>Pending</option>
-                    <option value="approved" <?php echo ($user['status'] ?? 'pending') === 'approved' ? 'selected' : ''; ?>>Approved</option>
-                    <option value="active" <?php echo ($user['status'] ?? 'pending') === 'active' ? 'selected' : ''; ?>>Active</option>
-                    <option value="inactive" <?php echo ($user['status'] ?? 'pending') === 'inactive' ? 'selected' : ''; ?>>Inactive</option>
+                    <option value="active" <?php echo (($user['status'] ?? 'inactive') === 'active' || ($user['status'] ?? 'inactive') === 'approved') ? 'selected' : ''; ?>>Active</option>
+                    <option value="inactive" <?php echo (($user['status'] ?? 'inactive') === 'inactive' || ($user['status'] ?? 'inactive') === 'pending') ? 'selected' : ''; ?>>Inactive</option>
                   </select>
                 </div>
                 

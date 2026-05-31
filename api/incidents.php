@@ -28,9 +28,6 @@ try {
             description TEXT NOT NULL,
             status VARCHAR(50) NOT NULL DEFAULT 'New',
             reported_by VARCHAR(255) NOT NULL,
-            severity VARCHAR(50) DEFAULT NULL,
-            lat DECIMAL(10, 8) DEFAULT NULL,
-            lng DECIMAL(11, 8) DEFAULT NULL,
             photo_data_url LONGTEXT DEFAULT NULL,
             created_at BIGINT NOT NULL,
             updated_at BIGINT DEFAULT NULL,
@@ -55,7 +52,7 @@ switch ($method) {
             $userId = isset($_GET['user_id']) ? $_GET['user_id'] : null;
             $status = isset($_GET['status']) ? $_GET['status'] : null;
             
-            $query = 'SELECT id, type, description, status, reported_by, severity, lat, lng, photo_data_url, created_at, updated_at FROM incidents WHERE 1=1';
+            $query = 'SELECT id, type, description, status, reported_by, photo_data_url, created_at, updated_at FROM incidents WHERE 1=1';
             $params = [];
             
             // Allow filtering by user if provided (for admin filtering by specific user)
@@ -85,9 +82,6 @@ switch ($method) {
                     'description' => $incident['description'],
                     'status' => $incident['status'],
                     'reportedBy' => $incident['reported_by'],
-                    'severity' => $incident['severity'],
-                    'lat' => $incident['lat'] ? (float)$incident['lat'] : null,
-                    'lng' => $incident['lng'] ? (float)$incident['lng'] : null,
                     'photoDataUrl' => $incident['photo_data_url'],
                     'createdAt' => (int)$incident['created_at'],
                     'updatedAt' => $incident['updated_at'] ? (int)$incident['updated_at'] : null
@@ -117,15 +111,12 @@ switch ($method) {
             $description = $data['description'];
             $status = $data['status'] ?? 'New';
             $reportedBy = $data['reportedBy'] ?? $currentUser;
-            $severity = $data['severity'] ?? null;
-            $lat = isset($data['lat']) ? $data['lat'] : null;
-            $lng = isset($data['lng']) ? $data['lng'] : null;
             $photoDataUrl = $data['photoDataUrl'] ?? null;
             $createdAt = $data['createdAt'] ?? (time() * 1000); // Convert to milliseconds
             
             $stmt = $pdo->prepare('
-                INSERT INTO incidents (id, type, description, status, reported_by, severity, lat, lng, photo_data_url, created_at)
-                VALUES (:id, :type, :description, :status, :reported_by, :severity, :lat, :lng, :photo_data_url, :created_at)
+                INSERT INTO incidents (id, type, description, status, reported_by, photo_data_url, created_at)
+                VALUES (:id, :type, :description, :status, :reported_by, :photo_data_url, :created_at)
             ');
             
             $stmt->execute([
@@ -134,9 +125,6 @@ switch ($method) {
                 ':description' => $description,
                 ':status' => $status,
                 ':reported_by' => $reportedBy,
-                ':severity' => $severity,
-                ':lat' => $lat,
-                ':lng' => $lng,
                 ':photo_data_url' => $photoDataUrl,
                 ':created_at' => $createdAt
             ]);
@@ -182,11 +170,6 @@ switch ($method) {
             if (isset($data['type'])) {
                 $updates[] = 'type = :type';
                 $params[':type'] = $data['type'];
-            }
-
-            if (isset($data['severity'])) {
-                $updates[] = 'severity = :severity';
-                $params[':severity'] = $data['severity'];
             }
 
             if (isset($data['photoDataUrl'])) {
