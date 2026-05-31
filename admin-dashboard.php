@@ -20,7 +20,7 @@ if (isset($_GET['logout'])) {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Admin Dashboard | MDRRMO Incident Reporting</title>
+    <title>Admin Dashboard | MDRRMO Information System</title>
 
     <!-- Tab Icon / Favicon -->
     <link rel="icon" type="image/png" href="assets/icon.png" />
