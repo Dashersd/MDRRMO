@@ -127,7 +127,6 @@ if (isset($_GET['logout'])) {
                 $displayName = $userData['full_name'] ?? getCurrentUser();
                 echo htmlspecialchars($displayName);
               ?>!</strong>
-              <span class="text-muted ms-2 d-none d-xl-inline">Ready to report and monitor operations</span>
             </span>
           </div>
           
