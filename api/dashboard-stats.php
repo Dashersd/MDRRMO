@@ -36,13 +36,33 @@ try {
     // But we can prepare the structure here for future database integration
     
     // Get incidents stats
-    $stmt = $pdo->query('SELECT COUNT(*) as total FROM incidents');
+    $userRole = getUserRole();
+    $userData = getUserData();
+    $userOrg = $userData['organization'] ?? '';
+    
+    $whereClause = '';
+    $params = [];
+    
+    if ($userRole === 'client' && $userOrg) {
+        $whereClause = ' WHERE barangay = :user_org';
+        $params[':user_org'] = $userOrg;
+    }
+    
+    // Total incidents
+    $stmt = $pdo->prepare('SELECT COUNT(*) as total FROM incidents' . $whereClause);
+    $stmt->execute($params);
     $totalIncidents = $stmt->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
     
-    $stmt = $pdo->query('SELECT COUNT(*) as total FROM incidents WHERE status = "New"');
+    // New incidents
+    $newWhere = $whereClause ? $whereClause . ' AND status = "New"' : ' WHERE status = "New"';
+    $stmt = $pdo->prepare('SELECT COUNT(*) as total FROM incidents' . $newWhere);
+    $stmt->execute($params);
     $newIncidents = $stmt->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
     
-    $stmt = $pdo->query('SELECT COUNT(*) as total FROM incidents WHERE status = "Resolved"');
+    // Resolved incidents
+    $resolvedWhere = $whereClause ? $whereClause . ' AND status = "Resolved"' : ' WHERE status = "Resolved"';
+    $stmt = $pdo->prepare('SELECT COUNT(*) as total FROM incidents' . $resolvedWhere);
+    $stmt->execute($params);
     $resolvedIncidents = $stmt->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
     
     $stats = [

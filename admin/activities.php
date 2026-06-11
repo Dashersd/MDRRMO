@@ -131,6 +131,8 @@ if (isset($_GET['logout'])) {
                 <span class="badge bg-danger ms-1">Admin</span>
               </a>
               <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#adminProfileModal"><i class="bi bi-person me-2"></i>Profile Settings</a></li>
+                <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="../logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
               </ul>
             </div>
@@ -163,10 +165,14 @@ if (isset($_GET['logout'])) {
         <div class="row">
           <div class="col-12">
             <div class="card border-0 shadow-sm">
-              <div class="card-header bg-white border-0">
+              <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
                 <h5 class="mb-0 d-flex align-items-center gap-2">
                   <i class="bi bi-calendar-check text-primary"></i> Activity Log
                 </h5>
+                <div class="input-group input-group-sm" style="width: 250px;">
+                  <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                  <input type="text" id="searchActivities" class="form-control border-start-0 ps-0" placeholder="Search activities...">
+                </div>
               </div>
               <div class="card-body">
                 <!-- Loading State -->
@@ -202,6 +208,53 @@ if (isset($_GET['logout'])) {
           <i class="bi bi-info-circle"></i> MDRRMO Admin Dashboard - MDRRMO Information System
         </span>
       </footer>
+    </div>
+
+    <!-- Admin Profile Modal -->
+    <div class="modal fade" id="adminProfileModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Admin Profile</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <form method="POST" action="users.php">
+            <div class="modal-body">
+              <input type="hidden" name="action" value="update_profile">
+              <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input type="text" class="form-control" name="username" value="<?php echo htmlspecialchars($_SESSION['user_data']['username'] ?? ''); ?>" required minlength="3" pattern="[a-zA-Z0-9_]+">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Full Name</label>
+                <input type="text" class="form-control" name="full_name" value="<?php echo htmlspecialchars($_SESSION['user_data']['full_name'] ?? ''); ?>" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control" name="email" value="<?php echo htmlspecialchars($_SESSION['user_data']['email'] ?? ''); ?>" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Organization</label>
+                <input type="text" class="form-control" name="organization" value="<?php echo htmlspecialchars($_SESSION['user_data']['organization'] ?? ''); ?>" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">New Password</label>
+                <div class="input-group">
+                  <input type="password" class="form-control" name="password" id="activitiesProfilePassword" minlength="6" placeholder="Enter new password">
+                  <button class="btn btn-outline-secondary" type="button" onclick="const p=document.getElementById('activitiesProfilePassword');const i=this.querySelector('i');if(p.type==='password'){p.type='text';i.classList.replace('bi-eye','bi-eye-slash');}else{p.type='password';i.classList.replace('bi-eye-slash','bi-eye');}">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                </div>
+                <small class="text-muted">Minimum 6 characters. Leave blank to keep current password.</small>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">Update Profile</button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
 
     <!-- Bootstrap JS -->
@@ -274,7 +327,7 @@ if (isset($_GET['logout'])) {
             <div class="row g-0">
               <!-- Left side: Carousel -->
               <div class="col-md-6 bg-dark d-flex flex-column align-items-center justify-content-center position-relative" style="min-height: 350px; overflow: hidden;">
-                <div id="galleryCarousel" class="carousel slide w-100 h-100" data-bs-ride="carousel">
+                <div id="galleryCarousel" class="carousel slide w-100 h-100">
                   <div class="carousel-inner h-100 d-flex align-items-center" id="galleryCarouselInner"></div>
                   <button class="carousel-control-prev" type="button" data-bs-target="#galleryCarousel" data-bs-slide="prev">
                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -313,6 +366,12 @@ if (isset($_GET['logout'])) {
     <script src="../scripts/dashboard.js?v=<?php echo urlencode((string) @filemtime(__DIR__ . '/../scripts/dashboard.js')); ?>"></script>
     <script src="../scripts/activities.js?v=<?php echo urlencode((string) @filemtime(__DIR__ . '/../scripts/activities.js')); ?>"></script>
     <style>
+      /* Search Input Styles */
+      #searchActivities:focus {
+        box-shadow: none;
+        border-color: #dee2e6;
+      }
+
       .activities-list {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));

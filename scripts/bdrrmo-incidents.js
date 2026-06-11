@@ -211,16 +211,52 @@
         <div class="incident-card-square hover-lift">
           <!-- Image Section -->
           <div class="incident-card-image-wrapper" onclick="viewIncidentDetails('${incident.id}')">
-            ${incident.photoDataUrl ? `
-              <img src="${incident.photoDataUrl}" 
-                   alt="Incident photo" 
-                   class="incident-card-image"
-                   loading="lazy">
-            ` : `
-              <div class="incident-card-image-placeholder">
-                <i class="${typeIcon}"></i>
-              </div>
-            `}
+            ${(() => {
+              const images = incident.photoDataUrls && incident.photoDataUrls.length > 0 ? incident.photoDataUrls : (incident.photoDataUrl ? [incident.photoDataUrl] : []);
+              if (images.length === 0) {
+                return `
+                  <div class="incident-card-image-placeholder">
+                    <i class="${typeIcon}"></i>
+                  </div>
+                `;
+              } else if (images.length === 1) {
+                return `
+                  <img src="${images[0]}" 
+                       alt="Incident photo" 
+                       class="incident-card-image"
+                       loading="lazy">
+                `;
+              } else {
+                let carouselInner = '';
+                let carouselIndicators = '';
+                images.forEach((url, i) => {
+                  carouselIndicators += `<button type="button" data-bs-target="#cardCarouselBDRRMO${incident.id}" data-bs-slide-to="${i}" class="${i === 0 ? 'active' : ''}" aria-current="true" aria-label="Slide ${i + 1}" onclick="event.stopPropagation();"></button>`;
+                  carouselInner += `
+                    <div class="carousel-item ${i === 0 ? 'active' : ''} h-100">
+                      <img src="${url}" class="d-block w-100 h-100 incident-card-image" style="object-fit: cover; cursor: pointer;" alt="Incident Photo ${i+1}" onclick="event.stopPropagation(); viewIncidentDetails('${incident.id}')">
+                    </div>
+                  `;
+                });
+                return `
+                  <div id="cardCarouselBDRRMO${incident.id}" class="carousel slide h-100 w-100">
+                    <div class="carousel-indicators mb-0 pb-1" style="bottom: 0;">
+                      ${carouselIndicators}
+                    </div>
+                    <div class="carousel-inner h-100">
+                      ${carouselInner}
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#cardCarouselBDRRMO${incident.id}" data-bs-slide="prev" onclick="event.stopPropagation();" style="width: 15%; background: linear-gradient(90deg, rgba(0,0,0,0.5) 0%, transparent 100%);">
+                      <span class="carousel-control-prev-icon" aria-hidden="true" style="width: 1rem; height: 1rem;"></span>
+                      <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#cardCarouselBDRRMO${incident.id}" data-bs-slide="next" onclick="event.stopPropagation();" style="width: 15%; background: linear-gradient(270deg, rgba(0,0,0,0.5) 0%, transparent 100%);">
+                      <span class="carousel-control-next-icon" aria-hidden="true" style="width: 1rem; height: 1rem;"></span>
+                      <span class="visually-hidden">Next</span>
+                    </button>
+                  </div>
+                `;
+              }
+            })()}
             <!-- Status Badge Overlay -->
             <div class="incident-card-status-overlay">
               <span class="badge ${statusBadge.class} incident-status-badge">${escapeHtml(statusBadge.text)}</span>
@@ -241,11 +277,14 @@
                 <h6 class="incident-card-title mb-0" title="${escapeHtml(incident.type || 'Unknown')}">
                   ${escapeHtml(incident.type || 'Unknown')}
                 </h6>
-                <span class="badge bg-light text-dark border small py-0.5 px-1.5" style="font-size: 0.65rem; border-radius: 4px; white-space: nowrap; background-color: #f1f3f5; color: #495057; border: 1px solid #dee2e6; font-weight: 600;" title="Reported by BDRRMO Staff">
-                  <i class="bi bi-person-fill me-1 text-primary"></i>${escapeHtml(incident.reportedBy || 'Staff')}
+                <span class="badge bg-light text-dark border small py-0.5 px-1.5" style="font-size: 0.65rem; border-radius: 4px; white-space: nowrap; background-color: #f1f3f5; color: #495057; border: 1px solid #dee2e6; font-weight: 600;" title="Reported by You">
+                  <i class="bi bi-person-fill me-1 text-primary"></i>${escapeHtml(incident.reportedBy === window.CURRENT_USER ? 'You' : incident.reportedBy)}
                 </span>
               </div>
-              <small class="incident-card-time">${timeAgo}</small>
+              <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
+                <small class="incident-card-time">${timeAgo}</small>
+                <small class="text-muted"><i class="bi bi-geo-alt me-1"></i>${escapeHtml(incident.barangay || 'Not specified')}</small>
+              </div>
             </div>
             
             <!-- Description -->
@@ -352,6 +391,7 @@
    * Get type CSS class for icon colors
    */
   function getTypeClass(type) {
+    if (type && type.startsWith("Other:")) return 'incident-type-other';
     if (!type) return 'incident-type-other';
     const typeLower = type.toLowerCase().replace(/\s+/g, '-');
     return `incident-type-${typeLower}`;
@@ -361,6 +401,7 @@
    * Get type icon
    */
   function getTypeIcon(type) {
+    if (type && type.startsWith("Other:")) return 'bi bi-exclamation-octagon';
     const icons = {
       'Fire': 'bi bi-fire',
       'Flood': 'bi bi-droplet',
@@ -369,6 +410,7 @@
       'Landslide': 'bi bi-triangle',
       'Earthquake': 'bi bi-activity',
       'Power Outage': 'bi bi-lightning',
+      'Fallen Trees': 'bi bi-tree',
     };
     return icons[type] || 'bi bi-exclamation-octagon';
   }
@@ -421,23 +463,55 @@
   /**
    * Global functions for onclick handlers
    */
-  window.viewReportImage = async function(incidentId) {
+  window.viewReportImage = async function(incidentId, initialSlide = 0) {
     try {
       const incident = await getIncidentById(incidentId);
-      if (incident && incident.photoDataUrl) {
+      if (incident && (incident.photoDataUrls || incident.photoDataUrl)) {
+        const photos = (incident.photoDataUrls && incident.photoDataUrls.length > 0) 
+            ? incident.photoDataUrls 
+            : [incident.photoDataUrl];
+        
+        let carouselIndicators = '';
+        let carouselInner = '';
+        
+        photos.forEach((url, idx) => {
+            const activeClass = idx === initialSlide ? 'active' : '';
+            carouselIndicators += `<button type="button" data-bs-target="#incidentPhotoCarousel" data-bs-slide-to="${idx}" class="${activeClass}"></button>`;
+            carouselInner += `
+              <div class="carousel-item ${activeClass}">
+                <img src="${url}" class="d-block w-100 rounded" style="max-height: 70vh; object-fit: contain;" alt="Photo ${idx + 1}">
+              </div>
+            `;
+        });
+        
         // Create and show modal
         const modal = document.createElement('div');
         modal.className = 'modal fade';
         modal.id = 'reportImageModal';
         modal.innerHTML = `
-          <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title">Incident Photo - ${escapeHtml(incident.type || 'Unknown')}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="background: rgba(0,0,0,0.9);">
+              <div class="modal-header border-0 position-absolute w-100" style="z-index: 10;">
+                <h5 class="modal-title text-white">Incident Photos - ${escapeHtml(incident.type || 'Unknown')}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
               </div>
-              <div class="modal-body text-center">
-                <img src="${incident.photoDataUrl}" alt="Incident Photo" class="img-fluid rounded">
+              <div class="modal-body p-0 position-relative text-center">
+                <div id="incidentPhotoCarousel" class="carousel slide" data-bs-interval="false">
+                  ${photos.length > 1 ? `<div class="carousel-indicators">${carouselIndicators}</div>` : ''}
+                  <div class="carousel-inner">
+                    ${carouselInner}
+                  </div>
+                  ${photos.length > 1 ? `
+                  <button class="carousel-control-prev" type="button" data-bs-target="#incidentPhotoCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                  </button>
+                  <button class="carousel-control-next" type="button" data-bs-target="#incidentPhotoCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                  </button>
+                  ` : ''}
+                </div>
               </div>
             </div>
           </div>
@@ -460,143 +534,11 @@
         alert('Incident not found');
         return;
       }
-
-      const date = new Date(incident.createdAt || Date.now()).toLocaleString();
-      const statusBadge = getStatusBadge(incident.status || 'New');
-      
-      // Get type icon
-      const typeIcon = getTypeIcon(incident.type);
-      const typeClass = getTypeClass(incident.type);
-      
-      // Create a nice modal for details
-      const modal = document.createElement('div');
-      modal.className = 'modal fade';
-      modal.id = 'incidentDetailsModal';
-      modal.innerHTML = `
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-          <div class="modal-content border-0 shadow-lg" style="overflow: hidden;">
-            <!-- Enhanced Header -->
-            <div class="modal-header border-0 pb-0" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 1.25rem 1.5rem;">
-              <div class="d-flex align-items-center w-100">
-                <div class="flex-grow-1 d-flex align-items-center gap-3 pb-3">
-                  <h5 class="modal-title mb-0 fw-bold" style="font-size: 1.3rem; color: #212529;">
-                    ${escapeHtml(incident.type || 'Unknown Incident')}
-                  </h5>
-                  <span class="badge ${statusBadge.class} px-3 py-2" style="font-size: 0.75rem; font-weight: 600;">
-                    ${escapeHtml(statusBadge.text)}
-                  </span>
-                </div>
-                <button type="button" class="btn-close pb-3" data-bs-dismiss="modal" style="opacity: 0.7;"></button>
-              </div>
-            </div>
-            
-            <div class="modal-body" style="padding: 1.25rem;">
-              <!-- Incident Information Card -->
-              <div class="card border-0 shadow-sm mb-3" style="background: #f8f9fa;">
-                <div class="card-body p-3">
-                  <h6 class="card-title fw-bold mb-3 d-flex align-items-center" style="color: #495057; font-size: 0.95rem;">
-                    <i class="bi bi-info-circle-fill me-2 text-primary"></i>
-                    Incident Information
-                  </h6>
-                  
-                  <!-- Type -->
-                  <div class="d-flex align-items-start mb-2 pb-2 border-bottom">
-                    <div class="flex-shrink-0 me-3">
-                      <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                        <i class="bi bi-tag-fill text-primary" style="font-size: 0.85rem;"></i>
-                      </div>
-                    </div>
-                    <div class="flex-grow-1">
-                      <small class="text-muted d-block mb-0.5" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">Type</small>
-                      <div class="fw-semibold" style="color: #212529; font-size: 0.9rem;">
-                        ${escapeHtml(incident.type || 'Unknown')}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <!-- Date & Time -->
-                  <div class="d-flex align-items-start mb-2 pb-2 border-bottom">
-                    <div class="flex-shrink-0 me-3">
-                      <div class="bg-success bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                        <i class="bi bi-calendar3-fill text-success" style="font-size: 0.85rem;"></i>
-                      </div>
-                    </div>
-                    <div class="flex-grow-1">
-                      <small class="text-muted d-block mb-0.5" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">Date & Time</small>
-                      <div class="fw-semibold" style="color: #212529; font-size: 0.9rem;">
-                        ${escapeHtml(date)}
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Status -->
-                  <div class="d-flex align-items-start mb-2 pb-2 border-bottom">
-                    <div class="flex-shrink-0 me-3">
-                      <div class="bg-info bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                        <i class="bi bi-flag-fill text-info" style="font-size: 0.85rem;"></i>
-                      </div>
-                    </div>
-                    <div class="flex-grow-1">
-                      <small class="text-muted d-block mb-0.5" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">Status</small>
-                      <div class="fw-semibold" style="color: #212529; font-size: 0.9rem;">
-                        <span class="badge ${statusBadge.class}" style="font-size: 0.75rem;">${escapeHtml(statusBadge.text)}</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                </div>
-              </div>
-              
-              <!-- Description Card -->
-              <div class="card border-0 shadow-sm mb-3" style="background: #f8f9fa;">
-                <div class="card-body p-3">
-                  <h6 class="card-title fw-bold mb-2 d-flex align-items-center" style="color: #495057; font-size: 0.95rem;">
-                    <i class="bi bi-file-text-fill me-2 text-info"></i>
-                    Description
-                  </h6>
-                  <p class="mb-0 text-muted" style="line-height: 1.5; font-size: 0.85rem; max-height: 120px; overflow-y: auto;">
-                    ${escapeHtml(incident.description || 'No description provided')}
-                  </p>
-                </div>
-              </div>
-              
-              <!-- Photo Card -->
-              ${incident.photoDataUrl ? `
-                <div class="card border-0 shadow-sm" style="background: #f8f9fa;">
-                  <div class="card-body p-3">
-                    <h6 class="card-title fw-bold mb-2 d-flex align-items-center" style="color: #495057; font-size: 0.95rem;">
-                      <i class="bi bi-image-fill me-2 text-danger"></i>
-                      Incident Photo
-                    </h6>
-                    <div class="text-center" style="background: white; border-radius: 8px; padding: 0.5rem; box-shadow: inset 0 2px 6px rgba(0,0,0,0.05);">
-                      <img src="${incident.photoDataUrl}" 
-                           alt="Incident Photo" 
-                           class="img-fluid rounded shadow-sm" 
-                           style="max-height: 380px; width: 100%; object-fit: cover; cursor: pointer; transition: transform 0.3s ease;"
-                           onclick="viewReportImage('${incident.id}')"
-                           onmouseover="this.style.transform='scale(1.02)'"
-                           onmouseout="this.style.transform='scale(1)'">
-                    </div>
-                  </div>
-                </div>
-              ` : ''}
-            </div>
-            
-            <div class="modal-footer border-top bg-light" style="padding: 1rem 1.75rem;">
-              <button type="button" class="btn btn-outline-danger" onclick="showDownloadOptions('${incident.id}')">
-                <i class="bi bi-download me-1"></i> Download Report
-              </button>
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                <i class="bi bi-x-circle me-1"></i> Close
-              </button>
-            </div>
-          </div>
-        </div>
-      `;
-      document.body.appendChild(modal);
-      const bsModal = new bootstrap.Modal(modal);
-      bsModal.show();
-      modal.addEventListener('hidden.bs.modal', () => modal.remove());
+      if (window.showIncidentDetailsModal) {
+          window.showIncidentDetailsModal(incident, { isAdmin: false });
+      } else {
+          alert('Error: showIncidentDetailsModal not found. Please refresh the page.');
+      }
     } catch (error) {
       console.error('Error viewing incident details:', error);
       alert('Error loading incident details');
@@ -610,14 +552,17 @@
         alert('Incident not found');
         return;
       }
-      if (!incident.photoDataUrl) {
+      if (!incident.photoDataUrl && (!incident.photoDataUrls || incident.photoDataUrls.length === 0)) {
         alert('No photo available for this incident');
         return;
       }
-      const a = document.createElement('a');
-      a.href = incident.photoDataUrl;
-      a.download = `${incident.type || 'incident'}_${incidentId}.jpg`;
-      a.click();
+      const photos = (incident.photoDataUrls && incident.photoDataUrls.length > 0) ? incident.photoDataUrls : [incident.photoDataUrl];
+      photos.forEach((url, idx) => {
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${incident.type || 'incident'}_${incidentId}_${idx + 1}.jpg`;
+          a.click();
+      });
     } catch (error) {
       console.error('Error downloading incident photo:', error);
       alert('Error downloading photo');
@@ -1054,15 +999,20 @@
             <div class="report-description">${escapeHtml(incident.description || 'No description or logs provided for this incident.')}</div>
 
             <!-- Evidence Gallery -->
-            ${incident.photoDataUrl ? `
-              <div class="evidence-section page-break-inside-avoid">
+            ${((incident.photoDataUrls && incident.photoDataUrls.length > 0) || incident.photoDataUrl) ? `
+              <div class="evidence-section">
                 <div class="report-section-title">Photo Evidence</div>
-                <div class="evidence-card">
-                  <div class="evidence-img-container">
-                    <img src="${incident.photoDataUrl}" alt="Incident Photo Evidence">
-                  </div>
-                  <div class="evidence-caption">Figure 1: Geotagged Photo Evidence for Incident ID ${escapeHtml(incident.id)}</div>
-                </div>
+                ${(() => {
+                  const photos = (incident.photoDataUrls && incident.photoDataUrls.length > 0) ? incident.photoDataUrls : [incident.photoDataUrl];
+                  return photos.filter(url => url).map((url, idx) => `
+                    <div class="evidence-card page-break-inside-avoid" style="margin-bottom: 1rem;">
+                      <div class="evidence-img-container">
+                        <img src="${url}" alt="Incident Photo ${idx + 1}">
+                      </div>
+                      <div class="evidence-caption">Figure ${idx + 1}: Geotagged Photo Evidence for Incident ID ${escapeHtml(incident.id)}</div>
+                    </div>
+                  `).join('');
+                })()}
               </div>
             ` : ''}
 

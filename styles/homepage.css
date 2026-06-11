@@ -1112,17 +1112,7 @@ h6 {
     padding-top: 1rem;
 }
 
-/* Horizontal connector bar */
-.org-children::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: var(--primary);
-    opacity: 0.5;
-}
+/* Horizontal connector bar (Removed to prevent infinite line stretching) */
 
 /* Vertical line from parent node down */
 .org-children::after {

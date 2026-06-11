@@ -75,15 +75,23 @@ function getDatabaseConfig(): array
         return $val !== false ? $val : $default;
     };
 
-    $host = $getEnvVar('DB_HOST', '127.0.0.1');
-    $port = $getEnvVar('DB_PORT', '3306');
+    $isLocalhost = in_array($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? '', ['localhost', '127.0.0.1', '::1']);
 
-    // Support both DB_DATABASE/DB_NAME and DB_USERNAME/DB_USER naming conventions.
-    $dbname = $getEnvVar('DB_DATABASE', $getEnvVar('DB_NAME', 'mdrrmo_information_system'));
-    $username = $getEnvVar('DB_USERNAME', $getEnvVar('DB_USER', 'root'));
-    
-    // Check if DB_PASSWORD is set in environment (even if empty)
-    $password = $getEnvVar('DB_PASSWORD', '');
+    if ($isLocalhost) {
+        $host = $getEnvVar('DB_HOST', '127.0.0.1');
+        $port = $getEnvVar('DB_PORT', '3306');
+        $dbname = $getEnvVar('DB_DATABASE', $getEnvVar('DB_NAME', 'mdrrmo_information_system'));
+        $username = $getEnvVar('DB_USERNAME', $getEnvVar('DB_USER', 'root'));
+        $password = $getEnvVar('DB_PASSWORD', '');
+    } else {
+        // InfinityFree production credentials
+        $host = $getEnvVar('DB_HOST', 'sql311.infinityfree.com');
+        $port = $getEnvVar('DB_PORT', '3306');
+        // IMPORTANT: Replace 'if0_42044872_XXX' with your actual InfinityFree database name
+        $dbname = $getEnvVar('DB_DATABASE', $getEnvVar('DB_NAME', 'if0_42044872_XXX')); 
+        $username = $getEnvVar('DB_USERNAME', $getEnvVar('DB_USER', 'if0_42044872'));
+        $password = $getEnvVar('DB_PASSWORD', 'AVDK5mmi100DSDP');
+    }
 
     $options = [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,

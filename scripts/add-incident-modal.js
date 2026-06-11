@@ -12,55 +12,163 @@
                          window.location.pathname.includes('/bdrrmo/');
   const API_URL = isSubdirectory ? "../api/incidents.php" : "api/incidents.php";
 
+  let selectedImages = [];
+
   document.addEventListener("DOMContentLoaded", function () {
     const modal = document.getElementById("addIncidentModal");
     const form = document.getElementById("addIncidentForm");
     const submitBtn = document.getElementById("modalSubmitIncident");
     const photoInput = document.getElementById("modalPhoto");
-    const photoPreview = document.getElementById("modalPhotoPreview");
     const photoPreviewWrap = document.getElementById("modalPhotoPreviewWrap");
+    const photoPreviewContainer = document.getElementById("modalPhotoPreviewContainer");
     const photoMeta = document.getElementById("modalPhotoMeta");
-    const removePhotoBtn = document.getElementById("modalRemovePhoto");
     const incidentType = document.getElementById("modalIncidentType");
     const description = document.getElementById("modalDescription");
+    const otherIncidentTypeContainer = document.getElementById("otherIncidentTypeContainer");
+    const modalOtherIncidentType = document.getElementById("modalOtherIncidentType");
 
     if (!modal || !form) return;
 
-    // Photo preview handler
-    if (photoInput) {
-      photoInput.addEventListener("change", function () {
-        const file = this.files && this.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = function (e) {
-            photoPreview.src = e.target.result;
-            photoPreviewWrap.style.display = "block";
-            photoMeta.innerHTML = `<i class="bi bi-check-circle text-success me-1"></i>Photo selected: ${file.name}`;
-          };
-          reader.readAsDataURL(file);
+    if (incidentType && otherIncidentTypeContainer && modalOtherIncidentType) {
+      incidentType.addEventListener('change', function() {
+        if (this.value === 'Other') {
+          otherIncidentTypeContainer.style.display = 'block';
+          modalOtherIncidentType.setAttribute('required', 'required');
+        } else {
+          otherIncidentTypeContainer.style.display = 'none';
+          modalOtherIncidentType.removeAttribute('required');
+          modalOtherIncidentType.value = '';
         }
       });
     }
 
-    // Remove photo handler
-    if (removePhotoBtn) {
-      removePhotoBtn.addEventListener("click", function () {
-        if (photoInput) photoInput.value = "";
-        if (photoPreview) photoPreview.src = "";
-        if (photoPreviewWrap) photoPreviewWrap.style.display = "none";
-        if (photoMeta)
-          photoMeta.innerHTML =
-            '<i class="bi bi-clock me-1"></i>Awaiting image upload...';
+    // Auto-select and lock barangay for BDRRMO staff
+    const modalBarangay = document.getElementById("modalBarangay");
+    if (modalBarangay && window.USER_ORGANIZATION && window.USER_ORGANIZATION !== 'MDRRMO') {
+      modalBarangay.value = window.USER_ORGANIZATION;
+      modalBarangay.setAttribute('disabled', 'disabled');
+      // Create a hidden input to submit the value since disabled inputs aren't submitted
+      const hiddenBarangay = document.createElement('input');
+      hiddenBarangay.type = 'hidden';
+      hiddenBarangay.name = 'barangay';
+      hiddenBarangay.id = 'hiddenModalBarangay';
+      hiddenBarangay.value = window.USER_ORGANIZATION;
+      form.appendChild(hiddenBarangay);
+    }
+
+    // Photo preview handler
+    if (photoInput) {
+      photoInput.addEventListener("change", function (e) {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+
+        if (files.length > 10) {
+          alert('Please select a maximum of 10 images at a time to avoid storage issues.');
+          this.value = '';
+          return;
+        }
+
+        // Clear previous
+        selectedImages = [];
+        if (photoPreviewContainer) photoPreviewContainer.innerHTML = '';
+        if (photoMeta) photoMeta.innerHTML = `<i class="bi bi-clock me-1 text-muted"></i>Processing images...`;
+
+        let loadedCount = 0;
+        files.forEach((file, index) => {
+          resizeImageToDataURL(file, 800, 800)
+            .then(dataUrl => {
+              selectedImages.push(dataUrl);
+              addImagePreview(dataUrl, index);
+              loadedCount++;
+              if (loadedCount === files.length) {
+                if (photoPreviewWrap) photoPreviewWrap.style.display = "block";
+                if (photoMeta) photoMeta.innerHTML = `<i class="bi bi-check-circle text-success me-1"></i>${files.length} photo(s) selected`;
+              }
+            })
+            .catch(err => {
+              console.error(err);
+              loadedCount++;
+            });
+        });
       });
+    }
+
+    function addImagePreview(dataUrl, index) {
+      if (!photoPreviewContainer) return;
+      
+      const previewItem = document.createElement('div');
+      previewItem.style.position = 'relative';
+      previewItem.style.width = '100px';
+      previewItem.style.height = '100px';
+      previewItem.style.borderRadius = '8px';
+      previewItem.style.overflow = 'hidden';
+      previewItem.style.border = '2px solid #dee2e6';
+      
+      const img = document.createElement('img');
+      img.src = dataUrl;
+      img.style.width = '100%';
+      img.style.height = '100%';
+      img.style.objectFit = 'cover';
+      
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.innerHTML = '<i class="bi bi-x"></i>';
+      removeBtn.style.position = 'absolute';
+      removeBtn.style.top = '4px';
+      removeBtn.style.right = '4px';
+      removeBtn.style.width = '24px';
+      removeBtn.style.height = '24px';
+      removeBtn.style.borderRadius = '50%';
+      removeBtn.style.background = 'rgba(220, 53, 69, 0.9)';
+      removeBtn.style.color = 'white';
+      removeBtn.style.border = 'none';
+      removeBtn.style.display = 'flex';
+      removeBtn.style.alignItems = 'center';
+      removeBtn.style.justifyContent = 'center';
+      removeBtn.style.fontSize = '0.75rem';
+      
+      removeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        selectedImages.splice(selectedImages.indexOf(dataUrl), 1);
+        previewItem.remove();
+        if (selectedImages.length === 0) {
+          if (photoPreviewWrap) photoPreviewWrap.style.display = 'none';
+          if (photoInput) photoInput.value = '';
+          if (photoMeta) photoMeta.innerHTML = '<i class="bi bi-clock me-1"></i>You can select up to 10 images.';
+        } else {
+          if (photoMeta) photoMeta.innerHTML = `<i class="bi bi-check-circle text-success me-1"></i>${selectedImages.length} photo(s) selected`;
+        }
+      });
+      
+      previewItem.appendChild(img);
+      previewItem.appendChild(removeBtn);
+      photoPreviewContainer.appendChild(previewItem);
     }
 
     // Reset form states completely
     const resetModalState = () => {
       form.reset();
       form.classList.remove("was-validated");
+      selectedImages = [];
+      if (photoPreviewContainer) photoPreviewContainer.innerHTML = '';
       if (photoPreviewWrap) photoPreviewWrap.style.display = "none";
       if (photoMeta) {
-        photoMeta.innerHTML = '<i class="bi bi-clock me-1"></i>Awaiting image upload...';
+        photoMeta.innerHTML = '<i class="bi bi-clock me-1"></i>You can select up to 10 images.';
+      }
+      
+      const otherTypeContainer = document.getElementById("otherIncidentTypeContainer");
+      const otherTypeInput = document.getElementById("modalOtherIncidentType");
+      if (otherTypeContainer) {
+        otherTypeContainer.style.display = 'none';
+      }
+      if (otherTypeInput) {
+        otherTypeInput.removeAttribute('required');
+        otherTypeInput.value = '';
+      }
+      
+      const barangayInput = document.getElementById("modalBarangay");
+      if (barangayInput && (!window.USER_ORGANIZATION || window.USER_ORGANIZATION === 'MDRRMO')) {
+          barangayInput.value = "";
       }
       
       const editIdEl = document.getElementById("editIncidentId");
@@ -112,13 +220,23 @@
 
           if (isEdit) {
             const id = editIdEl.value;
-            const type = incidentType ? incidentType.value : "";
-            const descVal = description ? description.value.trim() : "";
-            const file = photoInput?.files && photoInput.files[0];
+            let type = incidentType ? incidentType.value : "";
             
-            const updateData = { id, type, description: descVal };
-            if (file) {
-              updateData.photoDataUrl = await resizeImageToDataURL(file, 1280, 1280);
+            if (type === 'Other') {
+              const otherTypeInput = document.getElementById("modalOtherIncidentType");
+              if (otherTypeInput && otherTypeInput.value.trim() !== '') {
+                type = "Other: " + otherTypeInput.value.trim();
+              }
+            }
+            
+            const descVal = description ? description.value.trim() : "";
+            
+            const barangayVal = document.getElementById("modalBarangay")?.value || "";
+            
+            const updateData = { id, type, description: descVal, barangay: barangayVal };
+            if (selectedImages.length > 0) {
+              updateData.photoDataUrls = selectedImages;
+              updateData.photoDataUrl = selectedImages[0]; // fallback
             }
             
             const response = await fetch(API_URL, {
@@ -169,20 +287,28 @@
   /**
    * Serialize form data to incident object
    */
-  async function serializeIncidentForm() {
-    const type = document.getElementById("modalIncidentType")?.value;
+   async function serializeIncidentForm() {
+    let type = document.getElementById("modalIncidentType")?.value;
+    
+    if (type === 'Other') {
+      const otherTypeInput = document.getElementById("modalOtherIncidentType");
+      if (otherTypeInput && otherTypeInput.value.trim() !== '') {
+        type = "Other: " + otherTypeInput.value.trim();
+      } else {
+        throw new Error("Please specify the other incident type");
+      }
+    }
+    
     const description = document
       .getElementById("modalDescription")
       ?.value.trim();
-    const photoInput = document.getElementById("modalPhoto");
-    const file = photoInput?.files && photoInput.files[0];
+
+    const barangay = document.getElementById("modalBarangay")?.value;
 
     if (!type) throw new Error("Please select an incident type");
+    if (!barangay) throw new Error("Please select a barangay");
     if (!description) throw new Error("Please provide a description");
-    if (!file) throw new Error("Please upload a photo");
-
-    // Resize and convert image to data URL
-    const photoDataUrl = await resizeImageToDataURL(file, 1280, 1280);
+    if (selectedImages.length === 0) throw new Error("Please upload at least one photo");
 
     // Get current user (try multiple methods)
     const currentUser =
@@ -196,9 +322,10 @@
       description: description,
       status: "New",
       reportedBy: currentUser, // Add reportedBy field
+      barangay: barangay,
       createdAt: Date.now(),
-      photoDataUrl: photoDataUrl,
-
+      photoDataUrl: selectedImages[0], // Keep for backward compatibility
+      photoDataUrls: selectedImages,
     };
   }
 
@@ -219,7 +346,7 @@
           canvas.height = Math.round(height * ratio);
           const ctx = canvas.getContext("2d");
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          resolve(canvas.toDataURL("image/jpeg", 0.8));
+          resolve(canvas.toDataURL("image/jpeg", 0.6)); // Lower quality to save space
         };
         img.onerror = reject;
         img.src = reader.result;

@@ -28,15 +28,40 @@ try {
             description TEXT NOT NULL,
             status VARCHAR(50) NOT NULL DEFAULT 'New',
             reported_by VARCHAR(255) NOT NULL,
+            barangay VARCHAR(100) DEFAULT NULL,
             photo_data_url LONGTEXT DEFAULT NULL,
+            photo_data_urls LONGTEXT DEFAULT NULL,
+            remarks TEXT DEFAULT NULL,
             created_at BIGINT NOT NULL,
             updated_at BIGINT DEFAULT NULL,
             PRIMARY KEY (id),
             INDEX idx_reported_by (reported_by),
+            INDEX idx_barangay (barangay),
             INDEX idx_status (status),
             INDEX idx_created_at (created_at)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     ");
+    
+    // Add remarks column if it doesn't exist (migration)
+    try {
+        $pdo->exec("ALTER TABLE incidents ADD COLUMN remarks TEXT DEFAULT NULL");
+    } catch (PDOException $e) {
+        // Column likely already exists
+    }
+
+    // Add photo_data_urls column if it doesn't exist (migration)
+    try {
+        $pdo->exec("ALTER TABLE incidents ADD COLUMN photo_data_urls LONGTEXT DEFAULT NULL");
+    } catch (PDOException $e) {
+        // Column likely already exists
+    }
+
+    // Add barangay column if it doesn't exist (migration)
+    try {
+        $pdo->exec("ALTER TABLE incidents ADD COLUMN barangay VARCHAR(100) DEFAULT NULL");
+    } catch (PDOException $e) {
+        // Column likely already exists
+    }
 } catch (PDOException $e) {
     // Table might already exist, continue
 }
@@ -52,11 +77,24 @@ switch ($method) {
             $userId = isset($_GET['user_id']) ? $_GET['user_id'] : null;
             $status = isset($_GET['status']) ? $_GET['status'] : null;
             
-            $query = 'SELECT id, type, description, status, reported_by, photo_data_url, created_at, updated_at FROM incidents WHERE 1=1';
+            $query = 'SELECT id, type, description, status, reported_by, barangay, photo_data_url, photo_data_urls, remarks, created_at, updated_at FROM incidents WHERE 1=1';
             $params = [];
             
+            // Privacy Policy: Clients (BDRRMO) can only see incidents in their own barangay
+            if ($userRole === 'client') {
+                $userData = getUserData();
+                $userOrg = $userData['organization'] ?? '';
+                if ($userOrg) {
+                    $query .= ' AND barangay = :user_org';
+                    $params[':user_org'] = $userOrg;
+                } else {
+                    // Fallback: If no organization is set, only show their own reports
+                    $query .= ' AND reported_by = :current_user';
+                    $params[':current_user'] = $currentUser;
+                }
+            }
+            
             // Allow filtering by user if provided (for admin filtering by specific user)
-            // Clients now see ALL incidents (as per requirements)
             if ($userId) {
                 $query .= ' AND reported_by = :reported_by';
                 $params[':reported_by'] = $userId;
@@ -76,13 +114,21 @@ switch ($method) {
             
             // Convert database format to frontend format
             $formattedIncidents = array_map(function($incident) {
+                $photoDataUrls = [];
+                if (!empty($incident['photo_data_urls'])) {
+                    $photoDataUrls = json_decode($incident['photo_data_urls'], true);
+                }
+                
                 return [
                     'id' => $incident['id'],
                     'type' => $incident['type'],
                     'description' => $incident['description'],
                     'status' => $incident['status'],
                     'reportedBy' => $incident['reported_by'],
-                    'photoDataUrl' => $incident['photo_data_url'],
+                    'barangay' => $incident['barangay'] ?? null,
+                    'photoDataUrl' => $incident['photo_data_url'], // Keep for backward compatibility
+                    'photoDataUrls' => is_array($photoDataUrls) ? $photoDataUrls : [],
+                    'remarks' => $incident['remarks'] ?? null,
                     'createdAt' => (int)$incident['created_at'],
                     'updatedAt' => $incident['updated_at'] ? (int)$incident['updated_at'] : null
                 ];
@@ -111,12 +157,14 @@ switch ($method) {
             $description = $data['description'];
             $status = $data['status'] ?? 'New';
             $reportedBy = $data['reportedBy'] ?? $currentUser;
+            $barangay = $data['barangay'] ?? null;
             $photoDataUrl = $data['photoDataUrl'] ?? null;
+            $photoDataUrls = isset($data['photoDataUrls']) && is_array($data['photoDataUrls']) ? json_encode($data['photoDataUrls']) : null;
             $createdAt = $data['createdAt'] ?? (time() * 1000); // Convert to milliseconds
             
             $stmt = $pdo->prepare('
-                INSERT INTO incidents (id, type, description, status, reported_by, photo_data_url, created_at)
-                VALUES (:id, :type, :description, :status, :reported_by, :photo_data_url, :created_at)
+                INSERT INTO incidents (id, type, description, status, reported_by, barangay, photo_data_url, photo_data_urls, created_at)
+                VALUES (:id, :type, :description, :status, :reported_by, :barangay, :photo_data_url, :photo_data_urls, :created_at)
             ');
             
             $stmt->execute([
@@ -125,7 +173,9 @@ switch ($method) {
                 ':description' => $description,
                 ':status' => $status,
                 ':reported_by' => $reportedBy,
+                ':barangay' => $barangay,
                 ':photo_data_url' => $photoDataUrl,
+                ':photo_data_urls' => $photoDataUrls,
                 ':created_at' => $createdAt
             ]);
             
@@ -172,9 +222,24 @@ switch ($method) {
                 $params[':type'] = $data['type'];
             }
 
+            if (isset($data['barangay'])) {
+                $updates[] = 'barangay = :barangay';
+                $params[':barangay'] = $data['barangay'];
+            }
+
             if (isset($data['photoDataUrl'])) {
                 $updates[] = 'photo_data_url = :photo_data_url';
                 $params[':photo_data_url'] = $data['photoDataUrl'];
+            }
+            
+            if (isset($data['photoDataUrls']) && is_array($data['photoDataUrls'])) {
+                $updates[] = 'photo_data_urls = :photo_data_urls';
+                $params[':photo_data_urls'] = json_encode($data['photoDataUrls']);
+            }
+            
+            if (isset($data['remarks'])) {
+                $updates[] = 'remarks = :remarks';
+                $params[':remarks'] = $data['remarks'];
             }
             
             if (!empty($updates)) {

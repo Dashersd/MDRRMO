@@ -529,13 +529,47 @@
             const col = document.createElement("div");
             col.className = "col-sm-6 col-md-4 mb-4";
             
-            const thumbnail = inc.photoDataUrl 
-                ? `<div class="personnel-img-wrap" style="height: 180px; overflow: hidden; position: relative;">
-                    <img src="${inc.photoDataUrl}" alt="${escapeHtml(inc.type)}" class="personnel-img incident-image-clickable" data-image="${inc.photoDataUrl}" data-title="${escapeHtml(inc.type)}" style="cursor: pointer; transition: all 0.3s ease; width:100%; height:100%; object-fit:cover;" />
-                   </div>`
-                : `<div class="personnel-placeholder-img bg-light d-flex align-items-center justify-content-center border-bottom text-muted" style="height: 180px;">
+            const images = (inc.photoDataUrls && inc.photoDataUrls.length > 0) ? inc.photoDataUrls : (inc.photoDataUrl ? [inc.photoDataUrl] : []);
+            let thumbnail = '';
+            
+            if (images.length === 0) {
+                thumbnail = `<div class="personnel-placeholder-img bg-light d-flex align-items-center justify-content-center border-bottom text-muted" style="height: 180px;">
                     <i class="bi bi-image fs-1 text-secondary"></i>
                    </div>`;
+            } else if (images.length === 1) {
+                thumbnail = `<div class="personnel-img-wrap" style="height: 180px; overflow: hidden; position: relative;">
+                    <img src="${images[0]}" alt="${escapeHtml(inc.type)}" class="personnel-img incident-image-clickable" data-image="${images[0]}" data-title="${escapeHtml(inc.type)}" style="cursor: pointer; transition: all 0.3s ease; width:100%; height:100%; object-fit:cover;" />
+                   </div>`;
+            } else {
+                let carouselInner = '';
+                let carouselIndicators = '';
+                images.forEach((url, i) => {
+                    carouselIndicators += `<button type="button" data-bs-target="#hpIncidentCard${inc.id}" data-bs-slide-to="${i}" class="${i === 0 ? 'active' : ''}" aria-current="true" aria-label="Slide ${i + 1}" onclick="event.stopPropagation();"></button>`;
+                    carouselInner += `
+                        <div class="carousel-item ${i === 0 ? 'active' : ''} h-100">
+                            <img src="${url}" class="d-block w-100 h-100 incident-image-clickable" data-image="${url}" data-title="${escapeHtml(inc.type)}" style="object-fit: cover; cursor: pointer;" alt="${escapeHtml(inc.type)} Photo ${i+1}">
+                        </div>
+                    `;
+                });
+                thumbnail = `
+                    <div id="hpIncidentCard${inc.id}" class="carousel slide" data-bs-interval="false" style="height: 180px; overflow: hidden; position: relative;">
+                        <div class="carousel-indicators mb-0 pb-1" style="bottom: 0;">
+                            ${carouselIndicators}
+                        </div>
+                        <div class="carousel-inner h-100">
+                            ${carouselInner}
+                        </div>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#hpIncidentCard${inc.id}" data-bs-slide="prev" onclick="event.stopPropagation();" style="width: 15%; background: linear-gradient(90deg, rgba(0,0,0,0.5) 0%, transparent 100%);">
+                            <span class="carousel-control-prev-icon" aria-hidden="true" style="width: 1rem; height: 1rem;"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#hpIncidentCard${inc.id}" data-bs-slide="next" onclick="event.stopPropagation();" style="width: 15%; background: linear-gradient(270deg, rgba(0,0,0,0.5) 0%, transparent 100%);">
+                            <span class="carousel-control-next-icon" aria-hidden="true" style="width: 1rem; height: 1rem;"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                    </div>
+                `;
+            }
 
             col.innerHTML = `
                 <div class="personnel-card incident-report-card h-100 d-flex flex-column justify-content-between" data-id="${inc.id}" style="border-left: 5px solid #dc3545; cursor: pointer;">
@@ -549,7 +583,10 @@
                                 </h5>
                                 ${inc.status !== 'Approved' ? `<span class="status-badge status-${inc.status}">${inc.status}</span>` : ''}
                             </div>
-                            <span class="small text-muted d-block mb-3"><i class="bi bi-calendar-event me-1"></i>${date}</span>
+                            <div class="small text-muted mb-3">
+                                <div class="mb-1"><i class="bi bi-calendar-event me-1"></i>${date}</div>
+                                ${inc.barangay ? `<div><i class="bi bi-geo-alt-fill me-1 text-danger"></i>Brgy. ${escapeHtml(inc.barangay)}</div>` : ''}
+                            </div>
                             <p class="text-muted small mb-0" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.5;">${escapeHtml(inc.description)}</p>
                         </div>
                     </div>
@@ -681,27 +718,92 @@
                 const mStatus = document.getElementById("incidentModalStatus");
                 const mDate = document.getElementById("incidentModalDate");
                 const mDescription = document.getElementById("incidentModalDescription");
+                const mBarangay = document.getElementById("incidentModalBarangay");
+                const mReportedBy = document.getElementById("incidentModalReportedBy");
+                const mIcon = document.getElementById("incidentModalIcon");
                 const mImgContainer = document.getElementById("incidentModalImgContainer");
 
-                if (mTitle) mTitle.textContent = `Incident Detail: ${inc.type}`;
+                if (mTitle) mTitle.textContent = `Incident Details`;
                 if (mType) mType.textContent = inc.type;
-                if (mDate) mDate.innerHTML = `<i class="bi bi-calendar-event me-1"></i>Reported: ${date}`;
+                if (mDate) mDate.textContent = date;
                 if (mDescription) mDescription.textContent = inc.description;
+                if (mBarangay) mBarangay.textContent = inc.barangay || 'Unknown Location';
+                
+                // Fetch the reporter's name if we have a users map, or default to generic string
+                let reporterName = "Lapuyan Resident";
+                if (inc.reportedBy && window.users && window.users.length) {
+                    const user = window.users.find(u => u.id == inc.reportedBy);
+                    if (user) reporterName = `${user.first_name} ${user.last_name}`;
+                }
+                if (mReportedBy) mReportedBy.textContent = reporterName;
                 
                 if (mStatus) {
                     if (inc.status === 'Approved') {
                         mStatus.style.display = 'none';
                     } else {
-                        mStatus.style.display = 'inline-block';
-                        mStatus.className = `badge status-badge status-${inc.status}`;
+                        mStatus.style.display = 'block';
                         mStatus.textContent = inc.status;
+                        mStatus.className = 'fw-bold';
+                        if (inc.status === 'Rejected') mStatus.classList.add('text-danger');
+                        else mStatus.classList.add('text-warning');
                     }
+                }
+                
+                if (mIcon) {
+                    const typeLower = (inc.type || '').toLowerCase();
+                    let iconClass = 'bi-exclamation-triangle text-warning';
+                    if (typeLower.includes('fire')) iconClass = 'bi-fire text-danger';
+                    else if (typeLower.includes('flood') || typeLower.includes('water')) iconClass = 'bi-water text-info';
+                    else if (typeLower.includes('accident') || typeLower.includes('crash')) iconClass = 'bi-car-front-fill text-danger';
+                    else if (typeLower.includes('medical') || typeLower.includes('health')) iconClass = 'bi-heart-pulse text-success';
+                    else if (typeLower.includes('earthquake')) iconClass = 'bi-activity text-warning';
+                    mIcon.className = `bi ${iconClass} fs-3`;
                 }
 
                 if (mImgContainer) {
-                    mImgContainer.innerHTML = inc.photoDataUrl
-                        ? `<img src="${inc.photoDataUrl}" alt="${escapeHtml(inc.type)}" style="width: 100%; height: 100%; object-fit: contain;" />`
-                        : `<div class="d-flex align-items-center justify-content-center h-100 text-white-50"><i class="bi bi-image display-1"></i></div>`;
+                    if (inc.photoDataUrls && inc.photoDataUrls.length > 0) {
+                        if (inc.photoDataUrls.length === 1) {
+                            mImgContainer.innerHTML = `<img src="${inc.photoDataUrls[0]}" alt="${escapeHtml(inc.type)}" style="width: 100%; height: 100%; object-fit: cover; cursor: zoom-in;" class="incident-image-clickable" data-image="${inc.photoDataUrls[0]}" data-title="${escapeHtml(inc.type)}" />`;
+                        } else {
+                            let carouselInner = '';
+                            let carouselIndicators = '';
+                            inc.photoDataUrls.forEach((url, i) => {
+                                carouselIndicators += `<button type="button" data-bs-target="#homepageIncidentCarousel" data-bs-slide-to="${i}" class="${i === 0 ? 'active' : ''}" aria-current="true" aria-label="Slide ${i + 1}"></button>`;
+                                carouselInner += `
+                                    <div class="carousel-item ${i === 0 ? 'active' : ''} h-100">
+                                        <img src="${url}" class="d-block w-100 h-100 incident-image-clickable" style="object-fit: cover; cursor: zoom-in;" alt="Incident Photo ${i+1}" data-image="${url}" data-title="${escapeHtml(inc.type)}">
+                                    </div>
+                                `;
+                            });
+                            
+                            const carouselControls = `
+                                <div class="carousel-indicators">
+                                    ${carouselIndicators}
+                                </div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#homepageIncidentCarousel" data-bs-slide="prev" style="background: linear-gradient(90deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 100%); width: 10%;">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true" style="width: 2rem; height: 2rem;"></span>
+                                    <span class="visually-hidden">Previous</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#homepageIncidentCarousel" data-bs-slide="next" style="background: linear-gradient(270deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 100%); width: 10%;">
+                                    <span class="carousel-control-next-icon" aria-hidden="true" style="width: 2rem; height: 2rem;"></span>
+                                    <span class="visually-hidden">Next</span>
+                                </button>
+                            `;
+
+                            mImgContainer.innerHTML = `
+                                <div id="homepageIncidentCarousel" class="carousel slide h-100 w-100" data-bs-interval="false">
+                                    <div class="carousel-inner h-100">
+                                        ${carouselInner}
+                                    </div>
+                                    ${carouselControls}
+                                </div>
+                            `;
+                        }
+                    } else if (inc.photoDataUrl) {
+                        mImgContainer.innerHTML = `<img src="${inc.photoDataUrl}" alt="${escapeHtml(inc.type)}" style="width: 100%; height: 100%; object-fit: cover; cursor: zoom-in;" class="incident-image-clickable" data-image="${inc.photoDataUrl}" data-title="${escapeHtml(inc.type)}" />`;
+                    } else {
+                        mImgContainer.innerHTML = `<div class="d-flex align-items-center justify-content-center h-100 text-white-50"><i class="bi bi-image display-1"></i></div>`;
+                    }
                 }
 
                 const bootstrapModal = new bootstrap.Modal(document.getElementById("incidentDetailsModal"));
@@ -731,10 +833,47 @@
                 if (mDescription) mDescription.textContent = activity.description || "No detailed log was provided.";
                 
                 if (mImgContainer) {
-                    const firstImage = activity.images && activity.images.length > 0 ? activity.images[0] : null;
-                    mImgContainer.innerHTML = firstImage
-                        ? `<img src="${firstImage}" alt="${escapeHtml(activity.title)}" style="width: 100%; height: 100%; object-fit: contain; cursor: zoom-in;" class="incident-image-clickable" data-image="${firstImage}" data-title="${escapeHtml(activity.title)}" />`
-                        : `<div class="d-flex align-items-center justify-content-center h-100 text-white-50"><i class="bi bi-image display-1"></i></div>`;
+                    if (activity.images && activity.images.length > 0) {
+                        if (activity.images.length === 1) {
+                            mImgContainer.innerHTML = `<img src="${activity.images[0]}" alt="${escapeHtml(activity.title)}" style="width: 100%; height: 100%; object-fit: contain; cursor: zoom-in;" class="incident-image-clickable" data-image="${activity.images[0]}" data-title="${escapeHtml(activity.title)}" />`;
+                        } else {
+                            let carouselInner = '';
+                            let carouselIndicators = '';
+                            activity.images.forEach((url, i) => {
+                                carouselIndicators += `<button type="button" data-bs-target="#homepageActivityCarousel" data-bs-slide-to="${i}" class="${i === 0 ? 'active' : ''}" aria-current="true" aria-label="Slide ${i + 1}"></button>`;
+                                carouselInner += `
+                                    <div class="carousel-item ${i === 0 ? 'active' : ''} h-100">
+                                        <img src="${url}" class="d-block w-100 h-100 incident-image-clickable" style="object-fit: contain; cursor: zoom-in;" alt="Activity Photo ${i+1}" data-image="${url}" data-title="${escapeHtml(activity.title)}">
+                                    </div>
+                                `;
+                            });
+                            
+                            const carouselControls = `
+                                <div class="carousel-indicators">
+                                    ${carouselIndicators}
+                                </div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#homepageActivityCarousel" data-bs-slide="prev" style="background: linear-gradient(90deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 100%); width: 10%;">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true" style="width: 2rem; height: 2rem;"></span>
+                                    <span class="visually-hidden">Previous</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#homepageActivityCarousel" data-bs-slide="next" style="background: linear-gradient(270deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 100%); width: 10%;">
+                                    <span class="carousel-control-next-icon" aria-hidden="true" style="width: 2rem; height: 2rem;"></span>
+                                    <span class="visually-hidden">Next</span>
+                                </button>
+                            `;
+
+                            mImgContainer.innerHTML = `
+                                <div id="homepageActivityCarousel" class="carousel slide h-100 w-100" data-bs-interval="false">
+                                    <div class="carousel-inner h-100">
+                                        ${carouselInner}
+                                    </div>
+                                    ${carouselControls}
+                                </div>
+                            `;
+                        }
+                    } else {
+                        mImgContainer.innerHTML = `<div class="d-flex align-items-center justify-content-center h-100 text-white-50"><i class="bi bi-image display-1"></i></div>`;
+                    }
                 }
 
                 const bootstrapModal = new bootstrap.Modal(document.getElementById("activityDetailsModal"));
@@ -852,16 +991,52 @@
             const col = document.createElement("div");
             col.className = "col-sm-6 col-md-4 mb-4";
             
-            const photoSrc = activity.images && activity.images.length > 0 ? activity.images[0] : '';
-            const imgBlock = photoSrc
-                ? `<img src="${photoSrc}" alt="${escapeHtml(activity.title)}" class="personnel-img" style="height: 100%; width: 100%; object-fit: cover;" />`
-                : `<div class="personnel-placeholder-img text-muted"><i class="bi bi-calendar4-event fs-1 mb-2"></i><span class="small">No Photo</span></div>`;
+            const images = activity.images || [];
+            let thumbnailHtml = '';
+            
+            if (images.length === 0) {
+                thumbnailHtml = `
+                    <div class="d-flex align-items-center justify-content-center h-100 bg-light border-end">
+                        <i class="bi bi-calendar-event fs-1 text-secondary"></i>
+                    </div>`;
+            } else if (images.length === 1) {
+                thumbnailHtml = `<img src="${images[0]}" alt="${escapeHtml(activity.title)}" class="personnel-img" style="height: 100%; width: 100%; object-fit: cover;" />`;
+            } else {
+                let carouselInner = '';
+                let carouselIndicators = '';
+                images.forEach((url, i) => {
+                    carouselIndicators += `<button type="button" data-bs-target="#hpActivityCard${activity.id}" data-bs-slide-to="${i}" class="${i === 0 ? 'active' : ''}" aria-current="true" aria-label="Slide ${i + 1}" onclick="event.stopPropagation();"></button>`;
+                    carouselInner += `
+                        <div class="carousel-item ${i === 0 ? 'active' : ''} h-100">
+                            <img src="${url}" class="d-block w-100 h-100 personnel-img" style="object-fit: cover;" alt="${escapeHtml(activity.title)} Photo ${i+1}">
+                        </div>
+                    `;
+                });
+                thumbnailHtml = `
+                    <div id="hpActivityCard${activity.id}" class="carousel slide h-100 w-100" data-bs-interval="false">
+                        <div class="carousel-indicators mb-0 pb-1" style="bottom: 0;">
+                            ${carouselIndicators}
+                        </div>
+                        <div class="carousel-inner h-100">
+                            ${carouselInner}
+                        </div>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#hpActivityCard${activity.id}" data-bs-slide="prev" onclick="event.stopPropagation();" style="width: 15%; background: linear-gradient(90deg, rgba(0,0,0,0.5) 0%, transparent 100%);">
+                            <span class="carousel-control-prev-icon" aria-hidden="true" style="width: 1rem; height: 1rem;"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#hpActivityCard${activity.id}" data-bs-slide="next" onclick="event.stopPropagation();" style="width: 15%; background: linear-gradient(270deg, rgba(0,0,0,0.5) 0%, transparent 100%);">
+                            <span class="carousel-control-next-icon" aria-hidden="true" style="width: 1rem; height: 1rem;"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                    </div>
+                `;
+            }
 
             col.innerHTML = `
                 <div class="personnel-card activity-log-card h-100 d-flex flex-column justify-content-between" data-id="${activity.id}" style="cursor: pointer;">
                     <div>
                         <div class="personnel-img-wrap" style="height: 180px; overflow: hidden; position: relative;">
-                            ${imgBlock}
+                            ${thumbnailHtml}
                             <span class="badge bg-danger rounded-pill px-3 py-1" style="position: absolute; top: 12px; left: 12px; font-size: 0.75rem; font-weight: 600;"><i class="bi bi-bookmark-star-fill me-1"></i>Official Activity</span>
                         </div>
                         <div class="p-4">

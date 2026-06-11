@@ -11,6 +11,7 @@
   // DOM Elements
   const incidentsList = document.getElementById('incidentsList');
   const filterStatus = document.getElementById('filterStatus');
+  const filterBarangay = document.getElementById('filterBarangay');
   const btnRefresh = document.getElementById('btnRefresh');
   const loadingState = document.getElementById('incidentsLoading');
   const emptyState = document.getElementById('incidentsEmpty');
@@ -32,6 +33,9 @@
   function setupEventListeners() {
     if (filterStatus) {
       filterStatus.addEventListener('change', loadAndDisplayIncidents);
+    }
+    if (filterBarangay) {
+      filterBarangay.addEventListener('change', loadAndDisplayIncidents);
     }
 
     if (btnRefresh) {
@@ -66,6 +70,7 @@
       
       // Fetch incidents from API
       const statusFilter = filterStatus ? filterStatus.value : 'All';
+      const barangayFilter = filterBarangay ? filterBarangay.value : 'All';
       const url = API_URL;
       
       let incidents = [];
@@ -122,6 +127,12 @@
         });
       }
 
+      if (barangayFilter !== 'All') {
+        filteredIncidents = filteredIncidents.filter(inc => {
+          return (inc.barangay || '') === barangayFilter;
+        });
+      }
+
       // Sort by newest first (should already be sorted by API, but ensure it)
       filteredIncidents.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 
@@ -133,10 +144,10 @@
       if (countText) {
         const totalCount = incidents.length;
         const filteredCount = filteredIncidents.length;
-        if (statusFilter === 'All') {
+        if (statusFilter === 'All' && barangayFilter === 'All') {
           countText.textContent = `${totalCount} ${totalCount === 1 ? 'incident' : 'incidents'} total`;
         } else {
-          countText.textContent = `${filteredCount} of ${totalCount} ${statusFilter.toLowerCase()} ${filteredCount === 1 ? 'incident' : 'incidents'}`;
+          countText.textContent = `${filteredCount} of ${totalCount} ${filteredCount === 1 ? 'incident' : 'incidents'} displayed`;
         }
       }
 
@@ -196,16 +207,52 @@
         <div class="incident-card-square hover-lift" onclick="viewIncidentDetails('${incident.id}')" style="cursor: pointer;">
           <!-- Image Section -->
           <div class="incident-card-image-wrapper" onclick="event.stopPropagation(); viewIncidentDetails('${incident.id}')">
-            ${incident.photoDataUrl ? `
-              <img src="${incident.photoDataUrl}" 
-                   alt="Incident photo" 
-                   class="incident-card-image"
-                   loading="lazy">
-            ` : `
-              <div class="incident-card-image-placeholder">
-                <i class="${typeIcon}"></i>
-              </div>
-            `}
+            ${(() => {
+              const images = incident.photoDataUrls && incident.photoDataUrls.length > 0 ? incident.photoDataUrls : (incident.photoDataUrl ? [incident.photoDataUrl] : []);
+              if (images.length === 0) {
+                return `
+                  <div class="incident-card-image-placeholder">
+                    <i class="${typeIcon}"></i>
+                  </div>
+                `;
+              } else if (images.length === 1) {
+                return `
+                  <img src="${images[0]}" 
+                       alt="Incident photo" 
+                       class="incident-card-image"
+                       loading="lazy">
+                `;
+              } else {
+                let carouselInner = '';
+                let carouselIndicators = '';
+                images.forEach((url, i) => {
+                  carouselIndicators += `<button type="button" data-bs-target="#cardCarousel${incident.id}" data-bs-slide-to="${i}" class="${i === 0 ? 'active' : ''}" aria-current="true" aria-label="Slide ${i + 1}" onclick="event.stopPropagation();"></button>`;
+                  carouselInner += `
+                    <div class="carousel-item ${i === 0 ? 'active' : ''} h-100">
+                      <img src="${url}" class="d-block w-100 h-100 incident-card-image" style="object-fit: cover; cursor: pointer;" alt="Incident Photo ${i+1}" onclick="event.stopPropagation(); viewIncidentDetails('${incident.id}')">
+                    </div>
+                  `;
+                });
+                return `
+                  <div id="cardCarousel${incident.id}" class="carousel slide h-100 w-100">
+                    <div class="carousel-indicators mb-0 pb-1" style="bottom: 0;">
+                      ${carouselIndicators}
+                    </div>
+                    <div class="carousel-inner h-100">
+                      ${carouselInner}
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#cardCarousel${incident.id}" data-bs-slide="prev" onclick="event.stopPropagation();" style="width: 15%; background: linear-gradient(90deg, rgba(0,0,0,0.5) 0%, transparent 100%);">
+                      <span class="carousel-control-prev-icon" aria-hidden="true" style="width: 1rem; height: 1rem;"></span>
+                      <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#cardCarousel${incident.id}" data-bs-slide="next" onclick="event.stopPropagation();" style="width: 15%; background: linear-gradient(270deg, rgba(0,0,0,0.5) 0%, transparent 100%);">
+                      <span class="carousel-control-next-icon" aria-hidden="true" style="width: 1rem; height: 1rem;"></span>
+                      <span class="visually-hidden">Next</span>
+                    </button>
+                  </div>
+                `;
+              }
+            })()}
             <!-- Status Badge Overlay -->
             <div class="incident-card-status-overlay">
               <span class="badge ${statusBadge.class} incident-status-badge">${escapeHtml(statusBadge.text)}</span>
@@ -230,7 +277,10 @@
                   <i class="bi bi-person-fill me-1 text-primary"></i>${escapeHtml(incident.reportedBy || 'Staff')}
                 </span>
               </div>
-              <small class="incident-card-time">${timeAgo}</small>
+              <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
+                <small class="incident-card-time">${timeAgo}</small>
+                <small class="text-muted"><i class="bi bi-geo-alt me-1"></i>${escapeHtml(incident.barangay || 'Not specified')}</small>
+              </div>
             </div>
             
             <!-- Description -->
@@ -243,12 +293,14 @@
               <button class="btn btn-sm btn-outline-dark incident-action-btn" onclick="event.stopPropagation(); showDownloadOptions('${incident.id}')" title="Download Options">
                 <i class="bi bi-download"></i>
               </button>
+              ${(incident.status || 'New').toLowerCase() === 'new' || (incident.status || 'New').toLowerCase() === 'pending' ? `
               <button class="btn btn-sm btn-outline-success incident-action-btn" onclick="event.stopPropagation(); updateIncidentStatus('${incident.id}', 'Approved')" title="Approve">
                 <i class="bi bi-check-circle"></i>
               </button>
               <button class="btn btn-sm btn-outline-danger incident-action-btn" onclick="event.stopPropagation(); updateIncidentStatus('${incident.id}', 'Decline')" title="Decline">
                 <i class="bi bi-x-circle"></i>
               </button>
+              ` : ''}
               <button class="btn btn-sm btn-outline-warning incident-action-btn" onclick="event.stopPropagation(); editIncident('${incident.id}')" title="Edit">
                 <i class="bi bi-pencil"></i>
               </button>
@@ -323,6 +375,7 @@
    * Get type icon
    */
   function getTypeIcon(type) {
+    if (type && type.startsWith("Other:")) return "bi bi-exclamation-octagon";
     const icons = {
       'Fire': 'bi bi-fire',
       'Flood': 'bi bi-droplet',
@@ -331,6 +384,7 @@
       'Landslide': 'bi bi-triangle',
       'Earthquake': 'bi bi-activity',
       'Power Outage': 'bi bi-lightning',
+      'Fallen Trees': 'bi bi-tree',
     };
     return icons[type] || 'bi bi-exclamation-octagon';
   }
@@ -363,23 +417,55 @@
   /**
    * Global functions for onclick handlers
    */
-  window.viewReportImage = async function(incidentId) {
+  window.viewReportImage = async function(incidentId, initialSlide = 0) {
     try {
       const incident = await getIncidentById(incidentId);
-      if (incident && incident.photoDataUrl) {
+      if (incident && (incident.photoDataUrls || incident.photoDataUrl)) {
+        const photos = (incident.photoDataUrls && incident.photoDataUrls.length > 0) 
+            ? incident.photoDataUrls 
+            : [incident.photoDataUrl];
+        
+        let carouselIndicators = '';
+        let carouselInner = '';
+        
+        photos.forEach((url, idx) => {
+            const activeClass = idx === initialSlide ? 'active' : '';
+            carouselIndicators += `<button type="button" data-bs-target="#incidentPhotoCarousel" data-bs-slide-to="${idx}" class="${activeClass}"></button>`;
+            carouselInner += `
+              <div class="carousel-item ${activeClass}">
+                <img src="${url}" class="d-block w-100 rounded" style="max-height: 70vh; object-fit: contain;" alt="Photo ${idx + 1}">
+              </div>
+            `;
+        });
+        
         // Create and show modal
         const modal = document.createElement('div');
         modal.className = 'modal fade';
         modal.id = 'reportImageModal';
         modal.innerHTML = `
-          <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title">Incident Photo - ${escapeHtml(incident.type || 'Unknown')}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="background: rgba(0,0,0,0.9);">
+              <div class="modal-header border-0 position-absolute w-100" style="z-index: 10;">
+                <h5 class="modal-title text-white">Incident Photos - ${escapeHtml(incident.type || 'Unknown')}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
               </div>
-              <div class="modal-body text-center">
-                <img src="${incident.photoDataUrl}" alt="Incident Photo" class="img-fluid rounded">
+              <div class="modal-body p-0 position-relative text-center">
+                <div id="incidentPhotoCarousel" class="carousel slide" data-bs-interval="false">
+                  ${photos.length > 1 ? `<div class="carousel-indicators">${carouselIndicators}</div>` : ''}
+                  <div class="carousel-inner">
+                    ${carouselInner}
+                  </div>
+                  ${photos.length > 1 ? `
+                  <button class="carousel-control-prev" type="button" data-bs-target="#incidentPhotoCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                  </button>
+                  <button class="carousel-control-next" type="button" data-bs-target="#incidentPhotoCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                  </button>
+                  ` : ''}
+                </div>
               </div>
             </div>
           </div>
@@ -402,166 +488,11 @@ window.viewIncidentDetails = async function(incidentId) {
         alert('Incident not found');
         return;
       }
-
-      const date = new Date(incident.createdAt || Date.now()).toLocaleString();
-      const statusBadge = getStatusBadge(incident.status || 'New');
-      
-      // Get type icon
-      const typeIcon = getTypeIcon(incident.type);
-      const typeClass = getTypeClass(incident.type);
-      
-      // Create a nice modal for details
-      const modal = document.createElement('div');
-      modal.className = 'modal fade';
-      modal.id = 'incidentDetailsModal';
-      modal.innerHTML = `
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-          <div class="modal-content border-0 shadow-lg" style="overflow: hidden;">
-            <!-- Enhanced Header -->
-            <div class="modal-header border-0 pb-0" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 1.25rem 1.5rem;">
-              <div class="d-flex align-items-center w-100">
-                <div class="flex-grow-1 d-flex align-items-center gap-3 pb-3">
-                  <h5 class="modal-title mb-0 fw-bold" style="font-size: 1.3rem; color: #212529;">
-                    ${escapeHtml(incident.type || 'Unknown Incident')}
-                  </h5>
-                  <span class="badge ${statusBadge.class} px-3 py-2" style="font-size: 0.75rem; font-weight: 600;">
-                    ${escapeHtml(statusBadge.text)}
-                  </span>
-                </div>
-                <button type="button" class="btn-close pb-3" data-bs-dismiss="modal" style="opacity: 0.7;"></button>
-              </div>
-            </div>
-            
-            <div class="modal-body" style="padding: 1.25rem;">
-              <!-- Incident Information Card -->
-              <div class="card border-0 shadow-sm mb-3" style="background: #f8f9fa;">
-                <div class="card-body p-3">
-                  <h6 class="card-title fw-bold mb-3 d-flex align-items-center" style="color: #495057; font-size: 0.95rem;">
-                    <i class="bi bi-info-circle-fill me-2 text-primary"></i>
-                    Incident Information
-                  </h6>
-                  
-                  <!-- Type -->
-                  <div class="d-flex align-items-start mb-2 pb-2 border-bottom">
-                    <div class="flex-shrink-0 me-3">
-                      <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                        <i class="bi bi-tag-fill text-primary" style="font-size: 0.85rem;"></i>
-                      </div>
-                    </div>
-                    <div class="flex-grow-1">
-                      <small class="text-muted d-block mb-0.5" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">Type</small>
-                      <div class="fw-semibold" style="color: #212529; font-size: 0.9rem;">
-                        ${escapeHtml(incident.type || 'Unknown')}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <!-- Date & Time -->
-                  <div class="d-flex align-items-start mb-2 pb-2 border-bottom">
-                    <div class="flex-shrink-0 me-3">
-                      <div class="bg-success bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                        <i class="bi bi-calendar3-fill text-success" style="font-size: 0.85rem;"></i>
-                      </div>
-                    </div>
-                    <div class="flex-grow-1">
-                      <small class="text-muted d-block mb-0.5" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">Date & Time</small>
-                      <div class="fw-semibold" style="color: #212529; font-size: 0.9rem;">
-                        ${escapeHtml(date)}
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Status -->
-                  <div class="d-flex align-items-start mb-2 pb-2 border-bottom">
-                    <div class="flex-shrink-0 me-3">
-                      <div class="bg-info bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                        <i class="bi bi-flag-fill text-info" style="font-size: 0.85rem;"></i>
-                      </div>
-                    </div>
-                    <div class="flex-grow-1">
-                      <small class="text-muted d-block mb-0.5" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">Status</small>
-                      <div class="fw-semibold" style="color: #212529; font-size: 0.9rem;">
-                        <span class="badge ${statusBadge.class}" style="font-size: 0.75rem;">${escapeHtml(statusBadge.text)}</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <!-- Reported By -->
-                  <div class="d-flex align-items-start mb-2 pb-2 border-bottom">
-                    <div class="flex-shrink-0 me-3">
-                      <div class="bg-secondary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                        <i class="bi bi-person-fill text-secondary" style="font-size: 0.85rem;"></i>
-                      </div>
-                    </div>
-                    <div class="flex-grow-1">
-                      <small class="text-muted d-block mb-0.5" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">Reported By</small>
-                      <div class="fw-semibold text-dark" style="font-size: 0.9rem;">
-                        ${escapeHtml(incident.reportedBy || 'System / Citizen')}
-                      </div>
-                    </div>
-                  </div>
-                  
-                </div>
-              </div>
-              
-              <!-- Description Card -->
-              <div class="card border-0 shadow-sm mb-3" style="background: #f8f9fa;">
-                <div class="card-body p-3">
-                  <h6 class="card-title fw-bold mb-2 d-flex align-items-center" style="color: #495057; font-size: 0.95rem;">
-                    <i class="bi bi-file-text-fill me-2 text-info"></i>
-                    Description
-                  </h6>
-                  <p class="mb-0 text-muted" style="line-height: 1.5; font-size: 0.85rem; max-height: 120px; overflow-y: auto;">
-                    ${escapeHtml(incident.description || 'No description provided')}
-                  </p>
-                </div>
-              </div>
-              
-              <!-- Photo Card -->
-              ${incident.photoDataUrl ? `
-                <div class="card border-0 shadow-sm" style="background: #f8f9fa;">
-                  <div class="card-body p-3">
-                    <h6 class="card-title fw-bold mb-2 d-flex align-items-center" style="color: #495057; font-size: 0.95rem;">
-                      <i class="bi bi-image-fill me-2 text-danger"></i>
-                      Incident Photo
-                    </h6>
-                    <div class="text-center" style="background: white; border-radius: 8px; padding: 0.5rem; box-shadow: inset 0 2px 6px rgba(0,0,0,0.05);">
-                      <img src="${incident.photoDataUrl}" 
-                           alt="Incident Photo" 
-                           class="img-fluid rounded shadow-sm" 
-                           style="max-height: 380px; width: 100%; object-fit: cover; cursor: pointer; transition: transform 0.3s ease;"
-                           onclick="viewReportImage('${incident.id}')"
-                           onmouseover="this.style.transform='scale(1.02)'"
-                           onmouseout="this.style.transform='scale(1)'">
-                    </div>
-                  </div>
-                </div>
-              ` : ''}
-            </div>
-            
-            <div class="modal-footer border-top bg-light" style="padding: 1rem 1.5rem;">
-              <button type="button" class="btn btn-outline-danger" onclick="showDownloadOptions('${incident.id}')">
-                <i class="bi bi-download me-1"></i> Download Report
-              </button>
-              ${(incident.status || 'New').toLowerCase() === 'new' || (incident.status || 'New').toLowerCase() === 'pending' ? `
-                <button type="button" class="btn btn-outline-success" onclick="updateIncidentStatus('${incident.id}', 'Approved'); bootstrap.Modal.getInstance(document.getElementById('incidentDetailsModal')).hide();">
-                  <i class="bi bi-check-circle me-1"></i> Approve
-                </button>
-                <button type="button" class="btn btn-outline-danger" onclick="updateIncidentStatus('${incident.id}', 'Decline'); bootstrap.Modal.getInstance(document.getElementById('incidentDetailsModal')).hide();">
-                  <i class="bi bi-x-circle me-1"></i> Decline
-                </button>
-              ` : ''}
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                <i class="bi bi-x-circle me-1"></i> Close
-              </button>
-            </div>
-          </div>
-        </div>
-      `;
-      document.body.appendChild(modal);
-      const bsModal = new bootstrap.Modal(modal);
-      bsModal.show();
-      modal.addEventListener('hidden.bs.modal', () => modal.remove());
+      if (window.showIncidentDetailsModal) {
+          window.showIncidentDetailsModal(incident, { isAdmin: true });
+      } else {
+          alert('Error: showIncidentDetailsModal not found. Please refresh the page.');
+      }
     } catch (error) {
       console.error('Error viewing incident details:', error);
       alert('Error loading incident details');
@@ -1065,22 +996,49 @@ window.viewIncidentDetails = async function(incidentId) {
     }
   };
 
-  window.updateIncidentStatus = async function(incidentId, newStatus) {
+  window.updateIncidentStatus = async function(incidentId, newStatus, providedRemarks = null) {
     try {
-      if (!confirm(`Change status to "${newStatus}"?`)) {
-        return;
+      let remarks = providedRemarks;
+      
+      // Normalize Statuses from the Modal
+      if (newStatus === 'Declined') newStatus = 'Decline';
+      if (newStatus === 'Approved') newStatus = 'Approved';
+
+      if (newStatus === 'Decline') {
+        if (!remarks) {
+            remarks = window.prompt(`Please provide a reason for declining this report:`);
+            if (remarks === null) {
+              return;
+            }
+            if (remarks.trim() === '') {
+              alert('A reason is required to decline a report.');
+              return;
+            }
+        }
+      } else {
+        // If it's an approve from the modal, we can check if it passed a specific flag or we just skip confirm
+        // For safety, let's still confirm unless providedRemarks === 'skip_confirm'
+        if (providedRemarks !== 'skip_confirm' && !confirm(`Change status to "${newStatus}"?`)) {
+          return;
+        }
       }
 
       // Update via API
+      const bodyData = {
+        id: incidentId,
+        status: newStatus
+      };
+      if (remarks && remarks !== 'skip_confirm') {
+        bodyData.remarks = remarks;
+      }
+
+
       const response = await fetch(API_URL, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          id: incidentId,
-          status: newStatus
-        })
+        body: JSON.stringify(bodyData)
       });
       
       if (!response.ok) {
@@ -1121,7 +1079,29 @@ window.viewIncidentDetails = async function(incidentId) {
       if (editIdEl) editIdEl.value = incidentId;
       
       const typeEl = document.getElementById("modalIncidentType");
-      if (typeEl) typeEl.value = incident.type || "";
+      if (typeEl) {
+        if (incident.type && incident.type.startsWith("Other:")) {
+          typeEl.value = "Other";
+          const otherTypeInput = document.getElementById("modalOtherIncidentType");
+          const otherTypeContainer = document.getElementById("otherIncidentTypeContainer");
+          if (otherTypeInput && otherTypeContainer) {
+            otherTypeContainer.style.display = "block";
+            otherTypeInput.value = incident.type.substring(6).trim();
+            otherTypeInput.setAttribute("required", "");
+          }
+        } else {
+          typeEl.value = incident.type || "";
+          const otherTypeInput = document.getElementById("modalOtherIncidentType");
+          const otherTypeContainer = document.getElementById("otherIncidentTypeContainer");
+          if (otherTypeContainer) otherTypeContainer.style.display = "none";
+          if (otherTypeInput) otherTypeInput.removeAttribute("required");
+        }
+      }
+      
+      const barangayEl = document.getElementById("modalBarangay");
+      if (barangayEl) {
+        barangayEl.value = incident.barangay || "";
+      }
       
       const descEl = document.getElementById("modalDescription");
       if (descEl) descEl.value = incident.description || "";

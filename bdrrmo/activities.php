@@ -74,13 +74,7 @@ if (isset($_GET['logout'])) {
             <div class="nav-text">Dashboard</div>
           </a>
           
-          <a href="organization-chart.php" class="nav-item">
-            <div class="nav-icon">
-              <i data-filled="fi fi-sr-sitemap" data-unfilled="fi fi-rr-sitemap"></i>
-            </div>
-            <div class="nav-text">Organization Chart</div>
-          </a>
-          
+
           <a href="incidents.php" class="nav-item" id="incidentsLink">
             <div class="nav-icon">
               <i data-filled="fi fi-sr-light-emergency-on" data-unfilled="fi fi-rr-light-emergency-on"></i>
@@ -210,7 +204,7 @@ if (isset($_GET['logout'])) {
           <div class="modal-body p-0 d-flex flex-column flex-lg-row">
             <!-- Left side: Carousel -->
             <div class="flex-grow-1 position-relative" style="min-height: 400px; background: #000;">
-              <div id="galleryCarousel" class="carousel slide h-100" data-bs-ride="carousel">
+                <div id="galleryCarousel" class="carousel slide w-100 h-100">
                 <div class="carousel-inner h-100 d-flex align-items-center" id="galleryCarouselInner"></div>
                 <button class="carousel-control-prev" type="button" data-bs-target="#galleryCarousel" data-bs-slide="prev">
                   <span class="carousel-control-prev-icon" aria-hidden="true"></span>

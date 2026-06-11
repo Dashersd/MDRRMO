@@ -24,6 +24,7 @@
   const totalEquipmentTypes = document.getElementById('totalEquipmentTypes');
   const totalEquipmentCount = document.getElementById('totalEquipmentCount');
   const editEquipmentIdInput = document.getElementById('editEquipmentId');
+  const searchEquipmentInput = document.getElementById('searchEquipment');
 
   // Initialize when DOM is ready
   document.addEventListener('DOMContentLoaded', function() {
@@ -102,6 +103,23 @@
         if (equipmentImageInput) equipmentImageInput.value = '';
         if (equipmentImagePreview) equipmentImagePreview.src = '';
         if (equipmentImagePreviewContainer) equipmentImagePreviewContainer.style.display = 'none';
+      });
+    }
+
+    // Handle search filtering
+    if (searchEquipmentInput) {
+      searchEquipmentInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const cards = equipmentGrid.querySelectorAll('.equipment-card');
+        
+        cards.forEach(card => {
+          const title = card.querySelector('.equipment-card-title').textContent.toLowerCase();
+          if (title.includes(searchTerm)) {
+            card.style.display = 'flex';
+          } else {
+            card.style.display = 'none';
+          }
+        });
       });
     }
   }

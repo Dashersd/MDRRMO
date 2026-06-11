@@ -422,6 +422,10 @@
               <i class="bi bi-calendar3"></i>
               <span>${date}</span>
             </div>
+            <div class="incident-detail-item mt-1">
+              <i class="bi bi-geo-alt text-secondary"></i>
+              <span>${escapeHtml(incident.barangay || 'Not specified')}</span>
+            </div>
           </div>
           
           <div class="incident-actions">
@@ -812,6 +816,7 @@
 
   // Utility functions
   function getTypeIcon(type) {
+    if (type && type.startsWith("Other:")) return "bi-exclamation-octagon";
     const icons = {
       Fire: "bi-fire",
       Flood: "bi-droplet",
@@ -820,12 +825,14 @@
       Landslide: "bi-triangle",
       Earthquake: "bi-activity",
       "Power Outage": "bi-lightning",
+      "Fallen Trees": "bi-tree",
       Other: "bi-exclamation-octagon",
     };
     return icons[type] || "bi-exclamation-octagon";
   }
 
   function getTypeClass(type) {
+    if (type && type.startsWith("Other:")) return "other";
     return type.toLowerCase().replace(/\s+/g, "-");
   }
 

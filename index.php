@@ -20,7 +20,7 @@ if ($isUserLoggedIn) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MDRRMO Information System</title>
+    <title>MDRRMO Homepage</title>
 
     <!-- Tab Icon / Favicon -->
     <link rel="icon" type="image/png" href="assets/icon.png" />
@@ -56,9 +56,6 @@ if ($isUserLoggedIn) {
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#about">ABOUT</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#personnels">PERSONNELS</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#equipment">EQUIPMENT</a>
@@ -145,53 +142,32 @@ if ($isUserLoggedIn) {
                 <p class="text-muted max-width-600 mx-auto">The Municipal Disaster Risk Reduction and Management Office of Lapuyan commits to building disaster-resilient and secure communities through comprehensive planning, coordination, and emergency response capabilities.</p>
             </div>
 
-            <div class="row g-4 mb-5">
+            <div class="row g-4 mb-5 justify-content-center">
                 <div class="col-md-6 col-lg-4">
                     <div class="about-card">
-                        <div class="about-card-icon">
-                            <i class="bi bi-shield-exclamation"></i>
-                        </div>
-                        <h4 class="about-card-title">1. Disaster Preparedness</h4>
-                        <p class="text-muted small">We conduct regular seminars, earthquake and fire drills, and equip citizens and local barangays with safety protocols and disaster responsive capabilities.</p>
+                        <h4 class="about-card-title">Vision</h4>
+                        <p class="text-muted small">To be a highly capable, proactive, and responsive office that fosters a disaster-resilient, climate change-adaptive, and safe municipality of Lapuyan through empowered and vigilant communities.</p>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-4">
                     <div class="about-card">
-                        <div class="about-card-icon">
-                            <i class="bi bi-truck"></i>
-                        </div>
-                        <h4 class="about-card-title">2. Response & Rescue</h4>
-                        <p class="text-muted small">Operating a 24/7 dispatch hub, our certified responders manage emergency rescues, evacuations, and relief efforts in times of calamities.</p>
+                        <h4 class="about-card-title">Mission</h4>
+                        <p class="text-muted small">To provide effective and efficient disaster risk reduction and management programs, ensuring the safety and resiliency of the people of Lapuyan against all forms of hazards and disasters.</p>
                     </div>
                 </div>
-                <div class="col-md-6 col-lg-4">
-                    <div class="about-card">
-                        <div class="about-card-icon">
-                            <i class="bi bi-heart-pulse"></i>
-                        </div>
-                        <h4 class="about-card-title">3. Prevention & Mitigation</h4>
-                        <p class="text-muted small">We map local flood patterns, evaluate landslide-prone areas, and clear drainage systems to minimize disaster effects across Lapuyan.</p>
-                    </div>
-                </div>
+
             </div>
-
-        </div>
-    </section>
-
-    <!-- Section 3: PERSONNELS -->
-    <section id="personnels" class="homepage-section">
-        <div class="container">
-            <div class="section-title-area">
+            
+            <div class="mt-5 pt-5 border-top text-center">
                 <span class="section-subtitle">Our Team</span>
-                <h2 class="section-title">Official MDRRMO Responders</h2>
+                <h3 class="font-heading fw-bold mb-4">Official MDRRMO Responders</h3>
                 <p class="text-muted max-width-600 mx-auto">Meet our leadership, certified responders, and rescue personnel who coordinate emergency efforts to secure Lapuyan. Roster updates in real time based on the Admin Organizational Chart.</p>
+                <!-- Dynamic Organization Chart Tree -->
+                <div class="org-chart-outer-wrapper text-center mt-4">
+                    <div id="homepageOrgChart" class="org-chart-wrapper"></div>
+                </div>
             </div>
 
-
-            <!-- Dynamic Organization Chart Tree -->
-            <div class="org-chart-outer-wrapper text-center">
-                <div id="homepageOrgChart" class="org-chart-wrapper"></div>
-            </div>
         </div>
     </section>
 
@@ -346,7 +322,11 @@ if ($isUserLoggedIn) {
         <div class="container">
             <div class="row g-4 justify-content-between">
                 <div class="col-lg-4">
-                    <img src="assets/icon.png" class="footer-brand-logo" alt="MDRRMO Logo">
+                    <div class="d-flex align-items-center gap-2">
+                        <img src="assets/icon.png" class="footer-brand-logo" alt="MDRRMO Logo">
+                        <img src="LGU.png" class="footer-brand-logo" alt="LGU Logo">
+                        <img src="Bago.png" class="footer-brand-logo" alt="Bago Logo">
+                    </div>
                     <h5 class="text-white mt-2 mb-3 font-heading fw-bold">MDRRMO LAPUYAN</h5>
                     <p class="footer-desc">Welcome to Municipal Disaster Risk Reduction and Management Office of Lapuyan (MDRRMO)<br><br>#SulongParaSaKaligtasan</p>
                 </div>
@@ -355,7 +335,6 @@ if ($isUserLoggedIn) {
                     <ul class="footer-links">
                         <li><a href="#home">HOME</a></li>
                         <li><a href="#about">ABOUT</a></li>
-                        <li><a href="#personnels">PERSONNELS</a></li>
                         <li><a href="#equipment">EQUIPMENT</a></li>
                         <li><a href="#reports">REPORTS</a></li>
                         <li><a href="#activities">ACTIVITIES</a></li>
@@ -424,22 +403,40 @@ if ($isUserLoggedIn) {
                 </div>
                 <div class="modal-body p-0">
                     <div class="row g-0">
-                        <div class="col-md-6 bg-dark d-flex align-items-center justify-content-center" id="incidentModalImgContainer" style="min-height: 350px; overflow: hidden;">
+                        <div class="col-md-6 bg-dark d-flex align-items-center justify-content-center" id="incidentModalImgContainer" style="min-height: 400px; overflow: hidden;">
                             <!-- Image goes here -->
                         </div>
-                        <div class="col-md-6 p-4 d-flex flex-column justify-content-between">
+                        <div class="col-md-6 p-4 d-flex flex-column justify-content-between bg-white">
                             <div>
-                                <div class="d-flex align-items-center justify-content-between mb-2">
-                                    <span class="badge status-badge" id="incidentModalStatus">--</span>
+                                <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
+                                    <div class="bg-light rounded-circle p-3 me-3" id="incidentModalIconContainer">
+                                        <i class="bi bi-exclamation-triangle fs-3 text-warning" id="incidentModalIcon"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="mb-1 fw-bold text-dark" id="incidentModalType">--</h4>
+                                        <div class="fw-bold" id="incidentModalStatus">--</div>
+                                    </div>
                                 </div>
-                                <h3 class="font-heading fw-bold mb-1 text-dark" id="incidentModalType">--</h3>
-                                <span class="small text-muted d-block mb-3" id="incidentModalDate"><i class="bi bi-calendar-event me-1"></i>--</span>
-                                <hr>
-                                <h6 class="fw-bold text-dark mb-2">Report Description:</h6>
-                                <p class="text-muted small" id="incidentModalDescription" style="line-height: 1.6; max-height: 180px; overflow-y: auto;">--</p>
+                                
+                                <div class="mb-4">
+                                    <h6 class="text-muted fw-bold mb-2 text-uppercase" style="font-size: 0.8rem; letter-spacing: 1px;">Report Details</h6>
+                                    
+                                    <div class="d-flex mb-2">
+                                        <div class="text-muted me-2" style="width: 20px;"><i class="bi bi-geo-alt"></i></div>
+                                        <div class="fw-medium text-dark" id="incidentModalBarangay">--</div>
+                                    </div>
+                                    
+                                    <div class="d-flex mb-3">
+                                        <div class="text-muted me-2" style="width: 20px;"><i class="bi bi-calendar-event"></i></div>
+                                        <div class="fw-medium text-dark" id="incidentModalDate">--</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <h6 class="text-muted fw-bold mb-2 text-uppercase" style="font-size: 0.8rem; letter-spacing: 1px;">Description</h6>
+                                    <p class="text-dark" id="incidentModalDescription" style="line-height: 1.6; white-space: pre-line; max-height: 200px; overflow-y: auto;">--</p>
+                                </div>
                             </div>
-                            
-
                         </div>
                     </div>
                 </div>

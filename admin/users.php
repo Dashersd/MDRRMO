@@ -24,14 +24,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'email' => $_POST['email'] ?? '',
             'organization' => $_POST['organization'] ?? '',
             'phone' => $_POST['phone'] ?? '',
-            'status' => $_POST['status'] ?? 'approved',
-            'role' => $_POST['role'] ?? 'client'
+            'status' => $_POST['status'] ?? 'approved'
         ];
+        
+        if (isset($_POST['role'])) {
+            $update_data['role'] = $_POST['role'];
+        }
+        
+        if (!empty($_POST['password'])) {
+            $update_data['password_hash'] = password_hash($_POST['password'], PASSWORD_DEFAULT);
+        }
         
         if (updateUser($user_id, $update_data)) {
             $success_message = 'User updated successfully.';
         } else {
             $error_message = 'Failed to update user.';
+        }
+    } elseif ($action === 'update_profile') {
+        $user_id = $_SESSION['user_data']['id'];
+        $update_data = [];
+        if (!empty($_POST['password'])) {
+            $update_data['password_hash'] = password_hash($_POST['password'], PASSWORD_DEFAULT);
+        }
+        if (!empty($_POST['username'])) $update_data['username'] = trim($_POST['username']);
+        if (!empty($_POST['email'])) $update_data['email'] = trim($_POST['email']);
+        if (!empty($_POST['organization'])) $update_data['organization'] = trim($_POST['organization']);
+        if (!empty($_POST['full_name'])) $update_data['full_name'] = trim($_POST['full_name']);
+        
+        if (!empty($update_data)) {
+            if (updateUser($user_id, $update_data)) {
+                $success_message = 'Profile updated successfully.';
+                if (isset($update_data['username'])) {
+                    $_SESSION['username'] = $update_data['username'];
+                    $_SESSION['user_data']['username'] = $update_data['username'];
+                }
+                if (isset($update_data['email'])) $_SESSION['user_data']['email'] = $update_data['email'];
+                if (isset($update_data['organization'])) $_SESSION['user_data']['organization'] = $update_data['organization'];
+                if (isset($update_data['full_name'])) $_SESSION['user_data']['full_name'] = $update_data['full_name'];
+            } else {
+                $error_message = 'Failed to update profile. Username or email might already be taken.';
+            }
         }
     } elseif ($action === 'create') {
         $username = trim($_POST['username'] ?? '');
@@ -230,6 +262,8 @@ $users = getAllUsers();
                 <span class="badge bg-danger ms-1">Admin</span>
               </a>
               <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#adminProfileModal"><i class="bi bi-person me-2"></i>Profile Settings</a></li>
+                <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="../logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
               </ul>
             </div>
@@ -316,6 +350,7 @@ $users = getAllUsers();
                       </tr>
                     <?php else: ?>
                       <?php foreach ($users as $user): ?>
+                        <?php if ($user['role'] === 'admin') continue; ?>
                         <tr>
                           <td><?php echo htmlspecialchars($user['id']); ?></td>
                           <td>
@@ -376,6 +411,7 @@ $users = getAllUsers();
 
     <!-- Edit User Modals -->
     <?php foreach ($users as $user): ?>
+      <?php if ($user['role'] === 'admin') continue; ?>
       <div class="modal fade" id="editUserModal<?php echo $user['id']; ?>" tabindex="-1">
         <div class="modal-dialog">
           <div class="modal-content">
@@ -402,8 +438,23 @@ $users = getAllUsers();
                 
                 <div class="mb-3">
                   <label class="form-label">Organization</label>
-                  <input type="text" class="form-control" name="organization" 
-                         value="<?php echo htmlspecialchars($user['organization'] ?? ''); ?>" required>
+                  <select class="form-select" name="organization" required>
+                    <option value="" disabled>Select organization/barangay...</option>
+                    <option value="MDRRMO" <?php echo ($user['organization'] === 'MDRRMO') ? 'selected' : ''; ?>>MDRRMO (Admin)</option>
+                    <?php
+                    $barangays = [
+                        'Bulawan', 'Danganan', 'Dansal', 'Dumara', 'Karpok', 'Lenok Madalum', 
+                        'Luanan', 'Lubosan', 'Mahalingeb', 'Mandeg', 'Maralag', 'Maruing', 
+                        'Molum', 'Pampang', 'Pantad', 'Pingalay', 'Poblacion', 'Salambuyan', 
+                        'San Jose', 'Sayog', 'Tabon', 'Talabob', 'Tiguha', 'Tininghalang', 
+                        'Tipasan', 'Tugaya'
+                    ];
+                    foreach ($barangays as $brgy) {
+                        $selected = ($user['organization'] === $brgy) ? 'selected' : '';
+                        echo "<option value=\"$brgy\" $selected>$brgy</option>";
+                    }
+                    ?>
+                  </select>
                 </div>
                 
                 <div class="mb-3">
@@ -423,8 +474,7 @@ $users = getAllUsers();
                 <div class="mb-3">
                   <label class="form-label">Role</label>
                   <select class="form-select" name="role">
-                    <option value="client" <?php echo ($user['role'] ?? 'client') === 'client' ? 'selected' : ''; ?>>BDRRMO Staff</option>
-                    <option value="admin" <?php echo ($user['role'] ?? 'client') === 'admin' ? 'selected' : ''; ?>>Admin</option>
+                    <option value="client" selected>BDRRMO Staff</option>
                   </select>
                 </div>
               </div>
@@ -501,7 +551,15 @@ $users = getAllUsers();
                 
                 <div class="col-md-6">
                   <label class="form-label">Organization <span class="text-danger">*</span></label>
-                  <input type="text" class="form-control" name="organization" required>
+                  <select class="form-select" name="organization" required>
+                    <option value="" selected disabled>Select organization/barangay...</option>
+                    <option value="MDRRMO">MDRRMO (Admin)</option>
+                    <?php
+                    foreach ($barangays as $brgy) {
+                        echo "<option value=\"$brgy\">$brgy</option>";
+                    }
+                    ?>
+                  </select>
                 </div>
                 
                 <div class="col-12">
@@ -535,6 +593,53 @@ $users = getAllUsers();
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
               <button type="submit" class="btn btn-success">Create User</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin Profile Modal -->
+    <div class="modal fade" id="adminProfileModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Admin Profile</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <form method="POST">
+            <div class="modal-body">
+              <input type="hidden" name="action" value="update_profile">
+              <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input type="text" class="form-control" name="username" value="<?php echo htmlspecialchars($_SESSION['user_data']['username'] ?? ''); ?>" required minlength="3" pattern="[a-zA-Z0-9_]+">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Full Name</label>
+                <input type="text" class="form-control" name="full_name" value="<?php echo htmlspecialchars($_SESSION['user_data']['full_name'] ?? ''); ?>" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control" name="email" value="<?php echo htmlspecialchars($_SESSION['user_data']['email'] ?? ''); ?>" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Organization</label>
+                <input type="text" class="form-control" name="organization" value="<?php echo htmlspecialchars($_SESSION['user_data']['organization'] ?? ''); ?>" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">New Password</label>
+                <div class="input-group">
+                  <input type="password" class="form-control" name="password" id="profilePassword" minlength="6" placeholder="Enter new password">
+                  <button class="btn btn-outline-secondary toggle-password" type="button" data-target="profilePassword">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                </div>
+                <small class="text-muted">Minimum 6 characters. Leave blank to keep current password.</small>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">Update Password</button>
             </div>
           </form>
         </div>

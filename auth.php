@@ -276,7 +276,7 @@ function updateUser($user_id, $data) {
         $fields = [];
         $params = [':id' => $user_id];
         
-        $allowedFields = ['full_name', 'email', 'organization', 'phone', 'status', 'role'];
+        $allowedFields = ['full_name', 'email', 'organization', 'phone', 'status', 'role', 'password_hash', 'username'];
         foreach ($allowedFields as $field) {
             if (isset($data[$field])) {
                 $fields[] = "$field = :$field";

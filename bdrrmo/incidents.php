@@ -74,13 +74,7 @@ if (isset($_GET['logout'])) {
             <div class="nav-text">Dashboard</div>
           </a>
           
-          <a href="organization-chart.php" class="nav-item">
-            <div class="nav-icon">
-              <i data-filled="fi fi-sr-sitemap" data-unfilled="fi fi-rr-sitemap"></i>
-            </div>
-            <div class="nav-text">Organization Chart</div>
-          </a>
-          
+
           <a href="incidents.php" class="nav-item active" id="incidentsLink">
             <div class="nav-icon">
               <i data-filled="fi fi-sr-light-emergency-on" data-unfilled="fi fi-rr-light-emergency-on"></i>
@@ -216,6 +210,7 @@ if (isset($_GET['logout'])) {
     <script>
       // Set current user for bdrrmo-incidents.js
       window.CURRENT_USER = '<?php echo htmlspecialchars(getCurrentUser(), ENT_QUOTES); ?>';
+      window.USER_ORGANIZATION = '<?php $ud = getUserData(); echo htmlspecialchars($ud["organization"] ?? "", ENT_QUOTES); ?>';
     </script>
     <script src="../scripts/bdrrmo-incidents.js?v=<?php echo urlencode((string) @filemtime(__DIR__ . '/../scripts/bdrrmo-incidents.js')); ?>"></script>
     <style>

@@ -1014,3 +1014,271 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 });
+
+// Expose a globally shared function to show incident details in a standardized, premium layout
+window.showIncidentDetailsModal = function(incident, options = {}) {
+    const isAdmin = options.isAdmin || false;
+
+    const date = new Date(incident.createdAt || Date.now()).toLocaleString();
+    
+    // Status text colors
+    let statusColorClass = "text-secondary";
+    const status = (incident.status || 'New').toLowerCase();
+    if (status === 'resolved' || status === 'approved') statusColorClass = "text-success";
+    if (status === 'cancelled' || status === 'declined' || status === 'rejected') statusColorClass = "text-danger";
+    if (status === 'dispatched') statusColorClass = "text-primary";
+    
+    // Default single image
+    let images = incident.photoDataUrls && incident.photoDataUrls.length > 0 ? incident.photoDataUrls : [incident.photoDataUrl || ''];
+    // Filter out empties
+    images = images.filter(img => img);
+    
+    // Carousel inner items
+    let carouselIndicators = '';
+    let carouselInner = '';
+    
+    if (images.length === 0) {
+        carouselInner = `
+            <div class="carousel-item active h-100">
+                <div class="d-flex align-items-center justify-content-center h-100 text-white-50 flex-column" style="background-color: #212529;">
+                    <i class="bi bi-image display-1 mb-3"></i>
+                    <p>No image provided</p>
+                </div>
+            </div>`;
+    } else if (images.length === 1) {
+        carouselInner = `
+            <div class="carousel-item active h-100">
+                <img src="${images[0]}" class="d-block w-100 h-100" style="object-fit: cover; cursor: zoom-in;" alt="Incident Photo" onclick="window.open(this.src, '_blank')">
+            </div>`;
+    } else {
+        images.forEach((img, idx) => {
+            const activeClass = idx === 0 ? 'active' : '';
+            carouselIndicators += `<button type="button" data-bs-target="#incidentImageCarousel" data-bs-slide-to="${idx}" class="${activeClass}" aria-current="true" aria-label="Slide ${idx + 1}"></button>`;
+            carouselInner += `
+                <div class="carousel-item ${activeClass} h-100">
+                    <img src="${img}" class="d-block w-100 h-100" style="object-fit: cover; cursor: zoom-in;" alt="Incident Photo ${idx + 1}" onclick="window.open(this.src, '_blank')">
+                </div>`;
+        });
+    }
+
+    let carouselControls = '';
+    if (images.length > 1) {
+        carouselControls = `
+            <div class="carousel-indicators">
+                ${carouselIndicators}
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#incidentImageCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#incidentImageCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        `;
+    }
+
+    // Action buttons
+    let actionButtons = '';
+    if (isAdmin) {
+        if (status === 'new' || status === 'pending') {
+            actionButtons = `
+                <button type="button" class="btn btn-outline-danger fw-bold px-4" id="btnRejectIncident" data-id="${incident.id}">
+                    <i class="bi bi-x-lg me-2"></i>Decline
+                </button>
+                <button type="button" class="btn btn-success fw-bold px-4" id="btnApproveIncident" data-id="${incident.id}">
+                    <i class="bi bi-check-lg me-2"></i>Approve
+                </button>
+            `;
+        } else {
+            actionButtons = `
+                <button type="button" class="btn btn-primary px-4 me-2" onclick="window.print()">
+                    <i class="bi bi-printer me-2"></i>Print
+                </button>
+                <button type="button" class="btn btn-outline-danger" data-action="delete" data-id="${incident.id}" id="btnDeleteIncidentModal">
+                    <i class="bi bi-trash"></i> Delete
+                </button>
+            `;
+        }
+    } else {
+        // BDRRMO Action buttons
+        if (status === 'new' || status === 'pending') {
+           actionButtons = `
+                <button type="button" class="btn btn-primary px-4 me-2" onclick="window.print()">
+                    <i class="bi bi-printer me-2"></i>Print
+                </button>
+                <button type="button" class="btn btn-outline-danger" data-action="delete" data-id="${incident.id}" id="btnDeleteIncidentModal">
+                    <i class="bi bi-trash"></i> Delete
+                </button>
+            `;
+        } else {
+            actionButtons = `
+                <button type="button" class="btn btn-primary px-4 me-2" onclick="window.print()">
+                    <i class="bi bi-printer me-2"></i>Print
+                </button>
+            `;
+        }
+    }
+    
+    // Type icon
+    let iconClass = 'bi-exclamation-octagon';
+    const typeStr = (incident.type || '').toLowerCase();
+    if (typeStr.includes('fire')) iconClass = 'bi-fire text-danger';
+    else if (typeStr.includes('flood')) iconClass = 'bi-water text-info';
+    else if (typeStr.includes('accident')) iconClass = 'bi-car-front text-warning';
+    else if (typeStr.includes('medical')) iconClass = 'bi-heart-pulse text-danger';
+    else if (typeStr.includes('landslide')) iconClass = 'bi-triangle text-warning';
+    else if (typeStr.includes('earthquake')) iconClass = 'bi-activity text-danger';
+    else if (typeStr.includes('power')) iconClass = 'bi-lightning text-warning';
+    else if (typeStr.includes('tree')) iconClass = 'bi-tree text-success';
+    else iconClass = 'bi-exclamation-triangle text-warning';
+
+    // Helper escape
+    const escapeHtml = (s) => String(s||'').replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+
+    const rejectionRemarkHTML = incident.remark && (status === 'declined' || status === 'rejected') ? `
+        <div class="alert alert-danger mt-3 mb-0" role="alert">
+            <h6 class="alert-heading fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-2"></i>Reason for Rejection:</h6>
+            <p class="mb-0 small">${escapeHtml(incident.remark)}</p>
+        </div>
+    ` : '';
+
+    const modalHtml = `
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+                <!-- Header (Red) -->
+                <div class="modal-header border-0 bg-danger text-white p-4">
+                    <h5 class="modal-title font-heading fw-bold">Incident Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <!-- Body (Split Layout) -->
+                <div class="modal-body p-0">
+                    <div class="row g-0">
+                        <!-- Left Column: Carousel -->
+                        <div class="col-md-6 bg-dark position-relative" style="min-height: 400px;">
+                            <div id="incidentImageCarousel" class="carousel slide h-100">
+                                <div class="carousel-inner h-100">
+                                    ${carouselInner}
+                                </div>
+                                ${carouselControls}
+                            </div>
+                        </div>
+                        
+                        <!-- Right Column: Details -->
+                        <div class="col-md-6 p-4 d-flex flex-column justify-content-between bg-white">
+                            <div>
+                                <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
+                                    <div class="bg-light rounded-circle p-3 me-3">
+                                        <i class="bi ${iconClass} fs-3"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="mb-1 fw-bold text-dark">${escapeHtml(incident.type)}</h4>
+                                        <div class="fw-bold ${statusColorClass}">${escapeHtml(incident.status)}</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <h6 class="text-muted fw-bold mb-2 text-uppercase" style="font-size: 0.8rem; letter-spacing: 1px;">Report Details</h6>
+                                    
+                                    <div class="d-flex mb-2">
+                                        <div class="text-muted me-2" style="width: 20px;"><i class="bi bi-geo-alt"></i></div>
+                                        <div class="fw-medium text-dark">${escapeHtml(incident.barangay || 'Unknown Barangay')}</div>
+                                    </div>
+                                    
+                                    <div class="d-flex mb-2">
+                                        <div class="text-muted me-2" style="width: 20px;"><i class="bi bi-calendar-event"></i></div>
+                                        <div class="fw-medium text-dark">${date}</div>
+                                    </div>
+                                    
+                                    <div class="d-flex mb-3">
+                                        <div class="text-muted me-2" style="width: 20px;"><i class="bi bi-person"></i></div>
+                                        <div class="fw-medium text-dark">${escapeHtml(incident.reportedBy || 'System User')}</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <h6 class="text-muted fw-bold mb-2 text-uppercase" style="font-size: 0.8rem; letter-spacing: 1px;">Description</h6>
+                                    <p class="text-dark" style="line-height: 1.6; white-space: pre-line;">${escapeHtml(incident.description)}</p>
+                                    ${rejectionRemarkHTML}
+                                </div>
+                            </div>
+                            
+                            <div class="mt-auto border-top pt-3 text-end d-flex justify-content-end gap-2 flex-wrap">
+                                ${actionButtons}
+                                <button type="button" class="btn btn-secondary px-4 fw-bold" data-bs-dismiss="modal">Close Logs</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Remove existing modal if any
+    let modalEl = document.getElementById('unifiedIncidentModal');
+    if (modalEl) {
+        modalEl.remove();
+    }
+    
+    modalEl = document.createElement('div');
+    modalEl.id = 'unifiedIncidentModal';
+    modalEl.className = 'modal fade';
+    modalEl.tabIndex = -1;
+    modalEl.setAttribute('aria-hidden', 'true');
+    modalEl.innerHTML = modalHtml;
+    
+    document.body.appendChild(modalEl);
+    
+    // Attach event listeners for Actions inside modal
+    const btnApprove = modalEl.querySelector('#btnApproveIncident');
+    const btnReject = modalEl.querySelector('#btnRejectIncident');
+    const btnDelete = modalEl.querySelector('#btnDeleteIncidentModal');
+    
+    if (btnApprove) {
+        btnApprove.addEventListener('click', () => {
+            if(window.updateIncidentStatus) {
+                window.updateIncidentStatus(incident.id, 'Approved', 'skip_confirm');
+            } else if (window.updateStatus) {
+                window.updateStatus(incident.id, 'Approved', 'skip_confirm');
+            }
+            bootstrap.Modal.getInstance(modalEl).hide();
+        });
+    }
+    
+    if (btnReject) {
+        btnReject.addEventListener('click', () => {
+            const remark = prompt('Please enter a reason for rejecting this report:');
+            if (remark !== null && remark.trim() !== '') {
+                if(window.updateIncidentStatus) {
+                    window.updateIncidentStatus(incident.id, 'Declined', remark);
+                } else if (window.updateStatus) {
+                    window.updateStatus(incident.id, 'Declined', remark);
+                }
+                bootstrap.Modal.getInstance(modalEl).hide();
+            } else if (remark !== null) {
+                alert("A reason is required to reject a report.");
+            }
+        });
+    }
+    
+    if (btnDelete) {
+        btnDelete.addEventListener('click', () => {
+            if(confirm("Are you sure you want to delete this incident?")) {
+                if(window.deleteIncidentAPI) {
+                    window.deleteIncidentAPI(incident.id);
+                } else if (window.deleteIncident) {
+                    window.deleteIncident(incident.id);
+                }
+                bootstrap.Modal.getInstance(modalEl).hide();
+            }
+        });
+    }
+
+    const bsModal = new bootstrap.Modal(modalEl);
+    bsModal.show();
+    
+    modalEl.addEventListener('hidden.bs.modal', () => {
+        modalEl.remove();
+    });
+};

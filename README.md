@@ -84,7 +84,6 @@ BDRRMO staff submit incident reports which are queued for Admin review:
 │
 ├── bdrrmo/
 │   ├── incidents.php                  # Staff incident submission & status view page
-│   ├── organization-chart.php         # Staff roster chart view
 │   └── activities.php                 # Staff activities & drills page
 │
 ├── db/
@@ -103,7 +102,6 @@ BDRRMO staff submit incident reports which are queued for Admin review:
 │   ├── admin-incidents.js             # Admin incidents management, approval, and PDF download
 │   ├── bdrrmo-dashboard.js            # BDRRMO staff dashboard logic & wide incident view modal
 │   ├── bdrrmo-incidents.js            # BDRRMO staff incident submission & status view logic
-│   ├── bdrrmo-organization-chart.js   # Staff organization chart logic
 │   ├── incidents.js                   # Public incidents view logic
 │   ├── add-incident-modal.js          # Reusable upload-incident modal component
 │   ├── organization-chart.js          # Organization chart shared logic
@@ -163,7 +161,6 @@ Use the links below to access the different parts of the system when running loc
 
 ### BDRRMO Staff Suite (`bdrrmo/`)
 * **Submit & View Incident Reports:** [http://localhost/MDRRMO/bdrrmo/incidents.php](http://localhost/MDRRMO/bdrrmo/incidents.php)
-* **View Roster Chart:** [http://localhost/MDRRMO/bdrrmo/organization-chart.php](http://localhost/MDRRMO/bdrrmo/organization-chart.php)
 * **Activities & Drills:** [http://localhost/MDRRMO/bdrrmo/activities.php](http://localhost/MDRRMO/bdrrmo/activities.php)
 
 ---

@@ -131,6 +131,8 @@ if (isset($_GET['logout'])) {
                 <span class="badge bg-danger ms-1">Admin</span>
               </a>
               <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#adminProfileModal"><i class="bi bi-person me-2"></i>Profile Settings</a></li>
+                <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="../logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
               </ul>
             </div>
@@ -172,12 +174,43 @@ if (isset($_GET['logout'])) {
                     <p class="text-muted small mb-0" id="incidentsCountText">Loading incidents...</p>
                   </div>
                   <div class="d-flex gap-2 align-items-center">
-                    <label for="filterStatus" class="form-label small text-muted mb-0 d-none d-md-block">Filter:</label>
+                    <label for="filterStatus" class="form-label small text-muted mb-0 d-none d-md-block">Status:</label>
                     <select id="filterStatus" class="form-select form-select-sm incident-filter-select">
                       <option value="All" selected>All statuses</option>
                       <option value="Pending">Pending</option>
                       <option value="Approved">Approved</option>
                       <option value="Decline">Declined</option>
+                    </select>
+
+                    <label for="filterBarangay" class="form-label small text-muted mb-0 d-none d-md-block ms-2">Barangay:</label>
+                    <select id="filterBarangay" class="form-select form-select-sm incident-filter-select">
+                      <option value="All" selected>All barangays</option>
+                      <option value="Bulawan">Bulawan</option>
+                      <option value="Danganan">Danganan</option>
+                      <option value="Dansal">Dansal</option>
+                      <option value="Dumara">Dumara</option>
+                      <option value="Karpok">Karpok</option>
+                      <option value="Lenok Madalum">Lenok Madalum</option>
+                      <option value="Luanan">Luanan</option>
+                      <option value="Lubosan">Lubosan</option>
+                      <option value="Mahalingeb">Mahalingeb</option>
+                      <option value="Mandeg">Mandeg</option>
+                      <option value="Maralag">Maralag</option>
+                      <option value="Maruing">Maruing</option>
+                      <option value="Molum">Molum</option>
+                      <option value="Pampang">Pampang</option>
+                      <option value="Pantad">Pantad</option>
+                      <option value="Pingalay">Pingalay</option>
+                      <option value="Poblacion">Poblacion</option>
+                      <option value="Salambuyan">Salambuyan</option>
+                      <option value="San Jose">San Jose</option>
+                      <option value="Sayog">Sayog</option>
+                      <option value="Tabon">Tabon</option>
+                      <option value="Talabob">Talabob</option>
+                      <option value="Tiguha">Tiguha</option>
+                      <option value="Tininghalang">Tininghalang</option>
+                      <option value="Tipasan">Tipasan</option>
+                      <option value="Tugaya">Tugaya</option>
                     </select>
                   </div>
                 </div>
@@ -253,9 +286,56 @@ if (isset($_GET['logout'])) {
                   <option value="Landslide">⛰️ Landslide</option>
                   <option value="Earthquake">🌍 Earthquake</option>
                   <option value="Power Outage">⚡ Power Outage</option>
+                  <option value="Fallen Trees">🌳 Fallen Trees</option>
                   <option value="Other">⚠️ Other</option>
                 </select>
                 <div class="invalid-feedback">Please select an incident type.</div>
+              </div>
+              
+              <!-- Specific Other Type (Hidden by default) -->
+              <div class="mb-4" id="otherIncidentTypeContainer" style="display: none;">
+                <label for="modalOtherIncidentType" class="form-label fw-semibold mb-2" style="font-size: 0.95rem; color: #495057;">
+                  Please specify incident type <span class="text-danger">*</span>
+                </label>
+                <input type="text" id="modalOtherIncidentType" class="form-control form-control-lg" placeholder="Enter incident type..." style="padding: 0.75rem 1rem; border: 2px solid #dee2e6; border-radius: 0.5rem; transition: all 0.3s ease;">
+                <div class="invalid-feedback">Please specify the incident type.</div>
+              </div>
+
+              <!-- Barangay -->
+              <div class="mb-4">
+                <label for="modalBarangay" class="form-label fw-semibold mb-2" style="font-size: 0.95rem; color: #495057;">
+                  Barangay <span class="text-danger">*</span>
+                </label>
+                <select id="modalBarangay" class="form-select form-select-lg" required style="padding: 0.75rem 1rem; border: 2px solid #dee2e6; border-radius: 0.5rem; cursor: pointer;">
+                  <option value="" selected disabled>Select barangay...</option>
+                  <option value="Bulawan">Bulawan</option>
+                  <option value="Danganan">Danganan</option>
+                  <option value="Dansal">Dansal</option>
+                  <option value="Dumara">Dumara</option>
+                  <option value="Karpok">Karpok</option>
+                  <option value="Lenok Madalum">Lenok Madalum</option>
+                  <option value="Luanan">Luanan</option>
+                  <option value="Lubosan">Lubosan</option>
+                  <option value="Mahalingeb">Mahalingeb</option>
+                  <option value="Mandeg">Mandeg</option>
+                  <option value="Maralag">Maralag</option>
+                  <option value="Maruing">Maruing</option>
+                  <option value="Molum">Molum</option>
+                  <option value="Pampang">Pampang</option>
+                  <option value="Pantad">Pantad</option>
+                  <option value="Pingalay">Pingalay</option>
+                  <option value="Poblacion">Poblacion</option>
+                  <option value="Salambuyan">Salambuyan</option>
+                  <option value="San Jose">San Jose</option>
+                  <option value="Sayog">Sayog</option>
+                  <option value="Tabon">Tabon</option>
+                  <option value="Talabob">Talabob</option>
+                  <option value="Tiguha">Tiguha</option>
+                  <option value="Tininghalang">Tininghalang</option>
+                  <option value="Tipasan">Tipasan</option>
+                  <option value="Tugaya">Tugaya</option>
+                </select>
+                <div class="invalid-feedback">Please select a barangay.</div>
               </div>
 
               <!-- Description -->
@@ -286,7 +366,7 @@ if (isset($_GET['logout'])) {
               <!-- Image Upload -->
               <div class="mb-0">
                 <label for="modalPhoto" class="form-label fw-semibold mb-2" style="font-size: 0.95rem; color: #495057;">
-                  Incident Photo <span class="text-danger">*</span>
+                  Incident Photos <span class="text-danger">*</span>
                   <small class="text-muted fw-normal">(Geotagged photos preferred)</small>
                 </label>
                 <input
@@ -295,22 +375,18 @@ if (isset($_GET['logout'])) {
                   class="form-control form-control-lg"
                   accept="image/*"
                   capture="environment"
+                  multiple
                   required
                   style="padding: 0.75rem 1rem; border: 2px solid #dee2e6; border-radius: 0.5rem; transition: all 0.3s ease;"
                 />
                 <div class="form-text mt-2" id="modalPhotoMeta" style="font-size: 0.875rem;">
-                  <i class="bi bi-clock me-1 text-muted"></i>Awaiting image upload...
+                  <i class="bi bi-clock me-1 text-muted"></i>You can select up to 10 images.
                 </div>
-                <div class="invalid-feedback">Please upload a photo of the incident.</div>
+                <div class="invalid-feedback">Please upload at least one photo of the incident.</div>
                 
                 <!-- Photo Preview -->
-                <div class="mt-3 border rounded-3 p-4 text-center" id="modalPhotoPreviewWrap" style="display: none; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border: 2px dashed #dc3545 !important;">
-                  <img id="modalPhotoPreview" alt="Photo Preview" class="img-fluid rounded shadow-sm" style="max-height: 280px; width: auto; border: 2px solid #fff;" />
-                  <div class="mt-3">
-                    <button type="button" class="btn btn-sm btn-outline-danger" id="modalRemovePhoto" style="border-radius: 0.5rem;">
-                      <i class="bi bi-x-circle me-1"></i> Remove Photo
-                    </button>
-                  </div>
+                <div class="mt-3 border rounded-3 p-4" id="modalPhotoPreviewWrap" style="display: none; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border: 2px dashed #dc3545 !important;">
+                  <div class="d-flex flex-wrap gap-2 justify-content-center" id="modalPhotoPreviewContainer"></div>
                 </div>
               </div>
             </form>
@@ -325,6 +401,53 @@ if (isset($_GET['logout'])) {
               <i class="bi bi-upload me-1"></i> Upload Incident Report
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin Profile Modal -->
+    <div class="modal fade" id="adminProfileModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Admin Profile</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <form method="POST" action="users.php">
+            <div class="modal-body">
+              <input type="hidden" name="action" value="update_profile">
+              <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input type="text" class="form-control" name="username" value="<?php echo htmlspecialchars($_SESSION['user_data']['username'] ?? ''); ?>" required minlength="3" pattern="[a-zA-Z0-9_]+">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Full Name</label>
+                <input type="text" class="form-control" name="full_name" value="<?php echo htmlspecialchars($_SESSION['user_data']['full_name'] ?? ''); ?>" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control" name="email" value="<?php echo htmlspecialchars($_SESSION['user_data']['email'] ?? ''); ?>" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Organization</label>
+                <input type="text" class="form-control" name="organization" value="<?php echo htmlspecialchars($_SESSION['user_data']['organization'] ?? ''); ?>" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">New Password</label>
+                <div class="input-group">
+                  <input type="password" class="form-control" name="password" id="incidentsProfilePassword" minlength="6" placeholder="Enter new password">
+                  <button class="btn btn-outline-secondary" type="button" onclick="const p=document.getElementById('incidentsProfilePassword');const i=this.querySelector('i');if(p.type==='password'){p.type='text';i.classList.replace('bi-eye','bi-eye-slash');}else{p.type='password';i.classList.replace('bi-eye-slash','bi-eye');}">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                </div>
+                <small class="text-muted">Minimum 6 characters. Leave blank to keep current password.</small>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">Update Profile</button>
+            </div>
+          </form>
         </div>
       </div>
     </div>

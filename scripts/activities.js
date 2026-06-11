@@ -24,6 +24,7 @@
   const imageGalleryModal = document.getElementById('imageGalleryModal');
   const galleryCarouselInner = document.getElementById('galleryCarouselInner');
   const galleryImageCounter = document.getElementById('galleryImageCounter');
+  const searchActivitiesInput = document.getElementById('searchActivities');
 
   let selectedImages = []; // Store selected images as data URLs
   let allActivities = []; // Store activities in memory for quick access
@@ -145,6 +146,26 @@
     if (galleryCarousel) {
       galleryCarousel.addEventListener('slid.bs.carousel', function(e) {
         updateGalleryCounter(e.to);
+      });
+    }
+
+    // Handle search filtering
+    if (searchActivitiesInput) {
+      searchActivitiesInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const cards = activitiesList.querySelectorAll('.activity-card');
+        
+        cards.forEach(card => {
+          const title = card.querySelector('.activity-title').textContent.toLowerCase();
+          const descElement = card.querySelector('.activity-description');
+          const desc = descElement ? descElement.textContent.toLowerCase() : '';
+          
+          if (title.includes(searchTerm) || desc.includes(searchTerm)) {
+            card.style.display = 'flex';
+          } else {
+            card.style.display = 'none';
+          }
+        });
       });
     }
   }
@@ -395,16 +416,52 @@
         <div class="activity-card-square hover-lift" onclick="openImageGalleryById('${activity.id}')" style="cursor: pointer;">
           <!-- Image Section -->
           <div class="activity-card-image-wrapper" onclick="event.stopPropagation(); openImageGalleryById('${activity.id}')">
-            ${firstImage ? `
-              <img src="${firstImage}" 
-                   alt="Activity photo" 
-                   class="activity-card-image"
-                   loading="lazy">
-            ` : `
-              <div class="activity-card-image-placeholder">
-                <i class="bi bi-calendar4-event"></i>
-              </div>
-            `}
+            ${(() => {
+              const images = activity.images && activity.images.length > 0 ? activity.images : [];
+              if (images.length === 0) {
+                return `
+                  <div class="activity-card-image-placeholder">
+                    <i class="bi bi-calendar4-event"></i>
+                  </div>
+                `;
+              } else if (images.length === 1) {
+                return `
+                  <img src="${images[0]}" 
+                       alt="Activity photo" 
+                       class="activity-card-image"
+                       loading="lazy">
+                `;
+              } else {
+                let carouselInner = '';
+                let carouselIndicators = '';
+                images.forEach((url, i) => {
+                  carouselIndicators += `<button type="button" data-bs-target="#cardCarouselAct${activity.id}" data-bs-slide-to="${i}" class="${i === 0 ? 'active' : ''}" aria-current="true" aria-label="Slide ${i + 1}" onclick="event.stopPropagation();"></button>`;
+                  carouselInner += `
+                    <div class="carousel-item ${i === 0 ? 'active' : ''} h-100">
+                      <img src="${url}" class="d-block w-100 h-100 activity-card-image" style="object-fit: cover; cursor: pointer;" alt="Activity Photo ${i+1}" onclick="event.stopPropagation(); openImageGalleryById('${activity.id}')">
+                    </div>
+                  `;
+                });
+                return `
+                  <div id="cardCarouselAct${activity.id}" class="carousel slide h-100 w-100">
+                    <div class="carousel-indicators mb-0 pb-1" style="bottom: 0;">
+                      ${carouselIndicators}
+                    </div>
+                    <div class="carousel-inner h-100">
+                      ${carouselInner}
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#cardCarouselAct${activity.id}" data-bs-slide="prev" onclick="event.stopPropagation();" style="width: 15%; background: linear-gradient(90deg, rgba(0,0,0,0.5) 0%, transparent 100%);">
+                      <span class="carousel-control-prev-icon" aria-hidden="true" style="width: 1rem; height: 1rem;"></span>
+                      <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#cardCarouselAct${activity.id}" data-bs-slide="next" onclick="event.stopPropagation();" style="width: 15%; background: linear-gradient(270deg, rgba(0,0,0,0.5) 0%, transparent 100%);">
+                      <span class="carousel-control-next-icon" aria-hidden="true" style="width: 1rem; height: 1rem;"></span>
+                      <span class="visually-hidden">Next</span>
+                    </button>
+                  </div>
+                `;
+              }
+            })()}
             <!-- Status Badge Overlay -->
             <div class="activity-card-status-overlay">
               <span class="badge bg-success activity-status-badge">Official</span>
@@ -1073,6 +1130,22 @@
 
     // Clear carousel
     carouselInner.innerHTML = '';
+    
+    const carouselEl = document.getElementById('galleryCarousel');
+    let indicatorsEl = document.getElementById('galleryCarouselIndicators');
+    
+    // Create indicators container if it doesn't exist
+    if (!indicatorsEl && carouselEl) {
+      indicatorsEl = document.createElement('div');
+      indicatorsEl.id = 'galleryCarouselIndicators';
+      indicatorsEl.className = 'carousel-indicators';
+      // Insert right before the inner content
+      carouselEl.insertBefore(indicatorsEl, carouselInner);
+    }
+    
+    if (indicatorsEl) {
+      indicatorsEl.innerHTML = '';
+    }
 
     const images = activity.images || [];
 
@@ -1106,6 +1179,20 @@
         item.appendChild(img);
 
         carouselInner.appendChild(item);
+        
+        // Add indicator
+        if (indicatorsEl && images.length > 1) {
+          const indicator = document.createElement('button');
+          indicator.type = 'button';
+          indicator.setAttribute('data-bs-target', '#galleryCarousel');
+          indicator.setAttribute('data-bs-slide-to', index.toString());
+          if (index === startIndex) {
+            indicator.className = 'active';
+            indicator.setAttribute('aria-current', 'true');
+          }
+          indicator.setAttribute('aria-label', `Slide ${index + 1}`);
+          indicatorsEl.appendChild(indicator);
+        }
       });
     }
 

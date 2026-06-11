@@ -76,12 +76,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="styles/login.css" />
   </head>
   <body style="overflow: hidden;">
-    <!-- Floating background shapes -->
-    <div class="floating-shapes">
-      <div class="shape"></div>
-      <div class="shape"></div>
-      <div class="shape"></div>
-    </div>
 
     <div class="login-container">
       <div class="card login-card">

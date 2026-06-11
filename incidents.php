@@ -432,9 +432,56 @@ if (isset($_GET['logout'])) {
                   <option value="Landslide">⛰️ Landslide</option>
                   <option value="Earthquake">🌍 Earthquake</option>
                   <option value="Power Outage">⚡ Power Outage</option>
+                  <option value="Fallen Trees">🌳 Fallen Trees</option>
                   <option value="Other">⚠️ Other</option>
                 </select>
                 <div class="invalid-feedback">Please select an incident type.</div>
+              </div>
+              
+              <!-- Specific Other Type (Hidden by default) -->
+              <div class="mb-4" id="otherIncidentTypeContainer" style="display: none;">
+                <label for="modalOtherIncidentType" class="form-label fw-semibold mb-2" style="font-size: 0.95rem; color: #495057;">
+                  Please specify incident type <span class="text-danger">*</span>
+                </label>
+                <input type="text" id="modalOtherIncidentType" class="form-control form-control-lg" placeholder="Enter incident type..." style="padding: 0.75rem 1rem; border: 2px solid #dee2e6; border-radius: 0.5rem; transition: all 0.3s ease;">
+                <div class="invalid-feedback">Please specify the incident type.</div>
+              </div>
+
+              <!-- Barangay -->
+              <div class="mb-4">
+                <label for="modalBarangay" class="form-label fw-semibold mb-2" style="font-size: 0.95rem; color: #495057;">
+                  Barangay <span class="text-danger">*</span>
+                </label>
+                <select id="modalBarangay" class="form-select form-select-lg" required style="padding: 0.75rem 1rem; border: 2px solid #dee2e6; border-radius: 0.5rem; cursor: pointer;">
+                  <option value="" selected disabled>Select barangay...</option>
+                  <option value="Bulawan">Bulawan</option>
+                  <option value="Danganan">Danganan</option>
+                  <option value="Dansal">Dansal</option>
+                  <option value="Dumara">Dumara</option>
+                  <option value="Karpok">Karpok</option>
+                  <option value="Lenok Madalum">Lenok Madalum</option>
+                  <option value="Luanan">Luanan</option>
+                  <option value="Lubosan">Lubosan</option>
+                  <option value="Mahalingeb">Mahalingeb</option>
+                  <option value="Mandeg">Mandeg</option>
+                  <option value="Maralag">Maralag</option>
+                  <option value="Maruing">Maruing</option>
+                  <option value="Molum">Molum</option>
+                  <option value="Pampang">Pampang</option>
+                  <option value="Pantad">Pantad</option>
+                  <option value="Pingalay">Pingalay</option>
+                  <option value="Poblacion">Poblacion</option>
+                  <option value="Salambuyan">Salambuyan</option>
+                  <option value="San Jose">San Jose</option>
+                  <option value="Sayog">Sayog</option>
+                  <option value="Tabon">Tabon</option>
+                  <option value="Talabob">Talabob</option>
+                  <option value="Tiguha">Tiguha</option>
+                  <option value="Tininghalang">Tininghalang</option>
+                  <option value="Tipasan">Tipasan</option>
+                  <option value="Tugaya">Tugaya</option>
+                </select>
+                <div class="invalid-feedback">Please select a barangay.</div>
               </div>
 
               <!-- Description -->
@@ -465,7 +512,7 @@ if (isset($_GET['logout'])) {
               <!-- Image Upload -->
               <div class="mb-0">
                 <label for="modalPhoto" class="form-label fw-semibold mb-2" style="font-size: 0.95rem; color: #495057;">
-                  Incident Photo <span class="text-danger">*</span>
+                  Incident Photos <span class="text-danger">*</span>
                   <small class="text-muted fw-normal">(Geotagged photos preferred)</small>
                 </label>
                 <input
@@ -474,22 +521,18 @@ if (isset($_GET['logout'])) {
                   class="form-control form-control-lg"
                   accept="image/*"
                   capture="environment"
+                  multiple
                   required
                   style="padding: 0.75rem 1rem; border: 2px solid #dee2e6; border-radius: 0.5rem; transition: all 0.3s ease;"
                 />
                 <div class="form-text mt-2" id="modalPhotoMeta" style="font-size: 0.875rem;">
-                  <i class="bi bi-clock me-1 text-muted"></i>Awaiting image upload...
+                  <i class="bi bi-clock me-1 text-muted"></i>You can select up to 10 images.
                 </div>
-                <div class="invalid-feedback">Please upload a photo of the incident.</div>
+                <div class="invalid-feedback">Please upload at least one photo of the incident.</div>
                 
                 <!-- Photo Preview -->
-                <div class="mt-3 border rounded-3 p-4 text-center" id="modalPhotoPreviewWrap" style="display: none; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border: 2px dashed #dc3545 !important;">
-                  <img id="modalPhotoPreview" alt="Photo Preview" class="img-fluid rounded shadow-sm" style="max-height: 280px; width: auto; border: 2px solid #fff;" />
-                  <div class="mt-3">
-                    <button type="button" class="btn btn-sm btn-outline-danger" id="modalRemovePhoto" style="border-radius: 0.5rem;">
-                      <i class="bi bi-x-circle me-1"></i> Remove Photo
-                    </button>
-                  </div>
+                <div class="mt-3 border rounded-3 p-4" id="modalPhotoPreviewWrap" style="display: none; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border: 2px dashed #dc3545 !important;">
+                  <div class="d-flex flex-wrap gap-2 justify-content-center" id="modalPhotoPreviewContainer"></div>
                 </div>
               </div>
             </form>

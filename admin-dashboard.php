@@ -144,6 +144,8 @@ if (isset($_GET['logout'])) {
                 <span class="badge bg-danger ms-1">Admin</span>
               </a>
               <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#adminProfileModal"><i class="bi bi-person me-2"></i>Profile Settings</a></li>
+                <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
               </ul>
             </div>
@@ -272,11 +274,15 @@ if (isset($_GET['logout'])) {
               <div class="card-header bg-white border-0 pb-0">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                   <div>
-                    <h5 class="mb-1 fw-bold">
-                      <i class="bi bi-list-check text-warning me-2"></i>
-                      Pending Reports
-                    </h5>
-                    <p class="text-muted small mb-0">Incident reports awaiting review and action</p>
+                    <div class="d-flex align-items-center mb-1">
+                      <i class="bi bi-list-check text-warning me-2 fs-5" id="reportStatusIcon"></i>
+                      <select id="reportStatusFilter" class="form-select form-select-sm fw-bold border-0 bg-transparent shadow-none p-0 pe-4 fs-5" style="width: auto; cursor: pointer; color: #212529;">
+                        <option value="pending">Pending Reports</option>
+                        <option value="approved">Approved Reports</option>
+                        <option value="declined">Declined Reports</option>
+                      </select>
+                    </div>
+                    <p class="text-muted small mb-0" id="reportStatusSubtitle">Incident reports awaiting review and action</p>
                   </div>
                   <div class="d-flex gap-2">
                     <a href="admin/incidents.php" class="btn btn-outline-primary btn-sm">
@@ -299,8 +305,8 @@ if (isset($_GET['logout'])) {
                   <div class="mb-3">
                     <i class="bi bi-inbox display-1 text-muted"></i>
                   </div>
-                  <h5 class="fw-semibold mb-2">No Pending Reports</h5>
-                  <p class="text-muted mb-4">All reports have been reviewed. Great job!</p>
+                  <h5 class="fw-semibold mb-2" id="emptyStateTitle">No Pending Reports</h5>
+                  <p class="text-muted mb-4" id="emptyStateDesc">All reports have been reviewed. Great job!</p>
                   <a href="admin/incidents.php" class="btn btn-outline-primary">
                     <i class="bi bi-flag me-1"></i> View All Incidents
                   </a>
@@ -328,6 +334,53 @@ if (isset($_GET['logout'])) {
           <i class="bi bi-info-circle"></i> MDRRMO Admin Dashboard - MDRRMO Information System
         </span>
       </footer>
+    </div>
+
+    <!-- Admin Profile Modal -->
+    <div class="modal fade" id="adminProfileModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Admin Profile</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <form method="POST" action="admin/users.php">
+            <div class="modal-body">
+              <input type="hidden" name="action" value="update_profile">
+              <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input type="text" class="form-control" name="username" value="<?php echo htmlspecialchars($_SESSION['user_data']['username'] ?? ''); ?>" required minlength="3" pattern="[a-zA-Z0-9_]+">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Full Name</label>
+                <input type="text" class="form-control" name="full_name" value="<?php echo htmlspecialchars($_SESSION['user_data']['full_name'] ?? ''); ?>" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control" name="email" value="<?php echo htmlspecialchars($_SESSION['user_data']['email'] ?? ''); ?>" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Organization</label>
+                <input type="text" class="form-control" name="organization" value="<?php echo htmlspecialchars($_SESSION['user_data']['organization'] ?? ''); ?>" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">New Password</label>
+                <div class="input-group">
+                  <input type="password" class="form-control" name="password" id="dashboardProfilePassword" minlength="6" placeholder="Enter new password">
+                  <button class="btn btn-outline-secondary" type="button" onclick="const p=document.getElementById('dashboardProfilePassword');const i=this.querySelector('i');if(p.type==='password'){p.type='text';i.classList.replace('bi-eye','bi-eye-slash');}else{p.type='password';i.classList.replace('bi-eye-slash','bi-eye');}">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                </div>
+                <small class="text-muted">Minimum 6 characters. Leave blank to keep current password.</small>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">Update Profile</button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
 
     <!-- Bootstrap JS -->
