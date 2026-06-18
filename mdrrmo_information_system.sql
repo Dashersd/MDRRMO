@@ -207,10 +207,8 @@ ALTER TABLE `users`
 --
 
 --
--- Constraints for table `organization_personnel`
+-- (Foreign key constraints removed for Infinity Free compatibility)
 --
-ALTER TABLE `organization_personnel`
-  ADD CONSTRAINT `organization_personnel_ibfk_1` FOREIGN KEY (`reports_to`) REFERENCES `organization_personnel` (`id`) ON DELETE SET NULL;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -18,63 +18,7 @@ try {
         throw new Exception('Database connection failed');
     }
 
-    // Ensure organization_personnel table exists
-    $pdo->exec("CREATE TABLE IF NOT EXISTS organization_personnel (
-        id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-        name VARCHAR(255) NOT NULL,
-        role VARCHAR(255) NOT NULL,
-        is_ceo TINYINT(1) NOT NULL DEFAULT 0,
-        reports_to INT UNSIGNED DEFAULT NULL,
-        photo_data_url LONGTEXT DEFAULT NULL,
-        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        PRIMARY KEY (id),
-        FOREIGN KEY (reports_to) REFERENCES organization_personnel(id) ON DELETE SET NULL
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
-    // Ensure incidents table exists
-    $pdo->exec("CREATE TABLE IF NOT EXISTS incidents (
-        id VARCHAR(255) NOT NULL,
-        type VARCHAR(255) NOT NULL,
-        description TEXT NOT NULL,
-        status VARCHAR(50) NOT NULL DEFAULT 'New',
-        reported_by VARCHAR(255) NOT NULL,
-        photo_data_url LONGTEXT DEFAULT NULL,
-        created_at BIGINT NOT NULL,
-        updated_at BIGINT DEFAULT NULL,
-        PRIMARY KEY (id),
-        INDEX idx_reported_by (reported_by),
-        INDEX idx_status (status),
-        INDEX idx_created_at (created_at)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-
-    // Ensure equipment table exists
-    $pdo->exec("CREATE TABLE IF NOT EXISTS equipment (
-        id VARCHAR(255) NOT NULL,
-        name VARCHAR(255) NOT NULL,
-        count INT NOT NULL DEFAULT 1,
-        image_data_url LONGTEXT DEFAULT NULL,
-        created_by VARCHAR(255) NOT NULL,
-        created_at BIGINT NOT NULL,
-        updated_at BIGINT DEFAULT NULL,
-        PRIMARY KEY (id),
-        INDEX idx_created_by (created_by),
-        INDEX idx_name (name)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-
-    // Ensure activities table exists
-    $pdo->exec("CREATE TABLE IF NOT EXISTS activities (
-        id VARCHAR(255) NOT NULL,
-        title VARCHAR(255) NOT NULL,
-        description TEXT DEFAULT NULL,
-        images LONGTEXT DEFAULT NULL,
-        created_by VARCHAR(255) NOT NULL,
-        created_at BIGINT NOT NULL,
-        updated_at BIGINT DEFAULT NULL,
-        PRIMARY KEY (id),
-        INDEX idx_created_by (created_by),
-        INDEX idx_created_at (created_at)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
     // 1. Fetch Personnels
     $stmtPers = $pdo->query('SELECT id, name, role, is_ceo, reports_to, photo_data_url FROM organization_personnel ORDER BY is_ceo DESC, created_at ASC');
@@ -91,7 +35,14 @@ try {
     }, $personnels);
 
     // 2. Fetch Incidents (Only approved, dispatched, or resolved)
-    $stmtInc = $pdo->query("SELECT id, type, description, status, photo_data_url, photo_data_urls, barangay, reported_by, created_at FROM incidents WHERE status IN ('Approved', 'Dispatched', 'Resolved') ORDER BY created_at DESC LIMIT 50");
+    $stmtInc = $pdo->query("
+        SELECT i.id, i.type, i.description, i.status, i.photo_data_url, i.photo_data_urls, i.barangay, i.reported_by, u.full_name as reporter_name, i.created_at 
+        FROM incidents i 
+        LEFT JOIN users u ON i.reported_by = u.id 
+        WHERE i.status IN ('Approved', 'Dispatched', 'Resolved') 
+        ORDER BY i.created_at DESC 
+        LIMIT 50
+    ");
     $incidents = $stmtInc->fetchAll(PDO::FETCH_ASSOC);
     $formattedIncidents = array_map(function($incident) {
         $photoDataUrls = [];
@@ -105,6 +56,7 @@ try {
             'status' => $incident['status'],
             'barangay' => $incident['barangay'] ?? null,
             'reportedBy' => $incident['reported_by'] ?? null,
+            'reporterName' => $incident['reporter_name'] ?? ($incident['barangay'] ? $incident['barangay'] : 'Unknown Reporter'),
             'photoDataUrl' => $incident['photo_data_url'],
             'photoDataUrls' => is_array($photoDataUrls) ? $photoDataUrls : [],
             'createdAt' => (int)$incident['created_at']

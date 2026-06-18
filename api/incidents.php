@@ -19,53 +19,6 @@ if (!$pdo) {
     exit();
 }
 
-// Ensure incidents table exists
-try {
-    $pdo->exec("
-        CREATE TABLE IF NOT EXISTS incidents (
-            id VARCHAR(255) NOT NULL,
-            type VARCHAR(255) NOT NULL,
-            description TEXT NOT NULL,
-            status VARCHAR(50) NOT NULL DEFAULT 'New',
-            reported_by VARCHAR(255) NOT NULL,
-            barangay VARCHAR(100) DEFAULT NULL,
-            photo_data_url LONGTEXT DEFAULT NULL,
-            photo_data_urls LONGTEXT DEFAULT NULL,
-            remarks TEXT DEFAULT NULL,
-            created_at BIGINT NOT NULL,
-            updated_at BIGINT DEFAULT NULL,
-            PRIMARY KEY (id),
-            INDEX idx_reported_by (reported_by),
-            INDEX idx_barangay (barangay),
-            INDEX idx_status (status),
-            INDEX idx_created_at (created_at)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-    ");
-    
-    // Add remarks column if it doesn't exist (migration)
-    try {
-        $pdo->exec("ALTER TABLE incidents ADD COLUMN remarks TEXT DEFAULT NULL");
-    } catch (PDOException $e) {
-        // Column likely already exists
-    }
-
-    // Add photo_data_urls column if it doesn't exist (migration)
-    try {
-        $pdo->exec("ALTER TABLE incidents ADD COLUMN photo_data_urls LONGTEXT DEFAULT NULL");
-    } catch (PDOException $e) {
-        // Column likely already exists
-    }
-
-    // Add barangay column if it doesn't exist (migration)
-    try {
-        $pdo->exec("ALTER TABLE incidents ADD COLUMN barangay VARCHAR(100) DEFAULT NULL");
-    } catch (PDOException $e) {
-        // Column likely already exists
-    }
-} catch (PDOException $e) {
-    // Table might already exist, continue
-}
-
 $method = $_SERVER['REQUEST_METHOD'];
 $userRole = getUserRole();
 $currentUser = getCurrentUser();

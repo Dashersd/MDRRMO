@@ -7,6 +7,7 @@
   'use strict';
 
   let initialized = false;
+  window._previousIncidents = null;
   
   // Determine API path based on current page location
   function getDashboardStatsApi() {
@@ -45,6 +46,13 @@
       });
       
       window.sidebarCountsListenersSetup = true;
+    }
+
+    // Start polling every 10 seconds to check for status updates
+    if (!window.sidebarPollingInterval) {
+      window.sidebarPollingInterval = setInterval(() => {
+        updateIncidentCount();
+      }, 10000);
     }
     
     initialized = true;
@@ -104,6 +112,32 @@
         return status === 'new' || status === 'pending';
       }).length;
       
+      // Check for notifications for BDRRMO users
+      const brandText = document.getElementById('brandText');
+      const isBdrrmo = brandText && (brandText.textContent.toUpperCase().includes('BDRRMO') || brandText.textContent.toUpperCase().includes('CLIENT'));
+
+      if (isBdrrmo && window._previousIncidents !== null && Array.isArray(incidents)) {
+        incidents.forEach(newInc => {
+          const oldInc = window._previousIncidents.find(i => i.id === newInc.id);
+          if (oldInc) {
+            const oldStatus = (oldInc.status || '').toLowerCase().trim();
+            const newStatus = (newInc.status || '').toLowerCase().trim();
+            
+            if ((oldStatus === 'new' || oldStatus === 'pending') && 
+                (newStatus === 'approved' || newStatus === 'declined' || newStatus === 'decline')) {
+              showStatusNotification(newInc.id, newInc.type, newStatus);
+              // Trigger a local event so the dashboard can refresh
+              window.dispatchEvent(new CustomEvent('incidentUpdated', { detail: newInc }));
+            }
+          }
+        });
+      }
+
+      // Store the current incidents for the next poll
+      if (Array.isArray(incidents)) {
+        window._previousIncidents = [...incidents];
+      }
+
       // Update badge
       incidentBadge.textContent = pendingCount;
       // Hide badge if count is 0
@@ -230,6 +264,54 @@
   window.updateSidebarCounts = updateSidebarCounts;
   window.updateIncidentCount = updateIncidentCount;
   window.updateUserCount = updateUserCount;
+
+  // Add a global notification function
+  function showStatusNotification(incidentId, type, status) {
+    const notification = document.createElement("div");
+    notification.className = "toast align-items-center text-white border-0 show";
+    
+    // Choose colors based on status
+    let bgColor = "bg-success";
+    let iconClass = "bi-check-circle-fill";
+    let statusText = "Approved";
+    
+    if (status === 'declined' || status === 'decline') {
+      bgColor = "bg-danger";
+      iconClass = "bi-x-circle-fill";
+      statusText = "Declined";
+    }
+
+    notification.classList.add(bgColor);
+    notification.style.cssText = "position: fixed; top: 20px; right: 20px; z-index: 1060; min-width: 300px; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); border-radius: 8px;";
+    
+    notification.innerHTML = `
+      <div class="d-flex">
+        <div class="toast-body d-flex align-items-center">
+          <i class="bi ${iconClass} fs-4 me-3"></i>
+          <div>
+            <strong>Incident Update</strong><br>
+            Your report for <b>${type || 'Incident'}</b> has been <b>${statusText}</b> by Admin.
+          </div>
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" onclick="this.parentElement.parentElement.remove()"></button>
+      </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Automatically remove after 8 seconds
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.style.transition = "opacity 0.5s ease";
+        notification.style.opacity = "0";
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.remove();
+          }
+        }, 500);
+      }
+    }, 8000);
+  }
 
 })();
 

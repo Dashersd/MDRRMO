@@ -19,25 +19,7 @@ if (!$pdo) {
     exit();
 }
 
-// Ensure activities table exists
-try {
-    $pdo->exec("
-        CREATE TABLE IF NOT EXISTS activities (
-            id VARCHAR(255) NOT NULL,
-            title VARCHAR(255) NOT NULL,
-            description TEXT DEFAULT NULL,
-            images LONGTEXT DEFAULT NULL,
-            created_by VARCHAR(255) NOT NULL,
-            created_at BIGINT NOT NULL,
-            updated_at BIGINT DEFAULT NULL,
-            PRIMARY KEY (id),
-            INDEX idx_created_by (created_by),
-            INDEX idx_created_at (created_at)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-    ");
-} catch (PDOException $e) {
-    // Table might already exist, continue
-}
+
 
 $method = $_SERVER['REQUEST_METHOD'];
 $userRole = getUserRole();

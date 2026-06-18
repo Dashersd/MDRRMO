@@ -17,7 +17,8 @@
         initClock();
         initWeather();
         initCopyToClipboard();
-        initImageModal();
+        // Image modal removed
+        // initImageModal();
 
         // Equipment Search Filter
         const searchInput = $("#equipmentSearchInput");
@@ -586,6 +587,7 @@
                             <div class="small text-muted mb-3">
                                 <div class="mb-1"><i class="bi bi-calendar-event me-1"></i>${date}</div>
                                 ${inc.barangay ? `<div><i class="bi bi-geo-alt-fill me-1 text-danger"></i>Brgy. ${escapeHtml(inc.barangay)}</div>` : ''}
+                                <div class="mt-1"><i class="bi bi-person-badge text-primary me-1"></i>Reported by: ${escapeHtml(inc.reporterName || "Unknown Reporter")}</div>
                             </div>
                             <p class="text-muted small mb-0" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.5;">${escapeHtml(inc.description)}</p>
                         </div>
@@ -623,43 +625,7 @@
         });
     }
 
-    // 9. Standard High Fidelity Image Modal Zoom
-    function initImageModal() {
-        const modalHtml = `
-            <div id="homepageImageModal" class="modal fade" tabindex="-1" aria-hidden="true" style="z-index: 1100;">
-                <div class="modal-dialog modal-lg modal-dialog-centered">
-                    <div class="modal-content border-0 shadow-lg">
-                        <div class="modal-header border-0 pb-0" style="position: absolute; right: 15px; top: 15px; z-index: 10;">
-                            <button type="button" class="btn-close bg-white p-2 rounded-circle shadow-sm" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body text-center p-2 bg-dark rounded overflow-hidden">
-                            <img id="homepageModalImage" src="" alt="Zoom" class="img-fluid rounded" style="max-height: 80vh;">
-                            <h5 id="homepageModalTitle" class="text-white mt-3 font-heading mb-0"></h5>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        document.body.insertAdjacentHTML("beforeend", modalHtml);
-
-            document.addEventListener("click", (e) => {
-                const img = e.target.closest(".incident-image-clickable");
-                if (!img) return;
-
-                const src = img.getAttribute("data-image");
-                const title = img.getAttribute("data-title");
-
-                const modalImg = document.getElementById("homepageModalImage");
-                const modalTitle = document.getElementById("homepageModalTitle");
-
-                if (modalImg && modalTitle) {
-                    modalImg.src = src;
-                    modalTitle.textContent = title || "Incident Photo";
-
-                    const bootstrapModal = new bootstrap.Modal(document.getElementById("homepageImageModal"));
-                    bootstrapModal.show();
-                }
-            });
+    // 9. Removed image modal logic as requested
 
             // 9b. Interactive click to view full details of Personnel cards
             document.addEventListener("click", (e) => {
@@ -701,9 +667,6 @@
 
             // 9c. Interactive click to view full details of Incident cards
             document.addEventListener("click", (e) => {
-                // If they clicked on the image directly, let the zoom modal handle it
-                if (e.target.classList.contains("incident-image-clickable")) return;
-
                 const card = e.target.closest(".incident-report-card");
                 if (!card) return;
 
@@ -729,12 +692,8 @@
                 if (mDescription) mDescription.textContent = inc.description;
                 if (mBarangay) mBarangay.textContent = inc.barangay || 'Unknown Location';
                 
-                // Fetch the reporter's name if we have a users map, or default to generic string
-                let reporterName = "Lapuyan Resident";
-                if (inc.reportedBy && window.users && window.users.length) {
-                    const user = window.users.find(u => u.id == inc.reportedBy);
-                    if (user) reporterName = `${user.first_name} ${user.last_name}`;
-                }
+                // Use the provided reporterName from the API, falling back to a generic string
+                let reporterName = inc.reporterName || "Unknown Reporter";
                 if (mReportedBy) mReportedBy.textContent = reporterName;
                 
                 if (mStatus) {
@@ -908,7 +867,6 @@
                 const bootstrapModal = new bootstrap.Modal(document.getElementById("equipmentDetailsModal"));
                 bootstrapModal.show();
             });
-        }
 
     // 6b. Render Equipment Grid
     function renderEquipmentGrid(filterText = "") {

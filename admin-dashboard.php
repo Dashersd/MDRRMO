@@ -273,21 +273,34 @@ if (isset($_GET['logout'])) {
             <div class="card border-0 shadow-sm">
               <div class="card-header bg-white border-0 pb-0">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                  <div>
-                    <div class="d-flex align-items-center mb-1">
-                      <i class="bi bi-list-check text-warning me-2 fs-5" id="reportStatusIcon"></i>
-                      <select id="reportStatusFilter" class="form-select form-select-sm fw-bold border-0 bg-transparent shadow-none p-0 pe-4 fs-5" style="width: auto; cursor: pointer; color: #212529;">
-                        <option value="pending">Pending Reports</option>
-                        <option value="approved">Approved Reports</option>
-                        <option value="declined">Declined Reports</option>
-                      </select>
+                  <div class="w-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+                      <div class="d-flex align-items-center flex-wrap gap-3">
+                        <div>
+                          <h5 class="fw-bold mb-1"><i class="bi bi-list-check text-warning me-2" id="reportStatusIcon"></i>Incident Reports</h5>
+                          <p class="text-muted small mb-0" id="reportStatusSubtitle">Incident reports awaiting review and action</p>
+                        </div>
+                        
+                        <div class="d-flex flex-row flex-wrap gap-2 ms-md-2 mt-2 mt-md-0">
+                          <button type="button" class="btn btn-primary btn-sm text-start fw-semibold status-filter-btn active" data-value="pending">
+                            <i class="bi bi-clock-history me-1"></i>Pending
+                          </button>
+                          <button type="button" class="btn btn-outline-success btn-sm text-start fw-semibold status-filter-btn" data-value="approved">
+                            <i class="bi bi-check-circle me-1"></i>Approved
+                          </button>
+                          <button type="button" class="btn btn-outline-danger btn-sm text-start fw-semibold status-filter-btn" data-value="declined">
+                            <i class="bi bi-x-circle me-1"></i>Declined
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <div class="d-flex gap-2 mt-2 mt-md-0">
+                        <a href="admin/incidents.php" class="btn btn-outline-primary btn-sm">
+                          <i class="bi bi-arrow-right me-1"></i> View All
+                        </a>
+                      </div>
                     </div>
-                    <p class="text-muted small mb-0" id="reportStatusSubtitle">Incident reports awaiting review and action</p>
-                  </div>
-                  <div class="d-flex gap-2">
-                    <a href="admin/incidents.php" class="btn btn-outline-primary btn-sm">
-                      <i class="bi bi-arrow-right me-1"></i> View All
-                    </a>
+                    <input type="hidden" id="reportStatusFilter" value="pending">
                   </div>
                 </div>
               </div>

@@ -19,25 +19,7 @@ if (!$pdo) {
     exit();
 }
 
-// Ensure equipment table exists
-try {
-    $pdo->exec("
-        CREATE TABLE IF NOT EXISTS equipment (
-            id VARCHAR(255) NOT NULL,
-            name VARCHAR(255) NOT NULL,
-            count INT NOT NULL DEFAULT 1,
-            image_data_url LONGTEXT DEFAULT NULL,
-            created_by VARCHAR(255) NOT NULL,
-            created_at BIGINT NOT NULL,
-            updated_at BIGINT DEFAULT NULL,
-            PRIMARY KEY (id),
-            INDEX idx_created_by (created_by),
-            INDEX idx_name (name)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-    ");
-} catch (PDOException $e) {
-    // Table might already exist, continue
-}
+
 
 $method = $_SERVER['REQUEST_METHOD'];
 $userRole = getUserRole();

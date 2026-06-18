@@ -1136,10 +1136,10 @@ window.showIncidentDetailsModal = function(incident, options = {}) {
     // Helper escape
     const escapeHtml = (s) => String(s||'').replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
 
-    const rejectionRemarkHTML = incident.remark && (status === 'declined' || status === 'rejected') ? `
+    const rejectionRemarkHTML = incident.remarks && (status === 'declined' || status === 'decline' || status === 'rejected') ? `
         <div class="alert alert-danger mt-3 mb-0" role="alert">
             <h6 class="alert-heading fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-2"></i>Reason for Rejection:</h6>
-            <p class="mb-0 small">${escapeHtml(incident.remark)}</p>
+            <p class="mb-0 small">${escapeHtml(incident.remarks)}</p>
         </div>
     ` : '';
 
@@ -1193,7 +1193,7 @@ window.showIncidentDetailsModal = function(incident, options = {}) {
                                     
                                     <div class="d-flex mb-3">
                                         <div class="text-muted me-2" style="width: 20px;"><i class="bi bi-person"></i></div>
-                                        <div class="fw-medium text-dark">${escapeHtml(incident.reportedBy || 'System User')}</div>
+                                        <div class="fw-medium text-dark">Reported by: ${escapeHtml(incident.reportedBy || 'System User')}</div>
                                     </div>
                                 </div>
                                 

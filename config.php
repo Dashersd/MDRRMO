@@ -78,19 +78,18 @@ function getDatabaseConfig(): array
     $isLocalhost = in_array($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? '', ['localhost', '127.0.0.1', '::1']);
 
     if ($isLocalhost) {
-        $host = $getEnvVar('DB_HOST', '127.0.0.1');
-        $port = $getEnvVar('DB_PORT', '3306');
-        $dbname = $getEnvVar('DB_DATABASE', $getEnvVar('DB_NAME', 'mdrrmo_information_system'));
-        $username = $getEnvVar('DB_USERNAME', $getEnvVar('DB_USER', 'root'));
-        $password = $getEnvVar('DB_PASSWORD', '');
+        $host = '127.0.0.1';
+        $port = '3306';
+        $dbname = 'mdrrmo_information_system';
+        $username = 'root';
+        $password = '';
     } else {
         // InfinityFree production credentials
-        $host = $getEnvVar('DB_HOST', 'sql311.infinityfree.com');
-        $port = $getEnvVar('DB_PORT', '3306');
-        // IMPORTANT: Replace 'if0_42044872_XXX' with your actual InfinityFree database name
-        $dbname = $getEnvVar('DB_DATABASE', $getEnvVar('DB_NAME', 'if0_42044872_XXX')); 
-        $username = $getEnvVar('DB_USERNAME', $getEnvVar('DB_USER', 'if0_42044872'));
-        $password = $getEnvVar('DB_PASSWORD', 'AVDK5mmi100DSDP');
+        $host = 'sql311.infinityfree.com';
+        $port = '3306';
+        $dbname = 'if0_42044872_mdrrmo'; 
+        $username = 'if0_42044872';
+        $password = 'AVDK5mmi10ODSDP';
     }
 
     $options = [
@@ -130,8 +129,9 @@ function getPdoConnection(): ?PDO
 
     $maxAttempts = (int) (getenv('DB_CONNECTION_RETRIES') ?: 5);
     $maxAttempts = max(1, $maxAttempts);
-    $sleepSeconds = (int) (getenv('DB_CONNECTION_SLEEP') ?: 1);
     $lastError = null;
+    
+    $sleepSeconds = (int) (getenv('DB_CONNECTION_SLEEP') ?: 1);
 
     for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
         try {
@@ -139,12 +139,6 @@ function getPdoConnection(): ?PDO
             return $pdo;
         } catch (PDOException $exception) {
             $lastError = $exception;
-            error_log(sprintf(
-                'Database connection attempt %d/%d failed: %s',
-                $attempt,
-                $maxAttempts,
-                $exception->getMessage()
-            ));
 
             if ($attempt < $maxAttempts) {
                 sleep($sleepSeconds);
@@ -153,17 +147,6 @@ function getPdoConnection(): ?PDO
     }
 
     if ($lastError instanceof PDOException) {
-        error_log(sprintf(
-            'Database connection failed after %d attempts (host=%s, port=%s, db=%s, user=%s)',
-            $maxAttempts,
-            $config['host'],
-            $config['port'],
-            $config['database'],
-            $config['username']
-        ));
-    }
-
-    if ((getenv('APP_ENV') ?: '') === 'development' && $lastError instanceof PDOException) {
         throw $lastError;
     }
 

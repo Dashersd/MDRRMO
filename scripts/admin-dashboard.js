@@ -67,6 +67,35 @@
         loadPendingReports();
       });
     }
+
+    // Status filter buttons logic for the new column layout
+    const filterButtons = document.querySelectorAll('.status-filter-btn');
+    if (filterButtons.length > 0 && statusFilter) {
+      filterButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          // Reset all buttons to outline variants
+          filterButtons.forEach(b => {
+            b.classList.remove('active', 'btn-primary', 'btn-success', 'btn-danger', 'text-white');
+            if(b.dataset.value === 'pending') b.classList.add('btn-outline-primary');
+            if(b.dataset.value === 'approved') b.classList.add('btn-outline-success');
+            if(b.dataset.value === 'declined') b.classList.add('btn-outline-danger');
+          });
+          
+          // Set active state for clicked button
+          this.classList.add('active');
+          this.classList.remove('btn-outline-primary', 'btn-outline-success', 'btn-outline-danger');
+          
+          if(this.dataset.value === 'pending') this.classList.add('btn-primary', 'text-white');
+          if(this.dataset.value === 'approved') this.classList.add('btn-success', 'text-white');
+          if(this.dataset.value === 'declined') this.classList.add('btn-danger', 'text-white');
+          
+          // Update hidden input and trigger change
+          statusFilter.value = this.dataset.value;
+          const event = new Event('change');
+          statusFilter.dispatchEvent(event);
+        });
+      });
+    }
   }
 
   /**

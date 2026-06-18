@@ -127,7 +127,25 @@ if (createUser($admin_data)) {
     } else {
         echo "<!DOCTYPE html><html><head><title>Admin Setup - Error</title></head><body>";
         echo "<h2>Failed to create admin account</h2>";
-        echo "<p>Please check database connection and try again.</p>";
+        echo "<p>Database connection succeeded, but the INSERT query failed!</p>";
+        
+        try {
+            $pdo = getPdoConnection();
+            $stmt = $pdo->prepare('INSERT INTO users (username, email, password_hash, role, full_name, organization, status) VALUES (:username, :email, :password_hash, :role, :full_name, :organization, :status)');
+            $stmt->execute([
+                ':username' => $admin_username,
+                ':email' => $admin_email,
+                ':password_hash' => password_hash($admin_password, PASSWORD_DEFAULT),
+                ':role' => 'admin',
+                ':full_name' => $admin_full_name,
+                ':organization' => $admin_organization,
+                ':status' => 'approved',
+            ]);
+        } catch (Exception $e) {
+            echo "<h3>Exact Error Message:</h3>";
+            echo "<pre style='background:#f0f0f0; padding:10px; color:red;'>" . htmlspecialchars($e->getMessage()) . "</pre>";
+        }
+
         echo "</body></html>";
     }
     exit(1);
