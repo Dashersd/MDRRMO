@@ -8,6 +8,7 @@
 
   let initialized = false;
   window._previousIncidents = null;
+  window._previousActivities = null;
   
   // Determine API path based on current page location
   function getDashboardStatsApi() {
@@ -52,6 +53,7 @@
     if (!window.sidebarPollingInterval) {
       window.sidebarPollingInterval = setInterval(() => {
         updateIncidentCount();
+        updateActivityNotifications();
       }, 10000);
     }
     
@@ -229,6 +231,77 @@
         }
       });
   }
+
+  /**
+   * Fetch activities and trigger notification for new ones
+   */
+  async function updateActivityNotifications() {
+    try {
+      const path = window.location.pathname;
+      let apiUrl = 'api/activities.php';
+      if (path.includes('/admin/') || path.includes('/client/') || path.includes('/bdrrmo/')) {
+        apiUrl = '../api/activities.php';
+      }
+      
+      const response = await fetch(apiUrl);
+      if (response.ok) {
+        const data = await response.json();
+        if (Array.isArray(data) && !data.error) {
+          if (window._previousActivities !== null) {
+            const prevIds = new Set(window._previousActivities.map(a => a.id));
+            data.forEach(newAct => {
+              if (!prevIds.has(newAct.id)) {
+                showActivityNotification(newAct);
+                // Trigger an event so activity dashboard can refresh if open
+                window.dispatchEvent(new CustomEvent('activityAdded', { detail: newAct }));
+              }
+            });
+          }
+          window._previousActivities = data;
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to fetch activities for notifications", e);
+    }
+  }
+
+  function showActivityNotification(activity) {
+    const notification = document.createElement("div");
+    notification.className = "toast align-items-center text-white bg-primary border-0 show";
+    
+    // Display in the bottom right corner to avoid overlapping with incident notifications
+    notification.style.cssText = "position: fixed; bottom: 20px; right: 20px; z-index: 1060; min-width: 300px; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); border-radius: 8px;";
+    
+    const title = activity.title ? activity.title.replace(/</g, "&lt;").replace(/>/g, "&gt;") : 'Untitled';
+    
+    notification.innerHTML = `
+      <div class="d-flex">
+        <div class="toast-body d-flex align-items-center">
+          <i class="bi bi-info-circle-fill fs-4 me-3"></i>
+          <div>
+            <strong>New Activity Log</strong><br>
+            A new activity "<b>${title}</b>" was just added.
+          </div>
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" onclick="this.parentElement.parentElement.remove()"></button>
+      </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.style.transition = "opacity 0.5s ease";
+        notification.style.opacity = "0";
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.remove();
+          }
+        }, 500);
+      }
+    }, 8000);
+  }
+
 
 
   // Mark that sidebar-counts.js is loaded
