@@ -4,3 +4,6 @@ data/
 # Docker volumes and data
 *.log
 
+# Database dumps / SQL backups
+*.sql
+
