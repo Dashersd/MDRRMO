@@ -15,7 +15,7 @@ require_once 'auth.php';
 $is_cli = php_sapi_name() === 'cli';
 
 // Default admin credentials
-$admin_username = 'administrator';
+$admin_username = 'admin';
 $admin_password = 'admin123'; // CHANGE THIS AFTER FIRST LOGIN!
 $admin_email = 'admin@mdrrmo.local';
 $admin_full_name = 'System Administrator';

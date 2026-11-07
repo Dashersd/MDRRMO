@@ -56,15 +56,30 @@ try {
         description TEXT NOT NULL,
         status VARCHAR(50) NOT NULL DEFAULT 'New',
         reported_by VARCHAR(255) NOT NULL,
+        barangay VARCHAR(100) DEFAULT NULL,
         photo_data_url LONGTEXT DEFAULT NULL,
-        created_at BIGINT NOT NULL,
-        updated_at BIGINT DEFAULT NULL,
+        photo_data_urls LONGTEXT DEFAULT NULL,
+        remarks TEXT DEFAULT NULL,
+        created_at BIGINT(20) NOT NULL,
+        updated_at BIGINT(20) DEFAULT NULL,
         PRIMARY KEY (id),
         INDEX idx_reported_by (reported_by),
         INDEX idx_status (status),
         INDEX idx_created_at (created_at)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
     echo "✓ Incidents table ensured.<br>";
+
+    // Ensure columns exist if table was created previously without them
+    $columns = $pdo->query("SHOW COLUMNS FROM incidents")->fetchAll(PDO::FETCH_COLUMN);
+    if (!in_array('barangay', $columns)) {
+        $pdo->exec("ALTER TABLE incidents ADD COLUMN barangay VARCHAR(100) DEFAULT NULL");
+    }
+    if (!in_array('photo_data_urls', $columns)) {
+        $pdo->exec("ALTER TABLE incidents ADD COLUMN photo_data_urls LONGTEXT DEFAULT NULL");
+    }
+    if (!in_array('remarks', $columns)) {
+        $pdo->exec("ALTER TABLE incidents ADD COLUMN remarks TEXT DEFAULT NULL");
+    }
 
     // Organization Personnel table
     $pdo->exec("CREATE TABLE IF NOT EXISTS organization_personnel (
@@ -80,6 +95,36 @@ try {
         FOREIGN KEY (reports_to) REFERENCES organization_personnel(id) ON DELETE SET NULL
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
     echo "✓ Organization Personnel table ensured.<br>";
+
+    // Activities table
+    $pdo->exec("CREATE TABLE IF NOT EXISTS activities (
+        id VARCHAR(255) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        description TEXT DEFAULT NULL,
+        images LONGTEXT DEFAULT NULL,
+        created_by VARCHAR(255) NOT NULL,
+        created_at BIGINT(20) NOT NULL,
+        updated_at BIGINT(20) DEFAULT NULL,
+        PRIMARY KEY (id),
+        KEY idx_created_by (created_by),
+        KEY idx_created_at (created_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    echo "✓ Activities table ensured.<br>";
+
+    // Equipment table
+    $pdo->exec("CREATE TABLE IF NOT EXISTS equipment (
+        id VARCHAR(255) NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        count INT(11) NOT NULL DEFAULT 1,
+        image_data_url LONGTEXT DEFAULT NULL,
+        created_by VARCHAR(255) NOT NULL,
+        created_at BIGINT(20) NOT NULL,
+        updated_at BIGINT(20) DEFAULT NULL,
+        PRIMARY KEY (id),
+        KEY idx_created_by (created_by),
+        KEY idx_name (name)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    echo "✓ Equipment table ensured.<br>";
 
     // 5. Migrate Data from users.json
     $jsonFile = __DIR__ . '/../users.json';
@@ -109,6 +154,18 @@ try {
             }
             echo "✓ Migrated $count new users from users.json.<br>";
         }
+    }
+
+    // 6. Ensure default admin user exists
+    $adminCheck = $pdo->prepare("SELECT id FROM users WHERE username = 'admin' LIMIT 1");
+    $adminCheck->execute();
+    if (!$adminCheck->fetch()) {
+        $defaultAdminPass = password_hash('admin123', PASSWORD_DEFAULT);
+        $insertAdmin = $pdo->prepare("INSERT INTO users (username, email, password_hash, role, full_name, organization, status) VALUES ('admin', 'admin@mdrrmo.local', ?, 'admin', 'System Administrator', 'MDRRMO', 'approved')");
+        $insertAdmin->execute([$defaultAdminPass]);
+        echo "✓ Default admin account ('admin') ensured.<br>";
+    } else {
+        echo "✓ Admin account ('admin') ensured.<br>";
     }
 
     echo "<h3>Setup Complete!</h3>";

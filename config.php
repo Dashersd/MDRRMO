@@ -75,9 +75,17 @@ function getDatabaseConfig(): array
         return $val !== false ? $val : $default;
     };
 
-    $isLocalhost = in_array($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? '', ['localhost', '127.0.0.1', '::1']);
+    $isCli = (php_sapi_name() === 'cli');
+    $isLocalhost = $isCli || in_array($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? '', ['localhost', '127.0.0.1', '::1']);
 
-    if ($isLocalhost) {
+    $envHost = $getEnvVar('DB_HOST');
+    if ($envHost !== false) {
+        $host = $envHost;
+        $port = $getEnvVar('DB_PORT', '3306');
+        $dbname = $getEnvVar('DB_DATABASE', 'mdrrmo_information_system');
+        $username = $getEnvVar('DB_USERNAME', 'root');
+        $password = $getEnvVar('DB_PASSWORD', '');
+    } elseif ($isLocalhost) {
         $host = '127.0.0.1';
         $port = '3306';
         $dbname = 'mdrrmo_information_system';
