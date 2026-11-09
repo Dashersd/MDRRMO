@@ -145,6 +145,14 @@ if (isset($_GET['success']) && $_GET['success'] == '1' && isset($_GET['user'])) 
 }
 
 $users = getAllUsers();
+
+$barangays = [
+    'Bulawan', 'Danganan', 'Dansal', 'Dumara', 'Karpok', 'Lenok Madalum', 
+    'Luanan', 'Lubosan', 'Mahalingeb', 'Mandeg', 'Maralag', 'Maruing', 
+    'Molum', 'Pampang', 'Pantad', 'Pingalay', 'Poblacion', 'Salambuyan', 
+    'San Jose', 'Sayog', 'Tabon', 'Talabob', 'Tiguha', 'Tininghalang', 
+    'Tipasan', 'Tugaya'
+];
 ?>
 <!DOCTYPE html>
 <html lang="en">
