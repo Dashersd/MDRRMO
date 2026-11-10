@@ -79,10 +79,6 @@ if ($isUserLoggedIn) {
         <div class="container">
             <div class="row align-items-center g-5">
                 <div class="col-lg-7">
-                    <div class="hero-badge">
-                        <i class="bi bi-shield-fill-check"></i>
-                        <span>Lapuyan Municipal Safety and Resiliency Portal</span>
-                    </div>
                     <h1 class="hero-title">Preparedness Saves Lives. <br><span>24/7 Response</span> at Your Service.</h1>
                     <p class="hero-description">Welcome to Municipal Disaster Risk Reduction and Management Office of Lapuyan (MDRRMO) <br><br><strong>#SulongParaSaKaligtasan</strong></p>
                 </div>
