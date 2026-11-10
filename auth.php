@@ -19,13 +19,22 @@ ini_set('log_errors', 1);
 // Database config
 require_once __DIR__ . '/config.php';
 
+function getLoginRedirectUrl(): string {
+    $appDir = str_replace('\\', '/', __DIR__);
+    $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_FILENAME'] ?? ''));
+    if ($scriptDir !== $appDir) {
+        return '../login.php';
+    }
+    return 'login.php';
+}
+
 function checkLogin() {
     if (session_status() === PHP_SESSION_NONE) {
         session_start();
     }
     
     if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
-        header('Location: login.php');
+        header('Location: ' . getLoginRedirectUrl());
         exit();
     }
 }
@@ -60,7 +69,7 @@ function logout() {
     session_destroy();
     
     // Redirect to login page
-    header('Location: login.php');
+    header('Location: ' . getLoginRedirectUrl());
     exit();
 }
 
