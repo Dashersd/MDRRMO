@@ -47,6 +47,20 @@
   margin-bottom: 1rem;
 }
 
+.form-floating > label {
+  color: #6c757d !important;
+  font-size: 0.95rem;
+}
+
+.form-floating > .form-control:focus ~ label {
+  color: #dc3545 !important;
+}
+
+.form-control::placeholder {
+  color: #6c757d !important;
+  opacity: 0.8;
+}
+
 .btn-login {
   background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
   border: none;
